@@ -186,9 +186,9 @@
     <div class="mb-4">From<br><br><span class="out-name bold"></span><br><span class="out-designation"></span><br><span class="out-office"></span></div>
     <div class="mb-4">To<br><br><span class="out-controlling bold"></span><br><span class="out-office"></span></div>
     <div class="mb-4">Respected Sir/Madam,</div>
-    <div class="mb-4" style="padding-left: 40px;"><span class="bold">Sub:</span> Application for <span class="out-leave_name bold"></span> for <span class="out-duration_str bold"></span> - reg.</div>
+    <div class="mb-4" style="padding-left: 40px;"><span class="bold">Sub:</span> Application for <span class="out-leave_name bold"></span> <span class="out-leave_rule bold"></span> for <span class="out-duration_str bold"></span> - reg.</div>
     <div class="mb-4 text-justify">
-      I am submitting herewith my application for <span class="out-leave_name bold"></span> for a period of <span class="out-duration_str bold"></span> from <span class="out-start bold"></span> to <span class="out-end bold"></span>. The leave is required for the purpose of: <span class="out-reason bold"></span>.
+      I am submitting herewith my application for <span class="out-leave_name bold"></span> <span class="out-leave_rule"></span> for a period of <span class="out-duration_str bold"></span> from <span class="out-start bold"></span> to <span class="out-end bold"></span>. The leave is required for the purpose of: <span class="out-reason bold"></span>.
     </div>
     <div class="mb-4 text-justify" id="cover_attachments">I have attached the statutory Form No. 13 along with this letter.</div>
     <div class="mb-4">I kindly request you to sanction the leave / forward the application to the competent authority.</div>
@@ -210,7 +210,7 @@
       <tr><td>8. Confirmation in any post (Date & Post)</td><td>:</td><td><span class="out-probation"></span></td></tr>
       <tr><td>9. Address during the leave</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
       <tr><td>10. Allowances drawn in present post</td><td>:</td><td><span class="out-allowances"></span></td></tr>
-      <tr><td>11. Nature and period of leave applied for</td><td>:</td><td><span class="out-leave_name"></span> for <span class="out-duration_str"></span><br>from <span class="out-start"></span> to <span class="out-end"></span></td></tr>
+      <tr><td>11. Nature and period of leave applied for</td><td>:</td><td><span class="out-leave_name"></span> <span class="out-leave_rule"></span> for <span class="out-duration_str"></span><br>from <span class="out-start"></span> to <span class="out-end"></span></td></tr>
       <tr><td>12. Sundays and holidays prefixed/suffixed</td><td>:</td><td><span class="out-holidays"></span></td></tr>
       <tr><td>13. Ground on which leave is applied for</td><td>:</td><td><span class="out-reason"></span></td></tr>
       <tr><td>14. Date of return from last leave</td><td>:</td><td><span class="out-last_leave"></span></td></tr>
@@ -224,7 +224,6 @@
       <div class="text-center">Signature of Applicant<br><br><br><span class="out-name bold"></span></div>
     </div>
     <hr>
-    <br><br><br><br><br><br>
     <div class="bold mb-4">16. Remarks and/or recommendation of the Controlling Officer:</div>
     <div style="height: 40px;"></div>
     <div class="text-right">Signature (with date) and Designation</div>
@@ -247,7 +246,7 @@
       <tr><td>7. Purpose of visit</td><td>:</td><td><span class="out-reason"></span></td></tr>
       <tr><td>8. Address & Place of Visit</td><td>:</td><td><span class="out-lwa_country"></span></td></tr>
       <tr><td>9. Present Home Address</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
-      <tr><td>10. Nature of period of absence / leave required</td><td>:</td><td>LEAVE WITHOUT ALLOWANCE</td></tr>
+      <tr><td>10. Nature of period of absence / leave required</td><td>:</td><td>LEAVE WITHOUT ALLOWANCE <span class="out-leave_rule"></span></td></tr>
       <tr><td>11. Eligibility for the leave applied for</td><td>:</td><td><span class="out-reason"></span></td></tr>
       <tr><td>12. How expenditure will be met</td><td>:</td><td>N/A</td></tr>
       <tr><td>13. Declaration acceptance of job in abroad</td><td>:</td><td>N/A</td></tr>
@@ -437,12 +436,27 @@
       document.querySelectorAll('.out-' + field).forEach(t => t.innerText = val);
     });
 
-    // Set Leave Name Title
+    // Set Leave Name Title and Rule
     const nameMap = {
-      'earned': 'Earned / Commuted Leave', 'casual': 'Special Casual Leave', 'paternity': 'Paternity Leave',
-      'maternity': 'Maternity Leave', 'lwa_abroad': 'Leave Without Allowance', 'lwa_study': 'Leave Without Allowance'
+      'earned': 'Earned / Half Pay / Commuted Leave',
+      'casual': 'Special Casual Leave',
+      'paternity': 'Paternity Leave',
+      'maternity': 'Maternity Leave',
+      'lwa_abroad': 'Leave Without Allowance',
+      'lwa_study': 'Leave Without Allowance'
     };
+
+    const ruleMap = {
+      'earned': '(under Rule 78/83/84, Part I, K.S.R)',
+      'casual': '(under Appendix VII, Section II, K.S.R)',
+      'paternity': '(under Rule 102B, Part I, K.S.R)',
+      'maternity': '(under Rule 100, Part I, K.S.R)',
+      'lwa_abroad': '(under Appendix XII-A, Part I, K.S.R)',
+      'lwa_study': '(under Appendix XII-B/C, Part I, K.S.R)'
+    };
+
     document.querySelectorAll('.out-leave_name').forEach(t => t.innerText = nameMap[type] || 'Leave');
+    document.querySelectorAll('.out-leave_rule').forEach(t => t.innerText = ruleMap[type] || '');
 
     // Toggle Visibility of LWA Pages
     const isLWA = (type === 'lwa_abroad' || type === 'lwa_study');
