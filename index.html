@@ -3,59 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comprehensive KSR Leave Application Generator</title>
+<title>Official KSR Leave Application Generator</title>
 <style>
   /* --- SCREEN UI STYLES --- */
   @media screen {
-    :root { --bg: #f3f4f6; --text: #1f2937; --border: #d1d5db; --primary: #0f172a; --accent: #2563eb; --req: #ef4444; }
+    :root { --bg: #f8fafc; --text: #1e293b; --border: #cbd5e1; --primary: #0f172a; --accent: #0284c7; --req: #ef4444; }
     body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0 0 60px 0; }
     .print-only { display: none; }
-    .app-header { background-color: var(--primary); color: white; padding: 25px 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    .app-header h1 { margin: 0; font-size: 1.75rem; letter-spacing: -0.025em; }
+    .app-header { background-color: var(--primary); color: white; padding: 25px 20px; text-align: center; margin-bottom: 30px; }
+    .app-header h1 { margin: 0; font-size: 1.75rem; }
     .app-header p { margin: 8px 0 0 0; color: #94a3b8; font-size: 0.95rem; }
-    .container { max-width: 950px; margin: 0 auto; padding: 0 20px; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
     
-    .section { background: white; padding: 30px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
-    .section h2 { margin-top: 0; font-size: 1.25rem; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px; margin-bottom: 25px; color: var(--primary); }
+    .section { background: white; padding: 30px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+    .section h2 { margin-top: 0; font-size: 1.25rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 25px; color: var(--primary); }
     
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
     .full-width { grid-column: 1 / -1; }
     
     .form-group { display: flex; flex-direction: column; }
-    .form-group label { font-size: 0.875rem; font-weight: 600; margin-bottom: 8px; color: #4b5563; }
+    .form-group label { font-size: 0.875rem; font-weight: 600; margin-bottom: 8px; color: #475569; }
     .required::after { content: " *"; color: var(--req); font-weight: bold; }
     
     .form-group input, .form-group select, .form-group textarea { 
-      border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-size: 1rem; font-family: inherit; transition: all 0.2s; background: #fff;
+      border: 1px solid var(--border); padding: 10px 12px; border-radius: 6px; font-size: 1rem; font-family: inherit; 
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
-      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); 
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); 
     }
     
-    .help-text { font-size: 0.75rem; color: #6b7280; margin-top: 6px; }
+    .help-text { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
     .hidden-section { display: none; }
     
     .print-btn { 
       background-color: var(--accent); color: white; border: none; padding: 16px 32px; font-size: 1.15rem; 
-      border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; transition: background 0.2s; 
-      box-shadow: 0 4px 6px -1px rgba(37,99,235,0.3);
+      border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2,132,199,0.3);
     }
-    .print-btn:hover { background-color: #1d4ed8; }
+    .print-btn:hover { background-color: #0369a1; }
     
-    /* Type Selector Highlight */
-    .type-selector { background: #eff6ff; border-color: #bfdbfe; }
+    .date-calc-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 15px; border-radius: 6px; }
   }
 
   /* --- PDF EXPORT STYLES (A4 Format) --- */
   @media print {
     .screen-only { display: none !important; }
     .print-only { display: block !important; }
-    @page { size: A4; margin: 20mm; }
-    body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; background: #fff; margin: 0; padding: 0; }
+    @page { size: A4; margin: 15mm 20mm; }
+    body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.4; color: #000; background: #fff; margin: 0; padding: 0; }
     .page { page-break-after: always; padding: 0; margin: 0; position: relative; min-height: 250mm; }
     .page.hidden-print { display: none !important; }
     
-    .page-title { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 25px; line-height: 1.3; }
+    .page-title { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 20px; line-height: 1.3; }
     .text-right { text-align: right; }
     .text-center { text-align: center; }
     .text-justify { text-align: justify; }
@@ -64,13 +63,18 @@
     .mt-4 { margin-top: 1.5rem; }
     .mt-8 { margin-top: 3rem; }
     .flex-space { display: flex; justify-content: space-between; }
-    
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    td { padding: 6px 0; vertical-align: top; }
-    td:first-child { width: 45%; }
-    ol { padding-left: 20px; margin-top: 10px; }
-    li { margin-bottom: 12px; }
     .bold { font-weight: bold; }
+    
+    /* Strict Tabular Alignment */
+    .form-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .form-table td { padding: 5px 0; vertical-align: top; }
+    .form-table td:nth-child(1) { width: 50%; }
+    .form-table td:nth-child(2) { width: 2%; text-align: center; }
+    .form-table td:nth-child(3) { width: 48%; padding-left: 10px; font-weight: bold; }
+    
+    .signature-block { width: 300px; text-align: center; float: right; margin-top: 40px; }
+    .clear { clear: both; }
+    hr { border: 0; border-top: 1px solid #000; margin: 20px 0; }
   }
 </style>
 </head>
@@ -79,17 +83,17 @@
 <!-- UI FORM SECTION -->
 <div class="screen-only">
   <div class="app-header">
-    <h1>KSR Leave Application Generator</h1>
-    <p>Dynamically generates Form 13, Declarations, and Cover Letters based on KSR rules.</p>
+    <h1>Official KSR Leave Generator</h1>
+    <p>Dynamically renders perfectly aligned Forms, Proformas, and Head of Office Certificates.</p>
   </div>
 
   <div class="container">
     <form id="leaveForm" onsubmit="event.preventDefault(); generatePDF();">
       
-      <!-- LEAVE TYPE SELECTOR -->
-      <div class="section type-selector">
+      <!-- LEAVE TYPE -->
+      <div class="section" style="background: #eff6ff; border-color: #bfdbfe;">
         <div class="form-group full-width">
-          <label class="required" style="font-size: 1rem; color: #1e40af;">Select Leave Nature</label>
+          <label class="required" style="color: #1e40af;">Select Leave Nature</label>
           <select id="leave_type" required onchange="toggleSections()">
             <option value="" disabled selected>-- Select Leave Type --</option>
             <option value="earned">Earned Leave / Half Pay Leave / Commuted Leave</option>
@@ -102,65 +106,73 @@
         </div>
       </div>
 
-      <!-- COMMON EMPLOYEE DETAILS -->
+      <!-- EMPLOYEE DETAILS -->
       <div class="section">
         <h2>1. Employee Profile</h2>
         <div class="grid">
           <div class="form-group"><label class="required">Full Name</label><input type="text" id="name" required></div>
           <div class="form-group"><label class="required">PEN Number</label><input type="text" id="pen" required></div>
           <div class="form-group"><label class="required">Designation</label><input type="text" id="designation" required></div>
-          <div class="form-group"><label class="required">Current Office / Section</label><input type="text" id="office" required></div>
+          <div class="form-group"><label class="required">Employment Type</label>
+            <select id="emp_type"><option value="Regular / Substantive">Regular / Substantive</option><option value="Officiating">Officiating</option></select>
+          </div>
+          <div class="form-group full-width"><label class="required">Current Office, Department & Section</label><input type="text" id="office" required></div>
           <div class="form-group"><label class="required">Date of Birth</label><input type="date" id="dob" required></div>
           <div class="form-group"><label class="required">Date of Entry into Service</label><input type="date" id="entry" required></div>
           <div class="form-group"><label class="required">Pay & Scale of Pay</label><input type="text" id="pay" required></div>
-          <div class="form-group"><label>Probation / Confirmation Status</label><input type="text" id="probation"></div>
+          <div class="form-group"><label>Probation / Confirmation Status (Post & Date)</label><input type="text" id="probation" placeholder="Optional"></div>
         </div>
       </div>
 
-      <!-- LEAVE DURATION -->
+      <!-- SMART DATE CALCULATOR -->
       <div class="section">
         <h2>2. Leave Duration & Routing</h2>
+        <div class="date-calc-box mb-4">
+          <p style="margin-top:0; font-size: 0.9rem; color: #0369a1; font-weight: 600;">Smart Date Engine: Enter Start & End Date to auto-calculate duration, OR enter Start Date & Duration to auto-calculate End Date.</p>
+          <div class="grid-3">
+            <div class="form-group"><label class="required">Leave Start Date</label><input type="date" id="start" required onchange="calculateFromDates()"></div>
+            <div class="form-group"><label class="required">Leave End Date</label><input type="date" id="end" required onchange="calculateFromDates()"></div>
+            <div class="form-group"><label class="required">Leave Duration</label>
+              <div style="display:flex; gap:5px;">
+                <input type="number" id="dur_num" style="width:50%" oninput="calculateEndDate()">
+                <select id="dur_unit" style="width:50%" onchange="calculateEndDate()">
+                  <option value="days">Days</option><option value="months">Months</option><option value="years">Years</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group full-width mt-4"><label class="required">Formal Duration String (Printed on Forms)</label><input type="text" id="duration_str" required placeholder="e.g., 5 Years or 120 Days"></div>
+        </div>
+
         <div class="grid">
-          <div class="form-group"><label class="required">Leave Start Date</label><input type="date" id="start" required onchange="calculateDays()"></div>
-          <div class="form-group"><label class="required">Leave End Date</label><input type="date" id="end" required onchange="calculateDays()"></div>
-          <div class="form-group"><label class="required">Total Days</label><input type="number" id="days" required><div class="help-text">Auto-calculated</div></div>
           <div class="form-group"><label class="required">Reason for Leave</label><input type="text" id="reason" required></div>
-          <div class="form-group full-width"><label class="required">Address During Leave</label><textarea id="address" rows="2" required></textarea></div>
-          
+          <div class="form-group"><label class="required">Address During Leave</label><textarea id="address" rows="2" required></textarea></div>
           <div class="form-group"><label class="required">Application Place</label><input type="text" id="place" required></div>
           <div class="form-group"><label class="required">Application Date</label><input type="date" id="app_date" required></div>
           <div class="form-group full-width"><label class="required">Forward To (Controlling Officer Designation)</label><input type="text" id="controlling" required></div>
         </div>
       </div>
 
-      <!-- CONDITIONAL: LWA DETAILS -->
+      <!-- CONDITIONAL LWA DETAILS -->
       <div id="sec_lwa" class="section hidden-section border-blue">
         <h2>3. LWA Specific Details (Appendix XII)</h2>
         <div class="grid">
-          <div class="form-group"><label class="required" id="lbl_lwa_dest">Country of Employment</label><input type="text" id="lwa_country"></div>
-          <div class="form-group full-width"><label class="required" id="lbl_lwa_emp">Details of Employer / University</label><input type="text" id="lwa_employer"></div>
+          <div class="form-group"><label id="lbl_lwa_dest">Country / Place of Visit (Optional)</label><input type="text" id="lwa_country"></div>
+          <div class="form-group full-width"><label id="lbl_lwa_emp">Details of Employer / University (Optional)</label><input type="text" id="lwa_employer"></div>
         </div>
       </div>
 
-      <!-- CONDITIONAL: PATERNITY DETAILS -->
-      <div id="sec_paternity" class="section hidden-section">
-        <h2>3. Paternity Leave Details (Rule 102B)</h2>
-        <div class="grid">
-          <div class="form-group"><label class="required">Wife's Expected / Actual Date of Delivery</label><input type="date" id="delivery_date"></div>
-        </div>
-      </div>
-
-      <!-- METADATA (FORM 13 SPECIFIC) -->
+      <!-- METADATA (FORM 13) -->
       <div class="section">
-        <h2>4. Additional Form 13 Data</h2>
+        <h2>4. Additional Form Data</h2>
         <div class="grid">
           <div class="form-group"><label>Sundays/Holidays Prefixed/Suffixed</label><input type="text" id="holidays" placeholder="e.g., Nil"></div>
-          <div class="form-group"><label>Allowances in Present Post</label><input type="text" id="allowances" placeholder="e.g., Nil"></div>
-          <div class="form-group"><label>Date of return from last leave</label><input type="text" id="last_leave" placeholder="e.g., 05/01/2026 (EL)"></div>
+          <div class="form-group"><label>Allowances in Present Post</label><input type="text" id="allowances" placeholder="e.g., HRA Rs 1824"></div>
+          <div class="form-group"><label>Date of return from last leave</label><input type="text" id="last_leave" placeholder="e.g., 05/01/2026 (EL) or NA"></div>
         </div>
       </div>
 
-      <button type="submit" class="print-btn">Generate Official PDF</button>
+      <button type="submit" class="print-btn">Generate Official Application File (PDF)</button>
     </form>
   </div>
 </div>
@@ -168,125 +180,152 @@
 <!-- PRINT TEMPLATE SECTION -->
 <div id="document-preview" class="print-only">
   
-  <!-- PAGE 1: COVERING LETTER (Always visible) -->
+  <!-- PAGE 1: COVERING LETTER -->
   <div class="page" id="print_cover">
-    <div class="text-right mb-4">
-      Place: <span class="out-place bold"></span><br>
-      Date: <span class="out-app_date bold"></span>
-    </div>
-    <div class="mb-4" style="line-height: 1.2;">
-      From<br><br>
-      <span class="out-name bold"></span><br>
-      <span class="out-designation"></span><br>
-      <span class="out-office"></span>
-    </div>
-    <div class="mb-4" style="line-height: 1.2;">
-      To<br><br>
-      <span class="out-controlling bold"></span><br>
-      <span class="out-office"></span>
-    </div>
+    <div class="text-right mb-4">Place: <span class="out-place bold"></span><br>Date: <span class="out-app_date bold"></span></div>
+    <div class="mb-4">From<br><br><span class="out-name bold"></span><br><span class="out-designation"></span><br><span class="out-office"></span></div>
+    <div class="mb-4">To<br><br><span class="out-controlling bold"></span><br><span class="out-office"></span></div>
     <div class="mb-4">Respected Sir/Madam,</div>
-    <div class="mb-4" style="padding-left: 40px; text-align: justify;">
-      <span class="bold">Sub:</span> Application for <span class="out-leave_name bold"></span> for <span class="out-days bold"></span> days - reg.
-    </div>
+    <div class="mb-4" style="padding-left: 40px;"><span class="bold">Sub:</span> Application for <span class="out-leave_name bold"></span> for <span class="out-duration_str bold"></span> - reg.</div>
     <div class="mb-4 text-justify">
-      I am submitting herewith my application for <span class="out-leave_name bold"></span> for a period of <span class="out-days bold"></span> days from <span class="out-start bold"></span> to <span class="out-end bold"></span>. The leave is required for the purpose of: <span class="out-reason bold"></span>.
+      I am submitting herewith my application for <span class="out-leave_name bold"></span> for a period of <span class="out-duration_str bold"></span> from <span class="out-start bold"></span> to <span class="out-end bold"></span>. The leave is required for the purpose of: <span class="out-reason bold"></span>.
     </div>
-    <div class="mb-4 text-justify" id="cover_attachments">
-      I have attached the statutory Form No. 13 along with this letter for your kind consideration and necessary action.
-    </div>
-    <div class="mb-4 text-justify">
-      I kindly request you to sanction the leave / forward the application to the competent authority.
-    </div>
-    <div class="mt-8 text-right">
-      Yours faithfully,<br><br><br><br>
-      (<span class="out-name bold"></span>)
-    </div>
+    <div class="mb-4 text-justify" id="cover_attachments">I have attached the statutory Form No. 13 along with this letter.</div>
+    <div class="mb-4">I kindly request you to sanction the leave / forward the application to the competent authority.</div>
+    <div class="signature-block">Yours faithfully,<br><br><br><br>(<span class="out-name bold"></span>)</div>
+    <div class="clear"></div>
   </div>
   
-  <!-- PAGE 2: FORM 13 (Always visible) -->
+  <!-- PAGE 2: FORM 13 -->
   <div class="page" id="print_form13">
     <div class="page-title">FORM No. 13<br>APPLICATION FOR LEAVE<br><span style="font-size:10pt; font-weight:normal;">(Rule 113, Part I, K.S.R)</span></div>
-    <table>
-      <tr><td>1. Name of applicant</td><td>: <span class="out-name bold"></span></td></tr>
-      <tr><td>2. Date of Birth</td><td>: <span class="out-dob"></span></td></tr>
-      <tr><td>3. Post held</td><td>: <span class="out-designation"></span></td></tr>
-      <tr><td>4. Department, Office and Section</td><td>: <span class="out-office"></span></td></tr>
-      <tr><td>5. Pay and scale of Pay</td><td>: <span class="out-pay"></span></td></tr>
-      <tr><td>6. Date of entry into service</td><td>: <span class="out-entry"></span></td></tr>
-      <tr><td>7. Date of commencement of continuous service</td><td>: <span class="out-entry"></span></td></tr>
-      <tr><td>8. Confirmation in any post (Date & Post)</td><td>: <span class="out-probation"></span></td></tr>
-      <tr><td>9. Address during the leave</td><td>: <span class="out-address"></span></td></tr>
-      <tr><td>10. Allowances drawn in present post</td><td>: <span class="out-allowances"></span></td></tr>
-      <tr><td>11. Nature and period of leave applied for</td><td>: <span class="out-leave_name bold"></span> for <span class="out-days bold"></span> days from <span class="out-start bold"></span> to <span class="out-end bold"></span></td></tr>
-      <tr><td>12. Sundays and holidays prefixed/suffixed</td><td>: <span class="out-holidays"></span></td></tr>
-      <tr><td>13. Ground on which leave is applied for</td><td>: <span class="out-reason"></span></td></tr>
-      <tr><td>14. Date of return from last leave</td><td>: <span class="out-last_leave"></span></td></tr>
+    <table class="form-table">
+      <tr><td>1. Name of applicant</td><td>:</td><td><span class="out-name"></span></td></tr>
+      <tr><td>2. Date of Birth</td><td>:</td><td><span class="out-dob"></span></td></tr>
+      <tr><td>3. Post held</td><td>:</td><td><span class="out-designation"></span></td></tr>
+      <tr><td>4. Department, Office and Section</td><td>:</td><td><span class="out-office"></span></td></tr>
+      <tr><td>5. Pay and scale of Pay</td><td>:</td><td><span class="out-pay"></span></td></tr>
+      <tr><td>6. Date of entry in service</td><td>:</td><td><span class="out-entry"></span></td></tr>
+      <tr><td>7. Date of commencement of continuous service</td><td>:</td><td><span class="out-entry"></span></td></tr>
+      <tr><td>8. Confirmation in any post (Date & Post)</td><td>:</td><td><span class="out-probation"></span></td></tr>
+      <tr><td>9. Address during the leave</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
+      <tr><td>10. Allowances drawn in present post</td><td>:</td><td><span class="out-allowances"></span></td></tr>
+      <tr><td>11. Nature and period of leave applied for</td><td>:</td><td><span class="out-leave_name"></span> for <span class="out-duration_str"></span><br>from <span class="out-start"></span> to <span class="out-end"></span></td></tr>
+      <tr><td>12. Sundays and holidays prefixed/suffixed</td><td>:</td><td><span class="out-holidays"></span></td></tr>
+      <tr><td>13. Ground on which leave is applied for</td><td>:</td><td><span class="out-reason"></span></td></tr>
+      <tr><td>14. Date of return from last leave</td><td>:</td><td><span class="out-last_leave"></span></td></tr>
     </table>
-    <div class="mb-4 text-justify" style="font-size: 11pt; line-height: 1.4;">
-      15. (a) I undertake to refund the difference between the leave salary drawn during commuted leave and that admissible during half pay leave which would not have been admissible in the event of my retirement from service at the end of or during the currency of leave.<br><br>
-      (b) I undertake to refund the leave salary drawn during leave not due which would not have been admissible had rule 85, Part I KSR, not been applied in the event of my voluntary retirement or resignation from service at any time until I earn half pay leave not less than the amount of leave not due availed of by me.
+    <div class="text-justify mb-4" style="font-size: 11pt;">
+      15. (a) I undertake to refund the difference between the leave salary drawn during commuted leave and that admissible during half pay leave...<br><br>
+      (b) I undertake to refund the leave salary drawn during 'leave not due'...
     </div>
     <div class="flex-space mt-4">
       <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
       <div class="text-center">Signature of Applicant<br><br><br><span class="out-name bold"></span></div>
     </div>
-    <hr style="margin:25px 0; border: 0.5px solid #000;">
-    <div class="mb-4"><span class="bold">16. Remarks and/or recommendation of the Controlling Officer:</span></div>
-    <div style="height: 50px;"></div>
+    <hr>
+    <div class="bold mb-4">16. Remarks and/or recommendation of the Controlling Officer:</div>
+    <div style="height: 40px;"></div>
     <div class="text-right">Signature (with date) and Designation</div>
+    <hr>
+    <div class="bold mb-4">CERTIFICATE REGARDING ADMISSIBILITY OF LEAVE</div>
+    <div class="mb-4">Certified that <span class="out-leave_name"></span> for <span class="out-duration_str"></span> from <span class="out-start"></span> to <span class="out-end"></span> is admissible under rule ...................... of the Kerala Service Rules.</div>
+    <div class="text-right mt-8">Signature (with date) and Designation</div>
   </div>
 
-  <!-- PAGE 3: LWA PROFORMA (Conditional) -->
-  <div class="page hidden-print" id="print_lwa_proforma">
-    <div class="page-title">PROFORMA FOR LEAVE WITHOUT ALLOWANCE<br><span style="font-size:11pt; font-weight:normal;" id="lwa_rule_text"></span></div>
-    <ol style="line-height: 2;">
-      <li><span class="bold">Name of Applicant & PEN:</span> <span class="out-name"></span>, PEN: <span class="out-pen"></span></li>
-      <li><span class="bold">Designation:</span> <span class="out-designation"></span></li>
-      <li><span class="bold">Current Office & Department:</span> <span class="out-office"></span></li>
-      <li><span class="bold">Date of Entry into Service:</span> <span class="out-entry"></span></li>
-      <li><span class="bold">Whether appointment is regular or provisional:</span> Regular</li>
-      <li><span class="bold">Period of LWA requested:</span> <span class="out-days bold"></span> days from <span class="out-start bold"></span> to <span class="out-end bold"></span></li>
-      <li><span class="bold">Purpose of Leave:</span> <span class="out-reason"></span></li>
-      <li><span class="bold" id="lwa_dest_label">Country of Employment:</span> <span class="out-lwa_country"></span></li>
-      <li><span class="bold" id="lwa_emp_label">Details of Employer:</span> <span class="out-lwa_employer"></span></li>
-      <li><span class="bold">Any bonded obligations to serve the Govt:</span> No</li>
-    </ol>
+  <!-- PAGE 3: APPLICATION FOR NOC (LWA ONLY) -->
+  <div class="page hidden-print" id="print_lwa_noc">
+    <div class="page-title">APPLICATION FOR ISSUE OF NO OBJECTION CERTIFICATE</div>
+    <table class="form-table">
+      <tr><td>1. Name of applicant</td><td>:</td><td><span class="out-name"></span></td></tr>
+      <tr><td>2. Date of Birth</td><td>:</td><td><span class="out-dob"></span></td></tr>
+      <tr><td>3. Designation with Department<br><span style="font-weight:normal; margin-left:15px;">(a) Pay and scale of pay</span><br><span style="font-weight:normal; margin-left:15px;">(b) Whether Substantive/Officiating</span></td><td>:<br>:<br>:</td><td><span class="out-designation"></span><br><span class="out-pay"></span><br><span class="out-emp_type"></span></td></tr>
+      <tr><td>4. Date of commencement of continuous service</td><td>:</td><td><span class="out-entry"></span></td></tr>
+      <tr><td>5. Place proposed to visit</td><td>:</td><td><span class="out-lwa_country"></span></td></tr>
+      <tr><td>6. Period of absence from duty</td><td>:</td><td><span class="out-duration_str"></span></td></tr>
+      <tr><td>7. Purpose of visit</td><td>:</td><td><span class="out-reason"></span></td></tr>
+      <tr><td>8. Address & Place of Visit</td><td>:</td><td><span class="out-lwa_country"></span></td></tr>
+      <tr><td>9. Present Home Address</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
+      <tr><td>10. Nature of period of absence / leave required</td><td>:</td><td>LEAVE WITHOUT ALLOWANCE</td></tr>
+      <tr><td>11. Eligibility for the leave applied for</td><td>:</td><td><span class="out-reason"></span></td></tr>
+      <tr><td>12. How expenditure will be met</td><td>:</td><td>N/A</td></tr>
+      <tr><td>13. Declaration acceptance of job in abroad</td><td>:</td><td>N/A</td></tr>
+    </table>
+    <div class="signature-block">Signature of Applicant<br><br><br><br>(<span class="out-name bold"></span>)</div>
+    <div class="clear"></div>
+  </div>
+
+  <!-- PAGE 4: PROFORMA REPORT & HEAD OF OFFICE CERT (LWA ONLY) -->
+  <div class="page hidden-print" id="print_lwa_report">
+    <div class="page-title">PROFORMA REPORT</div>
+    <table class="form-table">
+      <tr><td>1. Whether any liabilities are pending/ outstanding against the applicant</td><td>:</td><td>NA</td></tr>
+      <tr><td>2. Whether any service disciplinary proceedings pending against the applicant</td><td>:</td><td>NA</td></tr>
+      <tr><td>3. Whether any Crime / Vigilance cases are pending against the applicant</td><td>:</td><td>NA</td></tr>
+      <tr><td>4. Recommendation of the Head of Unit</td><td>:</td><td>Recommended</td></tr>
+    </table>
     <div class="flex-space mt-8">
       <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
-      <div class="text-center">Signature of Applicant<br><br><br><span class="out-name bold"></span></div>
+      <div class="text-center">Signature & Designation of<br>Head of Office / Unit</div>
+    </div>
+    
+    <div class="page-title" style="margin-top: 100px;">CERTIFICATE</div>
+    <div class="text-justify mb-4" style="line-height: 2;">
+      Certified that no disciplinary action / Vigilance case is pending against Sri/Smt <strong><span class="out-name"></span></strong>, <span class="out-designation"></span>, and he/she has not any bonded obligation in serving the Government.
+    </div>
+    <div class="flex-space mt-8">
+      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
+      <div class="text-center">Signature & Designation of<br>Head of Institution / Office</div>
     </div>
   </div>
 
-  <!-- PAGE 4: LWA DECLARATIONS (Conditional) -->
+  <!-- PAGE 5: PROFORMA TO BE APPENDED (LWA ONLY) -->
+  <div class="page hidden-print" id="print_lwa_appended">
+    <div class="page-title">PROFORMA TO BE APPENDED WHEN PROPOSALS FOR SANCTION THE LEAVE WITHOUT ALLOWANCE IS FORWARDED TO GOVERNMENT</div>
+    <table class="form-table" style="font-size: 11pt;">
+      <tr><td>1. Name and designation of the applicant</td><td>:</td><td><span class="out-name"></span>, <span class="out-designation"></span></td></tr>
+      <tr><td>2. Institution in which the applicant is working</td><td>:</td><td><span class="out-office"></span></td></tr>
+      <tr><td>3. Date from which leave is required</td><td>:</td><td><span class="out-start"></span></td></tr>
+      <tr><td>4. Duration of leave</td><td>:</td><td><span class="out-duration_str"></span></td></tr>
+      <tr><td>5. Purpose of leave applied for</td><td>:</td><td><span class="out-reason"></span></td></tr>
+      <tr><td>6. Whether the appointment is regular</td><td>:</td><td>Yes (<span class="out-emp_type"></span>)</td></tr>
+      <tr><td>7. Total period of regular service put in by the applicant</td><td>:</td><td>From <span class="out-entry"></span></td></tr>
+      <tr><td>8. Whether there is any disciplinary action pending</td><td>:</td><td>NO</td></tr>
+      <tr><td>9. Whether there is any bonded obligation</td><td>:</td><td>NO</td></tr>
+      <tr><td>10. Whether there is any liability outstanding</td><td>:</td><td>NO</td></tr>
+      <tr><td>11. Whether sanctioned leave for same purpose earlier</td><td>:</td><td>NA</td></tr>
+      <tr><td>12. Whether sanctioned LWA earlier for other purpose</td><td>:</td><td>NO</td></tr>
+      <tr><td>13. Whether any relaxation of rule is necessary</td><td>:</td><td>NA</td></tr>
+      <tr><td>14. Whether suitable substitutes are available</td><td>:</td><td>Yes</td></tr>
+      <tr><td>15. Whether leave is recommended or not</td><td>:</td><td>Recommended</td></tr>
+      <tr><td>16. The leave address of the applicant in India</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
+      <tr><td>17. Any other relevant point to be brought to notice</td><td>:</td><td>NA</td></tr>
+    </table>
+    <div class="signature-block">Signature of Head of Department / Office<br><br><br></div>
+    <div class="clear"></div>
+  </div>
+
+  <!-- PAGE 6: DECLARATIONS (LWA ONLY) -->
   <div class="page hidden-print" id="print_lwa_dec">
-    <div class="page-title">DECLARATIONS</div>
-    <div class="mb-4 text-justify" style="line-height:1.8;">
-      I, <span class="out-name bold"></span>, working as <span class="out-designation bold"></span> at <span class="out-office bold"></span>, do hereby declare the following in connection with my application for Leave Without Allowance:<br><br>
-      <span class="bold">1. Consent to Lose Service Benefits:</span><br>
-      I declare that I am prepared to abide by all the terms and conditions stipulated in the relevant Appendix of the Kerala Service Rules. I explicitly consent to forfeit service benefits for the duration of the leave. I understand that this leave period will not count for pension, increments, higher grade, or accumulation of half-pay leave, and I will lose seniority to any juniors who may be promoted during my period of absence.<br><br>
-      <span class="bold">2. Declaration of Probation Status:</span><br>
-      I declare that my current confirmation/probation status is: <span class="out-probation bold"></span>. I understand that if I have not completed my probation in the entry cadre before proceeding on leave, I will be required to start my probation afresh upon rejoining duty.<br><br>
-      <span class="bold">3. Declaration of Financial Liabilities:</span><br>
-      I declare that I have no outstanding financial liabilities, dues, or bonded obligations to the Government of Kerala, including House Building Advances, vehicle loans, or unadjusted official advances.
+    <div class="page-title">DECLARATION</div>
+    <div class="mb-4">I, <strong><span class="out-name"></span></strong> do hereby declare that I shall abide by the conditions stipulated in G.O. (P) No. 274/70/Fin dated 29-04-1970 in case the leave applied for is sanctioned.</div>
+    <div class="flex-space mb-8">
+      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
+      <div class="text-center">Signature of Applicant<br><strong><span class="out-name"></span></strong></div>
+    </div>
+    
+    <div class="page-title" style="margin-top: 60px;">DECLARATION<br><span style="font-size:11pt; font-weight:normal;" id="lwa_rule_text">(Appendices - XIIA, XIIB & XIIC of Kerala Service Rules)</span></div>
+    <div class="mb-4 text-justify" style="line-height:1.6;">
+      An application for Leave Without Allowances (L.W.A) for a period of <strong><span class="out-duration_str"></span></strong> with effect from <strong><span class="out-start"></span></strong> is being submitted by me. In this connection I, <strong><span class="out-name"></span></strong> hereby declares as follows:<br><br>
+      (1) I hereby express my consent to lose all service benefits such as earning of leave including Half Pay Leave, Pension, Gratuity, Increment and also lose seniority in the Higher Grade/Grade with reference to my juniors who might get promoted to such grade/grades before I rejoin duty.<br>
+      (2) I am prepared to start afresh in the said cadre and complete my probation on rejoining duty (if not already completed) and I am prepared to forfeit the service benefits that had accrued to me before proceedings on leave.<br>
+      (3) I am not under bonded obligation to serve the Government.<br>
+      (4) There is no outstanding liability to Government against me.<br>
+      (5) No disciplinary action or vigilance enquiry is pending against me.
     </div>
     <div class="flex-space mt-8">
       <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
-      <div class="text-center">Signature of Applicant<br><br><br><span class="out-name bold"></span></div>
-    </div>
-  </div>
-
-  <!-- PAGE 5: PATERNITY DECLARATION (Conditional) -->
-  <div class="page hidden-print" id="print_paternity">
-    <div class="page-title">DECLARATION FOR PATERNITY LEAVE<br><span style="font-size:11pt; font-weight:normal;">(Under Rule 102B, Part I, K.S.R)</span></div>
-    <div class="mb-4 text-justify mt-8" style="line-height: 2;">
-      I, <span class="out-name bold"></span>, working as <span class="out-designation bold"></span> in <span class="out-office bold"></span>, do hereby declare that I am applying for Paternity Leave for <span class="out-days bold"></span> days in connection with the confinement of my wife.<br><br>
-      I hereby declare that the expected / actual date of delivery of my wife is <span class="out-delivery_date bold"></span>.<br><br>
-      I further declare that I have less than two surviving children, satisfying the conditions laid down in Rule 102B, Part I of the Kerala Service Rules for the grant of Paternity Leave.
-    </div>
-    <div class="flex-space" style="margin-top: 100px;">
-      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
-      <div class="text-center">Signature of Applicant<br><br><br><span class="out-name bold"></span></div>
+      <div class="text-center">Signature of Applicant<br><strong><span class="out-name"></span></strong></div>
     </div>
   </div>
 </div>
@@ -296,71 +335,75 @@
   function toggleSections() {
     const type = document.getElementById('leave_type').value;
     const lwaSec = document.getElementById('sec_lwa');
-    const patSec = document.getElementById('sec_paternity');
     const reasonInput = document.getElementById('reason');
     
-    // Reset hidden sections and required attributes
     lwaSec.classList.add('hidden-section');
-    patSec.classList.add('hidden-section');
-    document.getElementById('lwa_country').required = false;
-    document.getElementById('lwa_employer').required = false;
-    document.getElementById('delivery_date').required = false;
-
-    // Default reason handling
     reasonInput.readOnly = false;
 
-    switch(type) {
-      case 'lwa_abroad':
+    if (type === 'lwa_abroad') {
         lwaSec.classList.remove('hidden-section');
-        document.getElementById('lbl_lwa_dest').innerText = "Country of Employment";
-        document.getElementById('lbl_lwa_emp').innerText = "Details of Foreign Employer";
-        document.getElementById('lwa_country').required = true;
-        document.getElementById('lwa_employer').required = true;
-        reasonInput.value = "For taking up employment abroad";
-        break;
-      case 'lwa_study':
+        document.getElementById('lbl_lwa_dest').innerText = "Country of Visit (Optional)";
+        document.getElementById('lbl_lwa_emp').innerText = "Details of Foreign Employer (Optional)";
+        reasonInput.value = "For taking up better employment abroad";
+    } else if (type === 'lwa_study') {
         lwaSec.classList.remove('hidden-section');
-        document.getElementById('lbl_lwa_dest').innerText = "Country / State of Study";
-        document.getElementById('lbl_lwa_emp').innerText = "Details of University / Institution";
-        document.getElementById('lwa_country').required = true;
-        document.getElementById('lwa_employer').required = true;
+        document.getElementById('lbl_lwa_dest').innerText = "Country / State of Study (Optional)";
+        document.getElementById('lbl_lwa_emp').innerText = "Details of University / Institution (Optional)";
         reasonInput.value = "For pursuing higher studies";
-        break;
-      case 'paternity':
-        patSec.classList.remove('hidden-section');
-        document.getElementById('delivery_date').required = true;
-        reasonInput.value = "Paternity Leave for wife's confinement";
-        break;
-      case 'maternity':
-        reasonInput.value = "Maternity Leave";
-        break;
-      case 'casual':
-        reasonInput.value = "Special Casual Leave for ";
-        break;
-      default:
-        if(reasonInput.value.startsWith("For taking up") || reasonInput.value.includes("Leave")) {
-          reasonInput.value = "";
-        }
+    } else if (type === 'earned' || type === 'casual' || type === 'maternity') {
+        reasonInput.value = "Personal / Domestic Affairs";
     }
   }
 
-  // Calculate days difference
-  function calculateDays() {
-    const start = document.getElementById('start').value;
-    const end = document.getElementById('end').value;
-    if (start && end) {
-      const sDate = new Date(start);
-      const eDate = new Date(end);
-      const diff = Math.ceil((eDate - sDate) / (1000 * 60 * 60 * 24)) + 1;
-      if (diff > 0) {
-        document.getElementById('days').value = diff;
-      } else {
-        document.getElementById('days').value = "";
+  // Smart Date Engine
+  function calculateFromDates() {
+    const sDate = document.getElementById('start').value;
+    const eDate = document.getElementById('end').value;
+    if (sDate && eDate) {
+      const start = new Date(sDate);
+      const end = new Date(eDate);
+      const diffTime = end - start;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Inclusive
+      
+      if (diffDays > 0) {
+        document.getElementById('dur_num').value = diffDays;
+        document.getElementById('dur_unit').value = 'days';
+        document.getElementById('duration_str').value = diffDays + " Days";
       }
     }
   }
 
-  // Format date to DD/MM/YYYY
+  function calculateEndDate() {
+    const sDate = document.getElementById('start').value;
+    const num = parseInt(document.getElementById('dur_num').value);
+    const unit = document.getElementById('dur_unit').value;
+    
+    if (sDate && num > 0) {
+      const start = new Date(sDate);
+      let end = new Date(start);
+      
+      if (unit === 'days') {
+        end.setDate(start.getDate() + (num - 1));
+        document.getElementById('duration_str').value = num + " Days";
+      } else if (unit === 'months') {
+        end.setMonth(start.getMonth() + num);
+        end.setDate(end.getDate() - 1);
+        document.getElementById('duration_str').value = num + " Months";
+      } else if (unit === 'years') {
+        end.setFullYear(start.getFullYear() + num);
+        end.setDate(end.getDate() - 1);
+        document.getElementById('duration_str').value = num + " Years";
+      }
+      
+      // Update End Date field
+      const yyyy = end.getFullYear();
+      const mm = String(end.getMonth() + 1).padStart(2, '0');
+      const dd = String(end.getDate()).padStart(2, '0');
+      document.getElementById('end').value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  // Format date to DD/MM/YYYY for printing
   function formatDate(dateString) {
     if(!dateString) return '';
     const d = new Date(dateString);
@@ -370,76 +413,53 @@
            d.getFullYear();
   }
 
-  // Get formal name for leave type
-  function getLeaveName(type) {
-    const map = {
-      'earned': 'Earned / Half Pay / Commuted Leave',
-      'casual': 'Special Casual Leave',
-      'paternity': 'Paternity Leave',
-      'maternity': 'Maternity Leave',
-      'lwa_abroad': 'Leave Without Allowance (Appx XII-A)',
-      'lwa_study': 'Leave Without Allowance (Appx XII-B/C)'
-    };
-    return map[type] || 'Leave';
-  }
-
   // Generate PDF Logic
   function generatePDF() {
     const form = document.getElementById('leaveForm');
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    
     const type = document.getElementById('leave_type').value;
 
-    // 1. Map text fields to output spans
-    const fields = ['name', 'pen', 'designation', 'office', 'controlling', 'pay', 'probation', 'address', 'allowances', 'days', 'holidays', 'last_leave', 'lwa_country', 'lwa_employer', 'place', 'reason'];
+    // Map standard text fields (Fallback to N/A for LWA specifics)
+    const fields = ['name', 'pen', 'designation', 'emp_type', 'office', 'controlling', 'pay', 'probation', 'address', 'allowances', 'duration_str', 'holidays', 'last_leave', 'lwa_country', 'lwa_employer', 'place', 'reason'];
     fields.forEach(field => {
       const el = document.getElementById(field);
-      const val = el ? el.value || 'Nil' : 'Nil';
+      let val = el ? el.value : '';
+      if (!val) { val = (field === 'lwa_country' || field === 'lwa_employer' || field === 'probation') ? 'N/A' : 'Nil'; }
       document.querySelectorAll('.out-' + field).forEach(t => t.innerText = val);
     });
 
-    // 2. Map date fields
-    const dateFields = ['dob', 'entry', 'start', 'end', 'app_date', 'delivery_date'];
+    // Map dates
+    const dateFields = ['dob', 'entry', 'start', 'end', 'app_date'];
     dateFields.forEach(field => {
-      const el = document.getElementById(field);
-      const val = el ? formatDate(el.value) : '';
+      const val = document.getElementById(field) ? formatDate(document.getElementById(field).value) : '';
       document.querySelectorAll('.out-' + field).forEach(t => t.innerText = val);
     });
 
-    // 3. Set Leave Name globally
-    const leaveName = getLeaveName(type);
-    document.querySelectorAll('.out-leave_name').forEach(t => t.innerText = leaveName);
+    // Set Leave Name Title
+    const nameMap = {
+      'earned': 'Earned / Commuted Leave', 'casual': 'Special Casual Leave', 'paternity': 'Paternity Leave',
+      'maternity': 'Maternity Leave', 'lwa_abroad': 'Leave Without Allowance', 'lwa_study': 'Leave Without Allowance'
+    };
+    document.querySelectorAll('.out-leave_name').forEach(t => t.innerText = nameMap[type] || 'Leave');
 
-    // 4. Print Logic - Toggle page visibility based on leave type
-    document.getElementById('print_lwa_proforma').classList.add('hidden-print');
-    document.getElementById('print_lwa_dec').classList.add('hidden-print');
-    document.getElementById('print_paternity').classList.add('hidden-print');
+    // Toggle Visibility of LWA Pages
+    const isLWA = (type === 'lwa_abroad' || type === 'lwa_study');
+    document.getElementById('print_lwa_noc').classList.toggle('hidden-print', !isLWA);
+    document.getElementById('print_lwa_report').classList.toggle('hidden-print', !isLWA);
+    document.getElementById('print_lwa_appended').classList.toggle('hidden-print', !isLWA);
+    document.getElementById('print_lwa_dec').classList.toggle('hidden-print', !isLWA);
 
+    // Update Cover Letter Text based on leave type
     const attchText = document.getElementById('cover_attachments');
-    
-    if (type === 'lwa_abroad' || type === 'lwa_study') {
-      document.getElementById('print_lwa_proforma').classList.remove('hidden-print');
-      document.getElementById('print_lwa_dec').classList.remove('hidden-print');
-      
-      const isAbroad = type === 'lwa_abroad';
-      document.getElementById('lwa_rule_text').innerText = isAbroad ? "(Under Appendix XII-A, Part I, K.S.R for Employment Abroad)" : "(Under Appendix XII-B/C, Part I, K.S.R for Higher Studies)";
-      document.getElementById('lwa_dest_label').innerText = isAbroad ? "Country of Employment:" : "Country/State of Study:";
-      document.getElementById('lwa_emp_label').innerText = isAbroad ? "Details of Employer:" : "Details of Institution:";
-      attchText.innerText = "I have attached Form No. 13, the required LWA Proforma, and all mandatory declarations regarding the loss of service benefits, probation, and financial liabilities.";
-    
-    } else if (type === 'paternity') {
-      document.getElementById('print_paternity').classList.remove('hidden-print');
-      attchText.innerText = "I have attached Form No. 13 and the statutory Rule 102B Declaration along with this letter.";
-    
-    } else if (type === 'earned' || type === 'casual' || type === 'maternity') {
+    if (isLWA) {
+      attchText.innerText = "I have attached Form No. 13, the required Proformas, NOC Application, and all mandatory declarations regarding the loss of service benefits.";
+    } else {
       attchText.innerText = "I have attached the statutory Form No. 13 along with this letter.";
     }
 
     // Trigger Print
-    setTimeout(() => { window.print(); }, 100);
+    setTimeout(() => { window.print(); }, 150);
   }
 </script>
 </body>
