@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSR LWA Application Generator</title>
+<style>
+  /* --- UI STYLES (Hidden during PDF generation) --- */
+  @media screen {
+    :root { --bg: #f9fafb; --text: #111827; --border: #d1d5db; --primary: #2563eb; }
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0 0 50px 0; }
+    .print-only { display: none; }
+    .app-header { background-color: #1f2937; color: white; padding: 20px; text-align: center; margin-bottom: 30px; }
+    .app-header h1 { margin: 0; font-size: 1.5rem; }
+    .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+    .section { background: white; padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .section h2 { margin-top: 0; font-size: 1.125rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 20px; color: #1f2937; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 0.875rem; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    .form-group input, .form-group textarea { border: 1px solid var(--border); padding: 10px; border-radius: 4px; font-size: 1rem; font-family: inherit; }
+    .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+    .full-width { grid-column: 1 / -1; }
+    .help-text { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+    .print-btn { background-color: var(--primary); color: white; border: none; padding: 15px 30px; font-size: 1.1rem; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
+    .print-btn:hover { background-color: #1d4ed8; }
+  }
+
+  /* --- PDF EXPORT STYLES (A4 Document Format) --- */
+  @media print {
+    .screen-only { display: none !important; }
+    .print-only { display: block !important; }
+    @page { size: A4; margin: 20mm; }
+    body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; background: #fff; margin: 0; padding: 0; }
+    .page { page-break-after: always; padding: 0; margin: 0; position: relative; min-height: 250mm; }
+    .page-title { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 25px; line-height: 1.3; }
+    .text-right { text-align: right; }
+    .mb-4 { margin-bottom: 1.5rem; }
+    .mt-8 { margin-top: 3rem; }
+    .flex-space { display: flex; justify-content: space-between; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    td { padding: 6px 0; vertical-align: top; }
+    td:first-child { width: 45%; }
+    ol { padding-left: 20px; }
+    li { margin-bottom: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- UI FORM SECTION -->
+<div class="screen-only">
+  <div class="app-header">
+    <h1>Leave Without Allowance (LWA) Application Generator</h1>
+    <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #9ca3af;">Generates Form 13, Proforma, Declarations, and Cover Letter as a single PDF</p>
+  </div>
+
+  <div class="container">
+    <div class="section">
+      <h2>1. Personal & Office Details</h2>
+      <div class="grid">
+        <div class="form-group"><label>Full Name</label><input type="text" id="name"></div>
+        <div class="form-group"><label>PEN Number</label><input type="text" id="pen"></div>
+        <div class="form-group"><label>Designation</label><input type="text" id="designation"></div>
+        <div class="form-group"><label>Date of Birth</label><input type="date" id="dob"></div>
+        <div class="form-group full-width"><label>Current Office / Department Section</label><input type="text" id="office" placeholder="e.g., Cyber Cell, Excise Division, Kollam"></div>
+        <div class="form-group"><label>Date of Entry into Service</label><input type="date" id="entry"></div>
+        <div class="form-group"><label>Date of Continuous Service</label><input type="date" id="cont"></div>
+        <div class="form-group"><label>Pay and Scale of Pay</label><input type="text" id="pay" placeholder="e.g., Rs 39300 - 83000"></div>
+        <div class="form-group"><label>Probation / Confirmation Status</label><input type="text" id="probation" placeholder="e.g., Probation declared on 10/10/2017"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. Leave & Foreign Employment Details</h2>
+      <div class="grid">
+        <div class="form-group"><label>Leave Start Date</label><input type="date" id="start"></div>
+        <div class="form-group"><label>Leave End Date</label><input type="date" id="end"></div>
+        <div class="form-group"><label>Total Days</label><input type="number" id="days"><div class="help-text">Auto-calculates if dates are selected</div></div>
+        <div class="form-group"><label>Country of Employment</label><input type="text" id="country"></div>
+        <div class="form-group full-width"><label>Details of Foreign Employer</label><input type="text" id="employer" placeholder="Company name and location"></div>
+        <div class="form-group full-width"><label>Address During Leave</label><textarea id="address" rows="2"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>3. Application Metadata (Form 13 Specifics)</h2>
+      <div class="grid">
+        <div class="form-group"><label>Allowances in Present Post</label><input type="text" id="allowances" placeholder="e.g., HRA Rs. 1500, etc. or Nil"></div>
+        <div class="form-group"><label>Sundays/Holidays Prefixed/Suffixed</label><input type="text" id="holidays" placeholder="e.g., Nil"></div>
+        <div class="form-group"><label>Date of return from last leave</label><input type="text" id="last-leave" placeholder="e.g., 05/01/2026 (EL)"></div>
+        <div class="form-group full-width"><label>Controlling Officer Designation (For Cover Letter)</label><input type="text" id="controlling" placeholder="e.g., The Deputy Excise Commissioner"></div>
+        <div class="form-group"><label>Application Place</label><input type="text" id="place"></div>
+        <div class="form-group"><label>Application Date</label><input type="date" id="app-date"></div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="generatePDF()">Generate & Download PDF</button>
+  </div>
+</div>
+
+<!-- PRINT TEMPLATE SECTION -->
+<div id="document-preview" class="print-only">
+  
+  <!-- 1. Covering Letter -->
+  <div class="page">
+    <div class="text-right mb-4">
+      Place: <span class="out-place"></span><br>
+      Date: <span class="out-app-date"></span>
+    </div>
+    <div class="mb-4" style="line-height: 1.2;">
+      From<br><br>
+      <strong><span class="out-name"></span></strong><br>
+      <span class="out-designation"></span><br>
+      <span class="out-office"></span>
+    </div>
+    <div class="mb-4" style="line-height: 1.2;">
+      To<br><br>
+      <strong><span class="out-controlling"></span></strong><br>
+      <span class="out-office"></span>
+    </div>
+    <div class="mb-4">
+      Respected Sir/Madam,
+    </div>
+    <div class="mb-4" style="padding-left: 40px;">
+      <strong>Sub:</strong> Application for Leave Without Allowance (LWA) for taking up employment abroad - reg.
+    </div>
+    <div class="mb-4" style="text-align: justify;">
+      I am submitting herewith my application for Leave Without Allowance (LWA) under Appendix XII-A, Part I of the Kerala Service Rules for a period of <span class="out-days"></span> days from <span class="out-start"></span> to <span class="out-end"></span> for the purpose of taking up employment abroad in <span class="out-country"></span>.
+    </div>
+    <div class="mb-4" style="text-align: justify;">
+      I have attached Form No. 13, the required LWA Proforma, and all mandatory declarations regarding the loss of service benefits, probation, and financial liabilities, along with the proof of foreign employment.
+    </div>
+    <div class="mb-4" style="text-align: justify;">
+      I kindly request you to forward my application to the competent sanctioning authority with your recommendation and the mandatory Head of Office certificate.
+    </div>
+    <div class="mt-8 text-right">
+      Yours faithfully,<br><br><br><br>
+      (<strong><span class="out-name"></span></strong>)
+    </div>
+  </div>
+  
+  <!-- 2. Form No. 13 -->
+  <div class="page">
+    <div class="page-title">FORM No. 13<br>APPLICATION FOR LEAVE<br><span style="font-size:10pt; font-weight:normal;">(Rule 113, Part I, K.S.R)</span></div>
+    <table>
+      <tr><td>1. Name of applicant</td><td>: <strong><span class="out-name"></span></strong></td></tr>
+      <tr><td>2. Date of Birth</td><td>: <span class="out-dob"></span></td></tr>
+      <tr><td>3. Post held</td><td>: <span class="out-designation"></span></td></tr>
+      <tr><td>4. Department, Office and Section</td><td>: <span class="out-office"></span></td></tr>
+      <tr><td>5. Pay and scale of Pay</td><td>: <span class="out-pay"></span></td></tr>
+      <tr><td>6. Date of entry into service</td><td>: <span class="out-entry"></span></td></tr>
+      <tr><td>7. Date of commencement of continuous service</td><td>: <span class="out-cont"></span></td></tr>
+      <tr><td>8. Confirmation in any post (Date & Post)</td><td>: <span class="out-probation"></span></td></tr>
+      <tr><td>9. Address during the leave</td><td>: <span class="out-address"></span></td></tr>
+      <tr><td>10. Allowances drawn in present post</td><td>: <span class="out-allowances"></span></td></tr>
+      <tr><td>11. Nature and period of leave applied for</td><td>: <strong>LWA under Appendix XII-A for <span class="out-days"></span> days from <span class="out-start"></span> to <span class="out-end"></span></strong></td></tr>
+      <tr><td>12. Sundays and holidays prefixed/suffixed</td><td>: <span class="out-holidays"></span></td></tr>
+      <tr><td>13. Ground on which leave is applied for</td><td>: For taking up Employment Abroad</td></tr>
+      <tr><td>14. Date of return from last leave</td><td>: <span class="out-last-leave"></span></td></tr>
+    </table>
+    <div class="mb-4" style="font-size: 11pt; line-height: 1.4; text-align: justify;">
+      15. (a) I undertake to refund the difference between the leave salary drawn during commuted leave and that admissible during half pay leave which would not have been admissible in the event of my retirement from service at the end of or during the currency of leave.<br><br>
+      (b) I undertake to refund the leave salary drawn during leave not due which would not have been admissible had rule 85, Part I KSR, not been applied in the event of my voluntary retirement or resignation from service at any time until I earn half pay leave not less than the amount of leave not due availed of by me.
+    </div>
+    <div class="flex-space mt-8">
+      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app-date"></span></div>
+      <div style="text-align:center;">Signature of Applicant<br><br><br><strong><span class="out-name"></span></strong></div>
+    </div>
+    <hr style="margin:25px 0;">
+    <div class="mb-4"><strong>16. Remarks and/or recommendation of the Controlling Officer:</strong></div>
+    <div style="height: 60px;"></div>
+    <div class="text-right">Signature (with date) and Designation</div>
+  </div>
+
+  <!-- 3. Proforma -->
+  <div class="page">
+    <div class="page-title">PROFORMA FOR LEAVE WITHOUT ALLOWANCE<br><span style="font-size:11pt; font-weight:normal;">(Under Appendix XII-A, Part I, K.S.R for Employment Abroad)</span></div>
+    <ol style="line-height: 2;">
+      <li><strong>Name of Applicant & PEN:</strong> <span class="out-name"></span>, PEN: <span class="out-pen"></span></li>
+      <li><strong>Designation:</strong> <span class="out-designation"></span></li>
+      <li><strong>Current Office & Department:</strong> <span class="out-office"></span></li>
+      <li><strong>Date of Entry into Service:</strong> <span class="out-entry"></span></li>
+      <li><strong>Whether appointment is regular or provisional:</strong> Regular</li>
+      <li><strong>Period of LWA requested:</strong> <span class="out-days"></span> days from <span class="out-start"></span> to <span class="out-end"></span></li>
+      <li><strong>Purpose of Leave:</strong> For taking up employment abroad</li>
+      <li><strong>Country of Employment:</strong> <span class="out-country"></span></li>
+      <li><strong>Details of Employer:</strong> <span class="out-employer"></span></li>
+      <li><strong>Whether Visa/Employment Contract attached:</strong> Yes</li>
+      <li><strong>Any bonded obligations to serve the Govt:</strong> No</li>
+    </ol>
+    <div class="flex-space mt-8">
+      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app-date"></span></div>
+      <div style="text-align:center;">Signature of Applicant<br><br><br><strong><span class="out-name"></span></strong></div>
+    </div>
+  </div>
+
+  <!-- 4. Declarations -->
+  <div class="page">
+    <div class="page-title">DECLARATIONS</div>
+    <div class="mb-4" style="text-align:justify; line-height:1.8;">
+      I, <strong><span class="out-name"></span></strong>, working as <strong><span class="out-designation"></span></strong> at <strong><span class="out-office"></span></strong>, do hereby declare the following in connection with my application for Leave Without Allowance (LWA) for employment abroad under Appendix XII-A, Part I of the Kerala Service Rules:
+      <br><br>
+      <strong>1. Consent to Lose Service Benefits:</strong><br>
+      I declare that I am prepared to abide by all the terms and conditions stipulated in Appendix XII-A, Part I of the Kerala Service Rules and relevant Government Orders. I explicitly consent to forfeit service benefits for the duration of the leave. I understand that this leave period will not count for pension, increments, higher grade, or accumulation of half-pay leave, and I will lose seniority to any juniors who may be promoted during my period of absence.
+      <br><br>
+      <strong>2. Declaration of Probation Status:</strong><br>
+      I declare that my current confirmation/probation status is: <strong><span class="out-probation"></span></strong>. I understand that if I have not completed my probation in the entry cadre before proceeding on leave, I will be required to start my probation afresh upon rejoining duty.
+      <br><br>
+      <strong>3. Declaration of Financial Liabilities:</strong><br>
+      I declare that I have no outstanding financial liabilities, dues, or bonded obligations to the Government of Kerala, including but not limited to House Building Advances, vehicle loans, or unadjusted official advances.
+    </div>
+    <div class="flex-space mt-8">
+      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app-date"></span></div>
+      <div style="text-align:center;">Signature of Applicant<br><br><br><strong><span class="out-name"></span></strong></div>
+    </div>
+  </div>
+
+  <!-- 5. Certificate from Head of Office -->
+  <div class="page" style="page-break-after: auto;">
+    <div class="page-title">CERTIFICATE FROM HEAD OF OFFICE</div>
+    <div class="mb-4 mt-8" style="text-align:justify; line-height: 2;">
+      Certified that no disciplinary action or vigilance enquiry is pending or contemplated against Sri/Smt. <strong><span class="out-name"></span></strong>, working as <strong><span class="out-designation"></span></strong> in this office. 
+      <br><br>
+      It is further certified that as per the records available in this office, the applicant has no outstanding financial liabilities or dues to the Government, and the details provided in the LWA application have been verified and found correct.
+    </div>
+    <div class="flex-space" style="margin-top: 120px;">
+      <div>Place: <span class="out-place"></span><br>Date: _________________</div>
+      <div style="text-align:center;">Signature of Head of Office<br><br><br>Name & Designation Seal</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-calculate days based on start and end date
+  function calculateDays() {
+    const start = document.getElementById('start').value;
+    const end = document.getElementById('end').value;
+    if (start && end) {
+      const sDate = new Date(start);
+      const eDate = new Date(end);
+      const diff = Math.ceil((eDate - sDate) / (1000 * 60 * 60 * 24)) + 1;
+      if (diff > 0) {
+        document.getElementById('days').value = diff;
+      }
+    }
+  }
+
+  document.getElementById('start').addEventListener('change', calculateDays);
+  document.getElementById('end').addEventListener('change', calculateDays);
+
+  // Format date to DD/MM/YYYY for print output
+  function formatDateString(dateString) {
+    if(!dateString) return '';
+    const d = new Date(dateString);
+    if(isNaN(d.getTime())) return dateString;
+    return d.getDate().toString().padStart(2, '0') + '/' + 
+           (d.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+           d.getFullYear();
+  }
+
+  function generatePDF() {
+    // List of input IDs to map to span classes
+    const textFields = ['name', 'pen', 'designation', 'office', 'controlling', 'pay', 'probation', 'address', 'allowances', 'days', 'holidays', 'last-leave', 'country', 'employer', 'place'];
+    const dateFields = ['dob', 'entry', 'cont', 'start', 'end', 'app-date'];
+    
+    // Map standard text inputs
+    textFields.forEach(field => {
+      const val = document.getElementById(field).value;
+      const targets = document.querySelectorAll('.out-' + field);
+      targets.forEach(t => t.innerText = val);
+    });
+
+    // Map and format date inputs
+    dateFields.forEach(field => {
+      const val = document.getElementById(field).value;
+      const formattedDate = formatDateString(val);
+      const targets = document.querySelectorAll('.out-' + field);
+      targets.forEach(t => t.innerText = formattedDate);
+    });
+
+    // Trigger browser print to PDF
+    window.print();
+  }
+</script>
+</body>
+</html>
