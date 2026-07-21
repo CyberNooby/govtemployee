@@ -3,88 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Official KSR Leave Application Generator</title>
+<title>KSR Leave Application Generator</title>
 <style>
-  /* --- UNIVERSAL DOCUMENT STYLES (Applies to both Print and Screen Preview) --- */
-  .page-title { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 20px; line-height: 1.3; }
-  .text-right { text-align: right; }
-  .text-center { text-align: center; }
-  .text-justify { text-align: justify; }
-  .mb-2 { margin-bottom: 0.5rem; }
-  .mb-4 { margin-bottom: 1.5rem; }
-  .mt-4 { margin-top: 1.5rem; }
-  .mt-8 { margin-top: 3rem; }
-  .flex-space { display: flex; justify-content: space-between; }
-  .bold { font-weight: bold; }
-  
-  .form-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-  .form-table td { padding: 5px 0; vertical-align: top; }
-  .form-table td:nth-child(1) { width: 50%; }
-  .form-table td:nth-child(2) { width: 2%; text-align: center; }
-  .form-table td:nth-child(3) { width: 48%; padding-left: 10px; font-weight: bold; }
-  
-  .signature-block { width: 300px; text-align: center; float: right; margin-top: 20px; position: relative; }
-  .sig-slot { height: 45px; display: flex; align-items: center; justify-content: center; position: relative; }
-  .sig-img-target { position: absolute; max-height: 120px; max-width: 250px; object-fit: contain; z-index: 10; transform-origin: center; pointer-events: none; }
-  
-  .clear { clear: both; }
-  .doc-hr { border: 0; border-top: 1px solid #000; margin: 20px 0; }
-
   /* --- SCREEN UI STYLES --- */
   @media screen {
     :root { --bg: #f8fafc; --text: #1e293b; --border: #cbd5e1; --primary: #0f172a; --accent: #0284c7; --req: #ef4444; }
     body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0 0 60px 0; }
-    .print-only { display: none !important; }
-    #document-preview { display: none; } /* Hide print template on screen */
-    
-    .app-header { background-color: var(--primary); color: white; padding: 25px 20px; text-align: center; margin-bottom: 30px; }
+    .print-only { display: none; }
+    .app-header { background-color: var(--primary); color: white; padding: 25px 20px; text-align: center; margin-bottom: 0; }
     .app-header h1 { margin: 0; font-size: 1.75rem; }
     .app-header p { margin: 8px 0 0 0; color: #94a3b8; font-size: 0.95rem; }
     .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-    
+
+    .disclaimer-banner { background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:12px 16px; border-radius:6px; font-size:0.8rem; line-height:1.5; margin: 20px auto; max-width:960px; }
+    .privacy-note { text-align:center; font-size:0.78rem; color:#64748b; margin: 10px 0 20px; }
+
     .section { background: white; padding: 30px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
     .section h2 { margin-top: 0; font-size: 1.25rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 25px; color: var(--primary); }
-    
+    .section .sub-hint { font-size: 0.85rem; color: #64748b; margin: -18px 0 20px; }
+
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
     .full-width { grid-column: 1 / -1; }
-    
+
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-size: 0.875rem; font-weight: 600; margin-bottom: 8px; color: #475569; }
     .required::after { content: " *"; color: var(--req); font-weight: bold; }
-    
-    .form-group input, .form-group select, .form-group textarea { 
-      border: 1px solid var(--border); padding: 10px 12px; border-radius: 6px; font-size: 1rem; font-family: inherit; 
+
+    .form-group input, .form-group select, .form-group textarea {
+      border: 1px solid var(--border); padding: 10px 12px; border-radius: 6px; font-size: 1rem; font-family: inherit;
     }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
-      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); 
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
     }
-    
+
     .help-text { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
     .hidden-section { display: none; }
-    
+
+    .rule-hint { font-size: 0.8rem; color: #0369a1; margin-top: 10px; font-style: italic; min-height: 1.2em; }
+    .scl-hint { font-size: 0.82rem; color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: none; }
+
     .btn-group { display: flex; gap: 15px; margin-top: 20px; }
-    .print-btn { 
-      background-color: var(--accent); color: white; border: none; padding: 16px 32px; font-size: 1.15rem; 
+    .print-btn {
+      background-color: var(--accent); color: white; border: none; padding: 16px 32px; font-size: 1.15rem;
       border-radius: 8px; cursor: pointer; flex: 1; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2,132,199,0.3);
     }
     .print-btn:hover { background-color: #0369a1; }
     .secondary-btn { background-color: #475569; }
     .secondary-btn:hover { background-color: #334155; }
-    
+
     .date-calc-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 15px; border-radius: 6px; }
     .sig-preview-box { display: flex; align-items: center; gap: 20px; margin-top: 10px; border: 1px dashed var(--border); padding: 10px; border-radius: 6px; background: #fafafa; }
     .sig-preview-box img { max-height: 50px; border: 1px solid #ddd; background: #fff; padding: 2px; }
 
+    /* type-select highlight block */
+    .type-select-block { background: #eff6ff; border-color: #bfdbfe; }
+    .type-select-block label { color: #1e40af; }
+
     /* On-Screen PDF Preview Deck */
     #screen-preview-deck { display: none; background: #525659; padding: 30px; border-radius: 8px; margin-top: 30px; }
-    .page-preview-card { 
-      background: white; margin: 0 auto 30px auto; padding: 15mm 20mm; width: 210mm; min-height: 297mm; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3); box-sizing: border-box; font-family: "Times New Roman", Times, serif; 
-      font-size: 12pt; line-height: 1.4; color: #000; position: relative;
+    #screen-preview-deck .page-preview-card { background: white; margin: 0 auto 30px auto; padding: 20mm; width: 210mm; min-height: 297mm; box-shadow: 0 4px 10px rgba(0,0,0,0.3); box-sizing: border-box; }
+    @media (max-width: 720px) {
+      .grid, .grid-3 { grid-template-columns: 1fr; }
+      #screen-preview-deck .page-preview-card { width: 100%; padding: 8mm; min-height: 0; }
     }
   }
-
   /* --- PDF EXPORT STYLES (A4 Format) --- */
   @media print {
     .screen-only { display: none !important; }
@@ -93,35 +76,56 @@
     body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.4; color: #000; background: #fff; margin: 0; padding: 0; }
     .page { page-break-after: always; padding: 0; margin: 0; position: relative; min-height: 250mm; }
     .page.hidden-print { display: none !important; }
+
+    .page-title { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 20px; line-height: 1.3; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .text-justify { text-align: justify; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1.5rem; }
+    .mt-4 { margin-top: 1.5rem; }
+    .mt-8 { margin-top: 3rem; }
+    .flex-space { display: flex; justify-content: space-between; }
+    .bold { font-weight: bold; }
+    .blank-line { display:inline-block; border-bottom:1px solid #000; min-width:160px; }
+
+    /* Strict Tabular Alignment */
+    .form-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .form-table td { padding: 5px 0; vertical-align: top; }
+    .form-table td:nth-child(1) { width: 50%; }
+    .form-table td:nth-child(2) { width: 2%; text-align: center; }
+    .form-table td:nth-child(3) { width: 48%; padding-left: 10px; font-weight: bold; }
+
+    .signature-block { width: 300px; text-align: center; float: right; margin-top: 20px; }
+    .sig-slot { height: 45px; display: flex; align-items: center; justify-content: center; }
+    .sig-img-target { max-height: 45px; max-width: 180px; object-fit: contain; }
+
+    .clear { clear: both; }
+    hr { border: 0; border-top: 1px solid #000; margin: 20px 0; }
   }
 </style>
 </head>
 <body>
-
 <!-- UI FORM SECTION -->
 <div class="screen-only">
   <div class="app-header">
-    <h1>Official KSR Leave Generator</h1>
-    <p>Includes Auto Signature Isolation, Live Adjustments & Document Preview</p>
+    <h1>KSR Leave Application Generator</h1>
+    <p>Form 13, LWA proformas, and every leave application under the Kerala Service Rules — with signature capture &amp; live preview.</p>
   </div>
-
   <div class="container">
+    <div class="disclaimer-banner">
+      <strong>Before you rely on this:</strong> this tool drafts your application in the standard KSR formats so you have a clean starting point — it is not an official Government of Kerala product and is not legal advice. Rule numbers, appendices, and required enclosures are amended from time to time by Government Orders, and offices sometimes have local variations. Please confirm current requirements — and whether your office needs a wet-ink signature rather than a printed one — with your DDO / Head of Office before submission.
+    </div>
     <form id="leaveForm" onsubmit="event.preventDefault();">
-      
+
       <!-- LEAVE TYPE -->
-      <div class="section" style="background: #eff6ff; border-color: #bfdbfe;">
+      <div class="section type-select-block">
         <div class="form-group full-width">
-          <label class="required" style="color: #1e40af;">Select Leave Nature</label>
+          <label class="required" style="color: #1e40af;">Select Application Type</label>
           <select id="leave_type" required onchange="toggleSections()">
-            <option value="" disabled selected>-- Select Leave Type --</option>
-            <option value="earned">Earned Leave / Half Pay Leave / Commuted Leave</option>
-            <option value="casual">Special Casual Leave</option>
-            <option value="paternity">Paternity Leave (Rule 102B)</option>
-            <option value="maternity">Maternity Leave (Rule 100)</option>
-            <option value="lwa_88">Leave Without Allowance (Rule 88 - Personal Affairs)</option>
-            <option value="lwa_abroad">Leave Without Allowance (Appx XII-A - Employment Abroad)</option>
-            <option value="lwa_study">Leave Without Allowance (Appx XII-B/C - Higher Studies)</option>
+            <option value="" disabled selected>-- Select Application Type --</option>
           </select>
+          <div class="rule-hint" id="rule_hint"></div>
         </div>
       </div>
 
@@ -135,19 +139,19 @@
           <div class="form-group"><label class="required">Employment Type</label>
             <select id="emp_type"><option value="Regular / Substantive">Regular / Substantive</option><option value="Officiating">Officiating</option></select>
           </div>
-          <div class="form-group full-width"><label class="required">Current Office, Department & Section</label><input type="text" id="office" required></div>
+          <div class="form-group full-width"><label class="required">Current Office, Department &amp; Section</label><input type="text" id="office" required placeholder="e.g., District Treasury, Kozhikode"></div>
           <div class="form-group"><label class="required">Date of Birth</label><input type="date" id="dob" required></div>
           <div class="form-group"><label class="required">Date of Entry into Service</label><input type="date" id="entry" required></div>
-          <div class="form-group"><label class="required">Pay & Scale of Pay</label><input type="text" id="pay" required></div>
-          <div class="form-group"><label>Probation / Confirmation Status (Post & Date)</label><input type="text" id="probation" placeholder="Optional"></div>
+          <div class="form-group"><label class="required">Pay &amp; Scale of Pay</label><input type="text" id="pay" required placeholder="e.g., Rs 39300-83000, Level 8"></div>
+          <div class="form-group"><label>Probation / Confirmation Status (Post &amp; Date)</label><input type="text" id="probation" placeholder="Optional"></div>
         </div>
       </div>
 
       <!-- SMART DATE CALCULATOR -->
       <div class="section">
-        <h2>2. Leave Duration & Routing</h2>
+        <h2>2. Leave Duration &amp; Routing</h2>
         <div class="date-calc-box mb-4">
-          <p style="margin-top:0; font-size: 0.9rem; color: #0369a1; font-weight: 600;">Smart Date Engine: Enter Start & End Date to auto-calculate duration, OR enter Start Date & Duration to auto-calculate End Date.</p>
+          <p style="margin-top:0; font-size: 0.9rem; color: #0369a1; font-weight: 600;">Smart Date Engine: Enter Start &amp; End Date to auto-calculate duration, OR enter Start Date &amp; Duration to auto-calculate End Date.</p>
           <div class="grid-3">
             <div class="form-group"><label class="required">Leave Start Date</label><input type="date" id="start" required onchange="calculateFromDates()"></div>
             <div class="form-group"><label class="required">Leave End Date</label><input type="date" id="end" required onchange="calculateFromDates()"></div>
@@ -162,9 +166,10 @@
           </div>
           <div class="form-group full-width mt-4"><label class="required">Formal Duration String (Printed on Forms)</label><input type="text" id="duration_str" required placeholder="e.g., 5 Years or 120 Days"></div>
         </div>
-
         <div class="grid">
-          <div class="form-group"><label class="required">Reason for Leave</label><input type="text" id="reason" required></div>
+          <div class="form-group full-width"><label class="required">Ground / Reason / Purpose of Leave</label><input type="text" id="reason" required>
+            <div class="help-text">Auto-filled based on the application type you selected above — feel free to edit the wording.</div>
+          </div>
           <div class="form-group"><label class="required">Address During Leave</label><textarea id="address" rows="2" required></textarea></div>
           <div class="form-group"><label class="required">Application Place</label><input type="text" id="place" required></div>
           <div class="form-group"><label class="required">Application Date</label><input type="date" id="app_date" required></div>
@@ -174,36 +179,61 @@
 
       <!-- DIGITAL SIGNATURE CAPTURE ENGINE -->
       <div class="section">
-        <h2>3. Digital Signature Controls</h2>
+        <h2>3. Digital Signature (Auto Background Isolation)</h2>
         <div class="form-group full-width">
           <label>Upload Photo / Scan of Signature</label>
           <input type="file" id="sig_upload" accept="image/*" onchange="processSignatureUpload(this)">
-          <div class="help-text">Upload any snapshot of your signature on paper. The app will isolate the ink, strip the background, and place it neatly above signature lines across all forms.</div>
+          <div class="help-text">Upload any snapshot of your signature on paper. The app isolates the ink, strips the background, and places it above signature lines across all generated pages. Everything happens in your browser — the image is never uploaded anywhere. Note: many offices still require a wet-ink signature on the printed copy, so check before treating this as sufficient on its own.</div>
         </div>
-        
-        <!-- Live Adjustment Sliders (Hidden until upload) -->
-        <div id="sig_controls" style="display:none; margin-top: 15px; background: #f1f5f9; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1;">
-          <p style="margin:0 0 10px 0; font-weight:600; font-size:0.85rem; color:#334155;">Adjust Signature Placement & Size</p>
-          <div class="grid" style="grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
-            <div class="form-group"><label>Size Scale</label><input type="range" id="sig_scale" min="0.3" max="2.5" step="0.1" value="1" oninput="updateSignature()"></div>
-            <div class="form-group"><label>Rotate (Deg)</label><input type="range" id="sig_rotate" min="-90" max="90" step="1" value="0" oninput="updateSignature()"></div>
-            <div class="form-group"><label>Move Left/Right</label><input type="range" id="sig_x" min="-150" max="150" step="1" value="0" oninput="updateSignature()"></div>
-            <div class="form-group"><label>Move Up/Down</label><input type="range" id="sig_y" min="-100" max="100" step="1" value="0" oninput="updateSignature()"></div>
+        <div class="sig-preview-box" id="sig_preview_container" style="display:none;">
+          <span style="font-size:0.85rem; font-weight:600; color:#334155;">Captured Transparent Signature:</span>
+          <img id="sig_preview_img" src="" alt="Signature Preview">
+        </div>
+      </div>
+
+      <!-- CONDITIONAL: LWA DETAILS -->
+      <div id="sec_lwa" class="section hidden-section">
+        <h2>4. Leave Without Allowance — Particulars (Appendix XII)</h2>
+        <div class="grid">
+          <div class="form-group"><label id="lbl_lwa_dest">Country of Employment</label><input type="text" id="lwa_country" placeholder="Optional, but recommended"></div>
+          <div class="form-group full-width"><label id="lbl_lwa_emp">Details of Foreign Employer (Name &amp; Address)</label><input type="text" id="lwa_employer" placeholder="Optional, but recommended"></div>
+        </div>
+      </div>
+
+      <!-- CONDITIONAL: FAMILY & MEDICAL LEAVE DETAILS -->
+      <div id="sec_family" class="section hidden-section">
+        <h2>4. Family &amp; Medical Leave — Particulars</h2>
+        <div class="grid">
+          <div class="form-group"><label id="lbl_fam1">Expected / Actual Date of Delivery</label><input type="date" id="fam_date"></div>
+          <div class="form-group"><label id="lbl_fam2">Hospital / Medical Officer</label><input type="text" id="fam_info1" placeholder="Optional"></div>
+          <div class="form-group full-width hidden-section" id="field_fam3_wrap"><label id="lbl_fam3">Additional Detail</label><textarea id="fam_info2" rows="2" placeholder="Optional"></textarea></div>
+        </div>
+        <div class="help-text">A medical certificate or supporting document (adoption deed, etc.) is still required as an enclosure — this app only drafts the application text.</div>
+      </div>
+
+      <!-- CONDITIONAL: SPECIAL CASUAL LEAVE DETAILS -->
+      <div id="sec_scl" class="section hidden-section">
+        <h2>4. Special Casual Leave — Reason</h2>
+        <div class="form-group full-width">
+          <label>Recognised Reason</label>
+          <select id="scl_reason" onchange="onSclReasonChange()"></select>
+          <div class="scl-hint" id="scl_hint"></div>
+        </div>
+      </div>
+
+      <!-- CONDITIONAL: COMPENSATION LEAVE DETAILS -->
+      <div id="sec_compensation" class="section hidden-section">
+        <h2>4. Compensation Leave — Particulars</h2>
+        <div class="grid">
+          <div class="form-group full-width"><label>Date(s) of Duty Performed on Holiday / Beyond Office Hours</label><input type="text" id="comp_dates" placeholder="e.g., 12/07/2026 and 19/07/2026"></div>
+          <div class="form-group"><label>Compensation Leave Days Claimed</label><input type="number" id="comp_days" min="0" placeholder="e.g., 2">
+            <div class="help-text">Max 15 days in a calendar year; max 10 days accumulated at a time (Appendix VII, Section III).</div>
           </div>
         </div>
       </div>
 
-      <!-- CONDITIONAL LWA DETAILS -->
-      <div id="sec_lwa" class="section hidden-section border-blue">
-        <h2>4. Appendix XII Specific Details</h2>
-        <div class="grid">
-          <div class="form-group"><label id="lbl_lwa_dest">Country / Place of Visit (Optional)</label><input type="text" id="lwa_country"></div>
-          <div class="form-group full-width"><label id="lbl_lwa_emp">Details of Employer / University (Optional)</label><input type="text" id="lwa_employer"></div>
-        </div>
-      </div>
-
       <!-- METADATA (FORM 13) -->
-      <div class="section">
+      <div class="section" id="sec_form13meta">
         <h2>5. Additional Form Data</h2>
         <div class="grid">
           <div class="form-group"><label>Sundays/Holidays Prefixed/Suffixed</label><input type="text" id="holidays" placeholder="e.g., Nil"></div>
@@ -213,26 +243,26 @@
       </div>
 
       <div class="btn-group">
-        <button type="button" class="print-btn secondary-btn" onclick="toggleScreenPreview()">Preview Document Live</button>
+        <button type="button" class="print-btn secondary-btn" onclick="toggleScreenPreview()">Preview Application Forms</button>
         <button type="button" class="print-btn" onclick="generatePDF()">Download / Print PDF</button>
       </div>
+      <p class="privacy-note">All data stays in your browser on your device — nothing here is uploaded, stored, or sent anywhere.</p>
     </form>
-
     <!-- ON-SCREEN PREVIEW DECK -->
     <div id="screen-preview-deck">
       <div style="text-align:center; color:white; margin-bottom:20px;">
         <h3 style="margin:0;">Interactive Application Preview</h3>
-        <p style="font-size:0.85rem; color:#cbd5e1;">Review all generated pages and adjust your signature placements above before printing.</p>
+        <p style="font-size:0.85rem; color:#cbd5e1;">Review all generated pages and signature placements below before printing.</p>
       </div>
       <div id="preview-render-target"></div>
     </div>
   </div>
 </div>
 
-<!-- PRINT TEMPLATE SECTION (Cloned for Preview) -->
+<!-- PRINT TEMPLATE SECTION -->
 <div id="document-preview" class="print-only">
-  
-  <!-- PAGE 1: COVERING LETTER -->
+
+  <!-- PAGE: COVERING LETTER -->
   <div class="page" id="print_cover">
     <div class="text-right mb-4">Place: <span class="out-place bold"></span><br>Date: <span class="out-app_date bold"></span></div>
     <div class="mb-4">From<br><br><span class="out-name bold"></span><br><span class="out-designation"></span><br><span class="out-office"></span></div>
@@ -240,10 +270,10 @@
     <div class="mb-4">Respected Sir/Madam,</div>
     <div class="mb-4" style="padding-left: 40px;"><span class="bold">Sub:</span> Application for <span class="out-leave_name bold"></span> <span class="out-leave_rule bold"></span> for <span class="out-duration_str bold"></span> - reg.</div>
     <div class="mb-4 text-justify">
-      I am submitting herewith my application for <span class="out-leave_name bold"></span> <span class="out-leave_rule"></span> for a period of <span class="out-duration_str bold"></span> from <span class="out-start bold"></span> to <span class="out-end bold"></span>. The leave is required for the purpose of: <span class="out-reason bold"></span>.
+      I am submitting herewith my application for <span class="out-leave_name bold"></span> <span class="out-leave_rule"></span> for a period of <span class="out-duration_str bold"></span> from <span class="out-start bold"></span> to <span class="out-end bold"></span>. The leave is required on account of: <span class="out-reason bold"></span>.
     </div>
     <div class="mb-4 text-justify" id="cover_attachments">I have attached the statutory Form No. 13 along with this letter.</div>
-    <div class="mb-4">I kindly request you to sanction the leave / forward the application to the competent authority.</div>
+    <div class="mb-4">I kindly request you to sanction the leave / forward the application to the competent authority with your recommendation.</div>
     <div class="signature-block">
       Yours faithfully,<br>
       <div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div>
@@ -251,19 +281,19 @@
     </div>
     <div class="clear"></div>
   </div>
-  
-  <!-- PAGE 2: FORM 13 -->
+
+  <!-- PAGE: FORM 13 -->
   <div class="page" id="print_form13">
     <div class="page-title">FORM No. 13<br>APPLICATION FOR LEAVE<br><span style="font-size:10pt; font-weight:normal;">(Rule 113, Part I, K.S.R)</span></div>
     <table class="form-table">
-      <tr><td>1. Name of applicant</td><td>:</td><td><span class="out-name"></span></td></tr>
+      <tr><td>1. Name of applicant (PEN)</td><td>:</td><td><span class="out-name"></span> (PEN: <span class="out-pen"></span>)</td></tr>
       <tr><td>2. Date of Birth</td><td>:</td><td><span class="out-dob"></span></td></tr>
       <tr><td>3. Post held</td><td>:</td><td><span class="out-designation"></span></td></tr>
       <tr><td>4. Department, Office and Section</td><td>:</td><td><span class="out-office"></span></td></tr>
       <tr><td>5. Pay and scale of Pay</td><td>:</td><td><span class="out-pay"></span></td></tr>
       <tr><td>6. Date of entry in service</td><td>:</td><td><span class="out-entry"></span></td></tr>
       <tr><td>7. Date of commencement of continuous service</td><td>:</td><td><span class="out-entry"></span></td></tr>
-      <tr><td>8. Confirmation in any post (Date & Post)</td><td>:</td><td><span class="out-probation"></span></td></tr>
+      <tr><td>8. Confirmation in any post (Date &amp; Post)</td><td>:</td><td><span class="out-probation"></span></td></tr>
       <tr><td>9. Address during the leave</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
       <tr><td>10. Allowances drawn in present post</td><td>:</td><td><span class="out-allowances"></span></td></tr>
       <tr><td>11. Nature and period of leave applied for</td><td>:</td><td><span class="out-leave_name"></span> <span class="out-leave_rule"></span> for <span class="out-duration_str"></span><br>from <span class="out-start"></span> to <span class="out-end"></span></td></tr>
@@ -283,34 +313,32 @@
         <span class="out-name bold"></span>
       </div>
     </div>
-    <div class="doc-hr"></div><br><br><br><br>
+    <hr>
+    <br><br>
     <div class="bold mb-4">16. Remarks and/or recommendation of the Controlling Officer:</div>
     <div style="height: 40px;"></div>
     <div class="text-right">Signature (with date) and Designation</div>
-    <div class="doc-hr"></div>
+    <hr>
     <div class="bold mb-4">CERTIFICATE REGARDING ADMISSIBILITY OF LEAVE</div>
-    <div class="mb-4">Certified that <span class="out-leave_name"></span> for <span class="out-duration_str"></span> from <span class="out-start"></span> to <span class="out-end"></span> is admissible under rule ...................... of the Kerala Service Rules.</div>
+    <div class="mb-4">Certified that <span class="out-leave_name"></span> for <span class="out-duration_str"></span> from <span class="out-start"></span> to <span class="out-end"></span> is admissible under <span class="out-rule_plain"></span> of the Kerala Service Rules.</div>
     <div class="text-right mt-8">Signature (with date) and Designation</div>
   </div>
 
-  <!-- PAGE 3: APPLICATION FOR NOC (LWA ONLY) -->
+  <!-- PAGE: NOC / PRIOR INTIMATION (LWA — EMPLOYMENT ABROAD ONLY) -->
   <div class="page hidden-print" id="print_lwa_noc">
-    <div class="page-title">APPLICATION FOR ISSUE OF NO OBJECTION CERTIFICATE</div>
+    <div class="page-title">APPLICATION FOR NO OBJECTION CERTIFICATE / PRIOR INTIMATION<br><span style="font-size:10pt; font-weight:normal;">(For proceeding abroad on Leave Without Allowance)</span></div>
     <table class="form-table">
-      <tr><td>1. Name of applicant</td><td>:</td><td><span class="out-name"></span></td></tr>
+      <tr><td>1. Name of applicant (PEN)</td><td>:</td><td><span class="out-name"></span> (PEN: <span class="out-pen"></span>)</td></tr>
       <tr><td>2. Date of Birth</td><td>:</td><td><span class="out-dob"></span></td></tr>
       <tr><td>3. Designation with Department<br><span style="font-weight:normal; margin-left:15px;">(a) Pay and scale of pay</span><br><span style="font-weight:normal; margin-left:15px;">(b) Whether Substantive/Officiating</span></td><td>:<br>:<br>:</td><td><span class="out-designation"></span><br><span class="out-pay"></span><br><span class="out-emp_type"></span></td></tr>
       <tr><td>4. Date of commencement of continuous service</td><td>:</td><td><span class="out-entry"></span></td></tr>
-      <tr><td>5. Place proposed to visit</td><td>:</td><td><span class="out-lwa_country"></span></td></tr>
-      <tr><td>6. Period of absence from duty</td><td>:</td><td><span class="out-duration_str"></span></td></tr>
+      <tr><td>5. Country / Place proposed to be visited</td><td>:</td><td><span class="out-lwa_country"></span></td></tr>
+      <tr><td>6. Period of absence from duty</td><td>:</td><td><span class="out-duration_str"></span> (<span class="out-start"></span> to <span class="out-end"></span>)</td></tr>
       <tr><td>7. Purpose of visit</td><td>:</td><td><span class="out-reason"></span></td></tr>
-      <tr><td>8. Address & Place of Visit</td><td>:</td><td><span class="out-lwa_country"></span></td></tr>
-      <tr><td>9. Present Home Address</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
-      <tr><td>10. Nature of period of absence / leave required</td><td>:</td><td>LEAVE WITHOUT ALLOWANCE <span class="out-leave_rule"></span></td></tr>
-      <tr><td>11. Eligibility for the leave applied for</td><td>:</td><td><span class="out-reason"></span></td></tr>
-      <tr><td>12. How expenditure will be met</td><td>:</td><td>N/A</td></tr>
-      <tr><td>13. Declaration acceptance of job in abroad</td><td>:</td><td>N/A</td></tr>
+      <tr><td>8. Present / correspondence address in India</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
+      <tr><td>9. Nature of leave applied for concurrently</td><td>:</td><td>Leave Without Allowance <span class="out-leave_rule"></span></td></tr>
     </table>
+    <div class="mb-4 text-justify" style="margin-top:20px;">I request that a No Objection Certificate / prior intimation, as required for travel abroad while in Government service, be issued in my favour.</div>
     <div class="signature-block">
       Signature of Applicant<br>
       <div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div>
@@ -319,60 +347,60 @@
     <div class="clear"></div>
   </div>
 
-  <!-- PAGE 4: PROFORMA REPORT & HEAD OF OFFICE CERT (LWA ONLY) -->
+  <!-- PAGE: PROFORMA REPORT & HEAD OF OFFICE CERTIFICATE (LWA ONLY) -->
   <div class="page hidden-print" id="print_lwa_report">
-    <div class="page-title">PROFORMA REPORT</div>
+    <div class="page-title">PROFORMA REPORT<br><span style="font-size:10pt; font-weight:normal;">(To be completed by the Head of Office / Unit)</span></div>
     <table class="form-table">
-      <tr><td>1. Whether any liabilities are pending/ outstanding against the applicant</td><td>:</td><td>NA</td></tr>
-      <tr><td>2. Whether any service disciplinary proceedings pending against the applicant</td><td>:</td><td>NA</td></tr>
-      <tr><td>3. Whether any Crime / Vigilance cases are pending against the applicant</td><td>:</td><td>NA</td></tr>
-      <tr><td>4. Recommendation of the Head of Unit</td><td>:</td><td>Recommended</td></tr>
+      <tr><td>1. Whether any liabilities are pending/outstanding against the applicant</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>2. Whether any disciplinary proceedings are pending against the applicant</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>3. Whether any Crime / Vigilance case is pending against the applicant</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>4. Recommendation of the Head of Office / Unit</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
     </table>
     <div class="flex-space mt-8">
-      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
-      <div class="text-center">Signature & Designation of<br>Head of Office / Unit</div>
+      <div>Place: <span class="out-place"></span><br>Date: __________________</div>
+      <div class="text-center">Signature &amp; Designation of<br>Head of Office / Unit</div>
     </div>
-    
-    <div class="page-title" style="margin-top: 100px;">CERTIFICATE</div>
+
+    <div class="page-title" style="margin-top: 80px;">CERTIFICATE<br><span style="font-size:10pt; font-weight:normal;">(To be completed by the Head of Office / Institution)</span></div>
     <div class="text-justify mb-4" style="line-height: 2;">
-      Certified that no disciplinary action / Vigilance case is pending against Sri/Smt <strong><span class="out-name"></span></strong>, <span class="out-designation"></span>, and he/she has not any bonded obligation in serving the Government.
+      Certified that, to the best of records available in this office, <strong><span class="out-name"></span></strong>, <span class="out-designation"></span>, does / does not [<em>strike out whichever is not applicable</em>] have any disciplinary action or vigilance case pending, and does / does not have any bonded obligation to serve the Government.
     </div>
     <div class="flex-space mt-8">
-      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
-      <div class="text-center">Signature & Designation of<br>Head of Institution / Office</div>
+      <div>Place: <span class="out-place"></span><br>Date: __________________</div>
+      <div class="text-center">Signature &amp; Designation of<br>Head of Institution / Office</div>
     </div>
   </div>
 
-  <!-- PAGE 5: PROFORMA TO BE APPENDED (LWA ONLY) -->
+  <!-- PAGE: PROFORMA TO BE APPENDED WHEN FORWARDED TO GOVERNMENT (LWA ONLY) -->
   <div class="page hidden-print" id="print_lwa_appended">
-    <div class="page-title">PROFORMA TO BE APPENDED WHEN PROPOSALS FOR SANCTION THE LEAVE WITHOUT ALLOWANCE IS FORWARDED TO GOVERNMENT</div>
+    <div class="page-title">PROFORMA TO BE APPENDED WHEN THE PROPOSAL FOR SANCTION OF LEAVE WITHOUT ALLOWANCE IS FORWARDED TO GOVERNMENT<br><span style="font-size:10pt; font-weight:normal;">(Particulars 1–7 furnished by applicant; remaining items for completion by the forwarding authority)</span></div>
     <table class="form-table" style="font-size: 11pt;">
-      <tr><td>1. Name and designation of the applicant</td><td>:</td><td><span class="out-name"></span>, <span class="out-designation"></span></td></tr>
-      <tr><td>2. Institution in which the applicant is working</td><td>:</td><td><span class="out-office"></span></td></tr>
+      <tr><td>1. Name, PEN and designation of the applicant</td><td>:</td><td><span class="out-name"></span> (PEN: <span class="out-pen"></span>), <span class="out-designation"></span></td></tr>
+      <tr><td>2. Institution / Office in which the applicant is working</td><td>:</td><td><span class="out-office"></span></td></tr>
       <tr><td>3. Date from which leave is required</td><td>:</td><td><span class="out-start"></span></td></tr>
       <tr><td>4. Duration of leave</td><td>:</td><td><span class="out-duration_str"></span></td></tr>
       <tr><td>5. Purpose of leave applied for</td><td>:</td><td><span class="out-reason"></span></td></tr>
-      <tr><td>6. Whether the appointment is regular</td><td>:</td><td>Yes (<span class="out-emp_type"></span>)</td></tr>
-      <tr><td>7. Total period of regular service put in by the applicant</td><td>:</td><td>From <span class="out-entry"></span></td></tr>
-      <tr><td>8. Whether there is any disciplinary action pending</td><td>:</td><td>NO</td></tr>
-      <tr><td>9. Whether there is any bonded obligation</td><td>:</td><td>NO</td></tr>
-      <tr><td>10. Whether there is any liability outstanding</td><td>:</td><td>NO</td></tr>
-      <tr><td>11. Whether sanctioned leave for same purpose earlier</td><td>:</td><td>NA</td></tr>
-      <tr><td>12. Whether sanctioned LWA earlier for other purpose</td><td>:</td><td>NO</td></tr>
-      <tr><td>13. Whether any relaxation of rule is necessary</td><td>:</td><td>NA</td></tr>
-      <tr><td>14. Whether suitable substitutes are available</td><td>:</td><td>Yes</td></tr>
-      <tr><td>15. Whether leave is recommended or not</td><td>:</td><td>Recommended</td></tr>
-      <tr><td>16. The leave address of the applicant in India</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
-      <tr><td>17. Any other relevant point to be brought to notice</td><td>:</td><td>NA</td></tr>
+      <tr><td>6. Particulars of employment / study / spouse's posting furnished</td><td>:</td><td><span class="out-lwa_country"></span> — <span class="out-lwa_employer"></span></td></tr>
+      <tr><td>7. Whether the appointment is regular</td><td>:</td><td><span class="out-emp_type"></span>, in continuous service from <span class="out-entry"></span></td></tr>
+      <tr><td>8. Whether any disciplinary action is pending</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>9. Whether the applicant is under any bonded obligation</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>10. Whether any liability is outstanding against the applicant</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>11. Whether LWA for the same purpose was sanctioned earlier, and if so, for what period</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>12. Whether LWA was sanctioned earlier for any other purpose</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>13. Whether relaxation of any rule is necessary</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>14. Whether a suitable substitute is available / arranged</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>15. Recommendation of the forwarding authority</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
+      <tr><td>16. Leave address of the applicant</td><td>:</td><td><span class="out-address" style="font-weight:normal;"></span></td></tr>
+      <tr><td>17. Any other point to be brought to notice</td><td>:</td><td><span class="blank-line">&nbsp;</span></td></tr>
     </table>
-    <div class="signature-block">Signature of Head of Department / Office<br><br><br></div>
+    <div class="signature-block">Signature &amp; Designation of<br>Head of Department / Office<br><br><br></div>
     <div class="clear"></div>
   </div>
 
-  <!-- PAGE 6: DECLARATIONS (LWA ONLY) -->
+  <!-- PAGE: DECLARATIONS (LWA ONLY) -->
   <div class="page hidden-print" id="print_lwa_dec">
     <div class="page-title">DECLARATION</div>
-    <div class="mb-4">I, <strong><span class="out-name"></span></strong> do hereby declare that I shall abide by the conditions stipulated in G.O. (P) No. 274/70/Fin dated 29-04-1970 in case the leave applied for is sanctioned.</div>
+    <div class="mb-4 text-justify">I, <strong><span class="out-name"></span></strong>, working as <strong><span class="out-designation"></span></strong> at <strong><span class="out-office"></span></strong>, do hereby declare that I shall abide by the terms and conditions stipulated in <span class="out-rule_plain"></span> and the relevant Government Orders in force, in case the Leave Without Allowance applied for is sanctioned.</div>
     <div class="flex-space mb-8">
       <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
       <div class="text-center">
@@ -381,14 +409,14 @@
         <strong><span class="out-name"></span></strong>
       </div>
     </div>
-    
-    <div class="page-title" style="margin-top: 60px;">DECLARATION<br><span style="font-size:11pt; font-weight:normal;" id="lwa_rule_text">(Appendices - XIIA, XIIB & XIIC of Kerala Service Rules)</span></div>
+
+    <div class="page-title" style="margin-top: 60px;">DECLARATION<br><span style="font-size:11pt; font-weight:normal;" class="out-leave_rule"></span></div>
     <div class="mb-4 text-justify" style="line-height:1.6;">
-      An application for Leave Without Allowances (L.W.A) for a period of <strong><span class="out-duration_str"></span></strong> with effect from <strong><span class="out-start"></span></strong> is being submitted by me. In this connection I, <strong><span class="out-name"></span></strong> hereby declares as follows:<br><br>
-      (1) I hereby express my consent to lose all service benefits such as earning of leave including Half Pay Leave, Pension, Gratuity, Increment and also lose seniority in the Higher Grade/Grade with reference to my juniors who might get promoted to such grade/grades before I rejoin duty.<br>
-      (2) I am prepared to start afresh in the said cadre and complete my probation on rejoining duty (if not already completed) and I am prepared to forfeit the service benefits that had accrued to me before proceedings on leave.<br>
-      (3) I am not under bonded obligation to serve the Government.<br>
-      (4) There is no outstanding liability to Government against me.<br>
+      An application for Leave Without Allowance (L.W.A.) for a period of <strong><span class="out-duration_str"></span></strong> with effect from <strong><span class="out-start"></span></strong>, <span class="out-reason"></span>, is being submitted by me. In this connection, I, <strong><span class="out-name"></span></strong>, hereby declare as follows:<br><br>
+      (1) I express my consent to lose service benefits for the duration of this leave. I understand that this period will not count for pension, increment, Half Pay Leave accumulation, or higher grade, and that I will lose seniority to juniors who may be promoted during my absence.<br>
+      (2) I am prepared to start my probation afresh in the said cadre on rejoining duty, if I have not already completed it, and I am prepared to forfeit the service benefits that had accrued to me before proceeding on leave.<br>
+      (3) I am not under any bonded obligation to serve the Government.<br>
+      (4) There is no outstanding liability to the Government against me.<br>
       (5) No disciplinary action or vigilance enquiry is pending against me.
     </div>
     <div class="flex-space mt-8">
@@ -400,34 +428,207 @@
       </div>
     </div>
   </div>
-</div>
 
+  <!-- PAGE: SUPPORTING DECLARATION (FAMILY & MEDICAL LEAVE ONLY) -->
+  <div class="page hidden-print" id="print_family_dec">
+    <div class="page-title" id="family_dec_title">DECLARATION</div>
+    <div id="family_dec_body"></div>
+    <div class="flex-space mt-8">
+      <div>Place: <span class="out-place"></span><br>Date: <span class="out-app_date"></span></div>
+      <div class="text-center">
+        Signature of Applicant<br>
+        <div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div>
+        <strong><span class="out-name"></span></strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: SIMPLE APPLICATION LETTER (CASUAL / SPECIAL CASUAL / COMPENSATION LEAVE) -->
+  <div class="page hidden-print" id="print_simple">
+    <div class="page-title" id="simple_title">CASUAL LEAVE APPLICATION</div>
+    <div id="simple_body"></div>
+  </div>
+
+</div>
 <script>
-  // UI Logic: Toggle fields based on leave type
+  // ---------------------------------------------------------------------
+  // DATA: every application type this generator can produce, with its
+  // governing rule/appendix and the "family" of print pages it uses.
+  //   general     -> Cover Letter + Form 13
+  //   familyleave -> Cover Letter + Form 13 + Supporting Declaration
+  //   lwa         -> Cover Letter + Form 13 + (NOC if abroad) + Proforma
+  //                  Report + Government Proforma + Declarations
+  //   simple      -> a single stand-alone application letter (no Form 13,
+  //                  since Casual/Special Casual Leave is not treated as
+  //                  "leave" under the rules)
+  // ---------------------------------------------------------------------
+  const GROUP_ORDER = ['General Leave (Form 13)', 'Leave Without Allowance (LWA)', 'Family & Medical Leave', 'Casual & Special Leave'];
+
+  const LEAVE_TYPES = {
+    el:          { label: 'Earned Leave',                    group: GROUP_ORDER[0], rule: 'Rule 78, Part I, K.S.R.',                nature: 'Earned Leave', family: 'general' },
+    hpl:         { label: 'Half Pay Leave',                   group: GROUP_ORDER[0], rule: 'Rule 83, Part I, K.S.R.',                nature: 'Half Pay Leave', family: 'general' },
+    commuted:    { label: 'Commuted Leave',                   group: GROUP_ORDER[0], rule: 'Rule 84, Part I, K.S.R.',                nature: 'Commuted Leave (in lieu of Half Pay Leave)', family: 'general' },
+    leavenotdue: { label: 'Leave Not Due',                    group: GROUP_ORDER[0], rule: 'Rule 85, Part I, K.S.R.',                nature: 'Leave Not Due', family: 'general' },
+
+    lwa_abroad:  { label: 'LWA — Employment Abroad',          group: GROUP_ORDER[1], rule: 'Rule 88 & Appendix XII-A, Part I, K.S.R.', nature: 'Leave Without Allowance (LWA)', family: 'lwa' },
+    lwa_india:   { label: 'LWA — Employment within India',    group: GROUP_ORDER[1], rule: 'Rule 88 & Appendix XII-A, Part I, K.S.R.', nature: 'Leave Without Allowance (LWA)', family: 'lwa' },
+    lwa_study:   { label: 'LWA — Higher Studies',              group: GROUP_ORDER[1], rule: 'Rule 88 & Appendix XII-B, Part I, K.S.R.', nature: 'Leave Without Allowance (LWA)', family: 'lwa' },
+    lwa_spouse:  { label: 'LWA — Joining Spouse',              group: GROUP_ORDER[1], rule: 'Rule 88 & Appendix XII-C, Part I, K.S.R.', nature: 'Leave Without Allowance (LWA)', family: 'lwa' },
+
+    maternity:    { label: 'Maternity Leave',                 group: GROUP_ORDER[2], rule: 'Rule 100, Part I, K.S.R.',    nature: 'Maternity Leave', family: 'familyleave' },
+    miscarriage:  { label: 'Miscarriage / Abortion Leave',    group: GROUP_ORDER[2], rule: 'Rule 101, Part I, K.S.R.',    nature: 'Leave for Miscarriage / Abortion', family: 'familyleave' },
+    hysterectomy: { label: 'Hysterectomy Leave',              group: GROUP_ORDER[2], rule: 'Rule 101-A, Part I, K.S.R.',  nature: 'Hysterectomy Leave', family: 'familyleave' },
+    paternity:    { label: 'Paternity Leave',                 group: GROUP_ORDER[2], rule: 'Rule 102-B, Part I, K.S.R.',  nature: 'Paternity Leave', family: 'familyleave' },
+    adoption:     { label: 'Child Adoption Leave',            group: GROUP_ORDER[2], rule: 'Part I, K.S.R. (Child Adoption Leave provisions — confirm current rule number with your DDO)', nature: 'Child Adoption Leave', family: 'familyleave' },
+    hospital:     { label: 'Hospital Leave',                  group: GROUP_ORDER[2], rule: 'Rule 103, Part I, K.S.R.',    nature: 'Hospital Leave', family: 'familyleave' },
+
+    cl:           { label: 'Casual Leave',                    group: GROUP_ORDER[3], rule: 'Appendix VII, Part I, K.S.R.',             nature: 'Casual Leave', family: 'simple' },
+    scl:          { label: 'Special Casual Leave',            group: GROUP_ORDER[3], rule: 'Appendix VII, Section II, Part I, K.S.R.', nature: 'Special Casual Leave', family: 'simple' },
+    compensation: { label: 'Compensation Leave',              group: GROUP_ORDER[3], rule: 'Appendix VII, Section III, Part I, K.S.R.', nature: 'Compensation Leave', family: 'simple' },
+  };
+
+  const REASON_DEFAULTS = {
+    el: 'Private affairs',
+    hpl: 'Private affairs',
+    commuted: 'Medical treatment (Medical Certificate enclosed)',
+    leavenotdue: 'Medical treatment (Medical Certificate enclosed)',
+    lwa_abroad: 'For taking up employment abroad',
+    lwa_india: 'For taking up employment within India',
+    lwa_study: 'For pursuing higher studies',
+    lwa_spouse: 'For joining spouse',
+    maternity: 'Confinement for childbirth',
+    miscarriage: 'Miscarriage / Abortion',
+    hysterectomy: 'Hysterectomy',
+    paternity: 'Delivery of child by spouse',
+    adoption: 'Legal adoption of a child',
+    hospital: 'Injury sustained in the course of official duty',
+    cl: 'Personal / domestic affairs',
+    scl: '',
+    compensation: 'Compensation for duty performed on a holiday / beyond office hours',
+  };
+
+  // Special Casual Leave reasons. Day-limits are shown only where a specific
+  // figure is well established; categories without one just say to check
+  // with the sanctioning authority rather than guessing a number.
+  const SCL_REASONS = [
+    { label: 'Voluntary Blood / Blood-Component Donation', hint: 'Up to 4 days in a calendar year.' },
+    { label: 'Voluntary Kidney / Organ Donation', hint: 'Up to 45 days.' },
+    { label: 'Angioplasty (Self)', hint: 'Up to 30 days.' },
+    { label: 'Chemotherapy / Radiation Therapy / Heart Surgery / Organ or Kidney Transplant (Self)', hint: 'As per medical certificate, subject to the Government Order governing this category.' },
+    { label: 'Pacemaker Implantation (Self)', hint: 'Up to 21 days in a calendar year.' },
+    { label: 'Sterilisation — Tubectomy (Self)', hint: 'Up to 14 days.' },
+    { label: 'Sterilisation — Vasectomy (Self)', hint: 'Up to 6 working days.' },
+    { label: "Spouse's Tubectomy", hint: 'Up to 7 days.' },
+    { label: 'Illness Connected with Disability', hint: 'Up to 15 days in a calendar year.' },
+    { label: 'Artificial Limb Fitting / Replacement', hint: 'Up to 15 days at a time.' },
+    { label: 'Infectious Disease in Residence', hint: 'Up to 21 days.' },
+    { label: 'Parent of a Physically / Mentally Challenged Child (for care of the child)', hint: 'As per the applicable Government Order.' },
+    { label: 'Attending Court (Witness / Juror / Party in a Case)', hint: 'Duration as permitted by the sanctioning authority.' },
+    { label: 'Representing State / Country in Sports or Cultural Events', hint: 'Duration as permitted by the sanctioning authority.' },
+    { label: 'Other (please specify in the reason field below)', hint: '' },
+  ];
+
+  // ---------------------------------------------------------------------
+  // Populate the two data-driven dropdowns on load
+  // ---------------------------------------------------------------------
+  function populateLeaveTypeDropdown() {
+    const sel = document.getElementById('leave_type');
+    GROUP_ORDER.forEach(groupName => {
+      const og = document.createElement('optgroup');
+      og.label = groupName;
+      Object.keys(LEAVE_TYPES).forEach(key => {
+        const t = LEAVE_TYPES[key];
+        if (t.group !== groupName) return;
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = t.label;
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    });
+  }
+
+  function populateSclReasons() {
+    const sel = document.getElementById('scl_reason');
+    sel.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = ''; placeholder.disabled = true; placeholder.selected = true;
+    placeholder.textContent = '-- Select Reason --';
+    sel.appendChild(placeholder);
+    SCL_REASONS.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.label; opt.textContent = r.label;
+      sel.appendChild(opt);
+    });
+  }
+
+  function onSclReasonChange() {
+    const sel = document.getElementById('scl_reason');
+    const chosen = SCL_REASONS.find(r => r.label === sel.value);
+    document.getElementById('reason').value = sel.value;
+    const hintBox = document.getElementById('scl_hint');
+    if (chosen && chosen.hint) { hintBox.textContent = chosen.hint; hintBox.style.display = 'block'; }
+    else { hintBox.style.display = 'none'; }
+  }
+
+  // ---------------------------------------------------------------------
+  // UI Logic: show/hide the right conditional section and relabel its
+  // fields for the exact type chosen, plus prefill the shared reason field.
+  // ---------------------------------------------------------------------
   function toggleSections() {
     const type = document.getElementById('leave_type').value;
-    const lwaSec = document.getElementById('sec_lwa');
-    const reasonInput = document.getElementById('reason');
-    
-    lwaSec.classList.add('hidden-section');
-    reasonInput.readOnly = false;
+    const t = LEAVE_TYPES[type];
+    const family = t ? t.family : '';
 
-    if (type === 'lwa_abroad') {
-        lwaSec.classList.remove('hidden-section');
-        document.getElementById('lbl_lwa_dest').innerText = "Country of Visit (Optional)";
-        document.getElementById('lbl_lwa_emp').innerText = "Details of Foreign Employer (Optional)";
-        reasonInput.value = "For taking up better employment abroad";
-    } else if (type === 'lwa_study') {
-        lwaSec.classList.remove('hidden-section');
-        document.getElementById('lbl_lwa_dest').innerText = "Country / State of Study (Optional)";
-        document.getElementById('lbl_lwa_emp').innerText = "Details of University / Institution (Optional)";
-        reasonInput.value = "For pursuing higher studies";
-    } else if (type === 'earned' || type === 'casual' || type === 'maternity' || type === 'lwa_88') {
-        reasonInput.value = "Personal / Domestic Affairs";
+    document.getElementById('sec_lwa').classList.toggle('hidden-section', family !== 'lwa');
+    document.getElementById('sec_family').classList.toggle('hidden-section', family !== 'familyleave');
+    document.getElementById('sec_scl').classList.toggle('hidden-section', type !== 'scl');
+    document.getElementById('sec_compensation').classList.toggle('hidden-section', type !== 'compensation');
+    document.getElementById('sec_form13meta').classList.toggle('hidden-section', family === 'simple');
+
+    document.getElementById('rule_hint').textContent = t ? ('Governed by ' + t.rule + (family === 'lwa' ? ' — capped at 5 years across the entire service, subject to eligibility.' : '')) : '';
+
+    if (family === 'lwa') {
+      const lwaLabels = {
+        lwa_abroad: ['Country of Employment', 'Details of Foreign Employer (Name & Address)'],
+        lwa_india: ['Place of Employment in India', 'Details of Employer (Name & Address)'],
+        lwa_study: ['Institution & Course of Study', 'Expected Duration of Course'],
+        lwa_spouse: ['Name & Designation of Spouse', "Spouse's Office / Department & Place of Posting"],
+      };
+      document.getElementById('lbl_lwa_dest').textContent = lwaLabels[type][0];
+      document.getElementById('lbl_lwa_emp').textContent = lwaLabels[type][1];
+    }
+
+    if (family === 'familyleave') {
+      const famLabels = {
+        maternity:    ['Expected / Actual Date of Delivery', 'Hospital / Medical Officer', null],
+        miscarriage:  ['Date of Miscarriage', 'Hospital / Medical Officer', null],
+        hysterectomy: ['Date of Surgery', 'Hospital / Medical Officer', null],
+        paternity:    ['Date of Delivery of Wife', 'Name of Spouse', "This Child's Number (e.g., 1st / 2nd)"],
+        adoption:     ['Date of Adoption', 'Adoption Agency / Authority', 'Age of Child at Adoption'],
+        hospital:     ['Date of Accident / Injury', 'Place of Accident / Injury', 'Circumstances (how the injury arose in the course of official duty)'],
+      };
+      const l = famLabels[type];
+      document.getElementById('lbl_fam1').textContent = l[0];
+      document.getElementById('lbl_fam2').textContent = l[1];
+      const wrap3 = document.getElementById('field_fam3_wrap');
+      if (l[2]) { wrap3.classList.remove('hidden-section'); document.getElementById('lbl_fam3').textContent = l[2]; }
+      else { wrap3.classList.add('hidden-section'); }
+    }
+
+    if (type === 'scl') {
+      // reset the SCL-specific picker's hint whenever we (re)land on SCL
+      document.getElementById('scl_hint').style.display = 'none';
+    }
+
+    if (t && REASON_DEFAULTS[type] !== undefined && REASON_DEFAULTS[type] !== '') {
+      document.getElementById('reason').value = REASON_DEFAULTS[type];
     }
   }
 
-  // Smart Date Engine
+  // ---------------------------------------------------------------------
+  // Smart Date Engine (unchanged logic: either direction can drive the other)
+  // ---------------------------------------------------------------------
   function calculateFromDates() {
     const sDate = document.getElementById('start').value;
     const eDate = document.getElementById('end').value;
@@ -436,7 +637,7 @@
       const end = new Date(eDate);
       const diffTime = end - start;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Inclusive
-      
+
       if (diffDays > 0) {
         document.getElementById('dur_num').value = diffDays;
         document.getElementById('dur_unit').value = 'days';
@@ -444,16 +645,15 @@
       }
     }
   }
-
   function calculateEndDate() {
     const sDate = document.getElementById('start').value;
     const num = parseInt(document.getElementById('dur_num').value);
     const unit = document.getElementById('dur_unit').value;
-    
+
     if (sDate && num > 0) {
       const start = new Date(sDate);
       let end = new Date(start);
-      
+
       if (unit === 'days') {
         end.setDate(start.getDate() + (num - 1));
         document.getElementById('duration_str').value = num + " Days";
@@ -466,7 +666,7 @@
         end.setDate(end.getDate() - 1);
         document.getElementById('duration_str').value = num + " Years";
       }
-      
+
       const yyyy = end.getFullYear();
       const mm = String(end.getMonth() + 1).padStart(2, '0');
       const dd = String(end.getDate()).padStart(2, '0');
@@ -474,7 +674,9 @@
     }
   }
 
-  // Signature Processor: Background Removal Canvas Engine
+  // ---------------------------------------------------------------------
+  // Signature Processor: Background Removal Canvas Engine (unchanged)
+  // ---------------------------------------------------------------------
   function processSignatureUpload(input) {
     if (input.files && input.files[0]) {
       const reader = new FileReader();
@@ -486,35 +688,31 @@
           canvas.width = img.width;
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
-
           const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imgData.data;
-
-          // Luminance-based Background Removal
+          // Luminance-based Background Removal (Thresholding)
           for (let i = 0; i < data.length; i += 4) {
             const r = data[i], g = data[i+1], b = data[i+2];
             const avg = (r + g + b) / 3;
-            
-            if (avg > 180) { 
-              data[i+3] = 0; // Transparent background
+
+            if (avg > 180) {
+              data[i+3] = 0; // Make light paper background transparent
             } else {
-              data[i] = Math.max(0, r - 40); // Darken ink
+              // Darken ink color slightly for sharp print contrast
+              data[i] = Math.max(0, r - 40);
               data[i+1] = Math.max(0, g - 40);
               data[i+2] = Math.max(0, b - 40);
             }
           }
-          
+
           ctx.putImageData(imgData, 0, 0);
           const transparentDataUrl = canvas.toDataURL('image/png');
-
+          document.getElementById('sig_preview_img').src = transparentDataUrl;
+          document.getElementById('sig_preview_container').style.display = 'flex';
           document.querySelectorAll('.sig-img-target').forEach(target => {
             target.src = transparentDataUrl;
             target.style.display = 'block';
           });
-          
-          // Reveal controls
-          document.getElementById('sig_controls').style.display = 'block';
-          updateSignature(); // Initialize transforms
         };
         img.src = e.target.result;
       };
@@ -522,111 +720,219 @@
     }
   }
 
-  // Live Signature Adjustment
-  function updateSignature() {
-    const scale = document.getElementById('sig_scale').value;
-    const rotate = document.getElementById('sig_rotate').value;
-    const x = document.getElementById('sig_x').value;
-    const y = document.getElementById('sig_y').value;
-
-    const transformStr = `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotate}deg)`;
-    
-    // Apply to all signature targets across the live DOM
-    document.querySelectorAll('.sig-img-target').forEach(el => {
-        el.style.transform = transformStr;
-    });
-  }
-
   // Format date to DD/MM/YYYY
   function formatDate(dateString) {
-    if(!dateString) return '';
+    if (!dateString) return '';
     const d = new Date(dateString);
-    if(isNaN(d.getTime())) return dateString;
-    return d.getDate().toString().padStart(2, '0') + '/' + 
-           (d.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+    if (isNaN(d.getTime())) return dateString;
+    return d.getDate().toString().padStart(2, '0') + '/' +
+           (d.getMonth() + 1).toString().padStart(2, '0') + '/' +
            d.getFullYear();
   }
 
-  // Populate data bindings
+  function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+  function fval(id) { return formatDate(val(id)); }
+
+  // ---------------------------------------------------------------------
+  // Per-type dynamic content for the two brand-new page templates
+  // ---------------------------------------------------------------------
+  function buildFamilyDecTitle(type) {
+    const map = {
+      maternity: 'DECLARATION — MATERNITY LEAVE',
+      miscarriage: 'DECLARATION — MISCARRIAGE / ABORTION LEAVE',
+      hysterectomy: 'DECLARATION — HYSTERECTOMY LEAVE',
+      paternity: 'DECLARATION — PATERNITY LEAVE',
+      adoption: 'DECLARATION — CHILD ADOPTION LEAVE',
+      hospital: 'DECLARATION — HOSPITAL LEAVE',
+    };
+    return map[type] || 'DECLARATION';
+  }
+
+  function buildFamilyDecBody(type) {
+    const name = val('name'), designation = val('designation'), office = val('office');
+    const famDate = fval('fam_date') || '____________';
+    const info1 = val('fam_info1');
+    const info2 = val('fam_info2');
+
+    if (type === 'maternity') {
+      return `<div class="mb-4 text-justify">I, <strong>${name}</strong>, working as <strong>${designation}</strong> at <strong>${office}</strong>, declare that I am / was expecting confinement for childbirth on or around <strong>${famDate}</strong>${info1 ? `, and that I am under the medical care of <strong>${info1}</strong>` : ''}. A medical certificate in support of this application, as required under Rule 100, Part I, K.S.R., is enclosed.</div>`;
+    }
+    if (type === 'miscarriage') {
+      return `<div class="mb-4 text-justify">I, <strong>${name}</strong>, working as <strong>${designation}</strong> at <strong>${office}</strong>, declare that I underwent a miscarriage / abortion on <strong>${famDate}</strong>${info1 ? `, under the care of <strong>${info1}</strong>` : ''}. This application does not exceed the six-week limit prescribed under Rule 101, Part I, K.S.R. A medical certificate from the attending medical practitioner is enclosed.</div>`;
+    }
+    if (type === 'hysterectomy') {
+      return `<div class="mb-4 text-justify">I, <strong>${name}</strong>, working as <strong>${designation}</strong> at <strong>${office}</strong>, declare that I underwent a hysterectomy on <strong>${famDate}</strong>${info1 ? `, at / under <strong>${info1}</strong>` : ''}. This application does not exceed the 45-day limit prescribed under Rule 101-A, Part I, K.S.R. A medical certificate from the attending medical practitioner is enclosed.</div>`;
+    }
+    if (type === 'paternity') {
+      return `<div class="mb-4 text-justify">I, <strong>${name}</strong>, working as <strong>${designation}</strong> at <strong>${office}</strong>, declare that my wife${info1 ? `, <strong>${info1}</strong>,` : ''} delivered / is expected to deliver our <strong>${info2 || '____________'}</strong> child on or around <strong>${famDate}</strong>. This application falls within the window of 10 days before, or 3 months from, the date of delivery permitted under Rule 102-B, Part I, K.S.R., and I have not exhausted the two occasions of Paternity Leave admissible to me. A medical certificate stating the date of delivery is enclosed.</div>`;
+    }
+    if (type === 'adoption') {
+      return `<div class="mb-4 text-justify">I, <strong>${name}</strong>, working as <strong>${designation}</strong> at <strong>${office}</strong>, declare that I have legally adopted a child, aged <strong>${info2 || '____________'}</strong> at the time of adoption, through <strong>${info1 || '____________'}</strong>, on <strong>${famDate}</strong>. The adoption deed / certificate in support of this application is enclosed.</div>`;
+    }
+    if (type === 'hospital') {
+      return `<div class="mb-4 text-justify">I, <strong>${name}</strong>, working as <strong>${designation}</strong> at <strong>${office}</strong>, declare that I sustained an injury on <strong>${famDate}</strong> at <strong>${info1 || '____________'}</strong>, in the course of and in consequence of the due performance of my official duties, under the following circumstances:</div>
+      <div class="mb-4 text-justify" style="border:1px solid #999; padding: 10px 14px; min-height: 40px;">${info2 || ''}</div>
+      <div class="mb-4 text-justify">A medical certificate from the treating medical officer, as required under Rule 103, Part I, K.S.R., is enclosed.</div>`;
+    }
+    return '';
+  }
+
+  function buildSimpleBody(type) {
+    const name = val('name'), pen = val('pen'), designation = val('designation'), office = val('office'), controlling = val('controlling');
+    const place = val('place'), appdate = fval('app_date'), start = fval('start'), end = fval('end'), duration = val('duration_str'), reason = val('reason');
+    let subject = '', para = '';
+    let declLine = `<div class="mb-4 text-justify">I have not availed of Casual Leave / Special Casual Leave in excess of my entitlement during this calendar year, to the best of my knowledge.</div>`;
+
+    if (type === 'cl') {
+      subject = 'Application for Casual Leave — reg.';
+      para = `I request you to kindly grant me Casual Leave for <strong>${duration}</strong>, from <strong>${start}</strong> to <strong>${end}</strong>, on account of <strong>${reason || 'personal reasons'}</strong>.`;
+    } else if (type === 'scl') {
+      subject = 'Application for Special Casual Leave — reg.';
+      const medicalNote = /kidney|organ|angioplasty|chemotherapy|radiation|heart surgery|transplant|pacemaker|sterilisation|tubectomy|vasectomy/i.test(reason) ? ' A medical certificate from the authorised Medical Officer is enclosed.' : '';
+      para = `I request you to kindly grant me Special Casual Leave for <strong>${duration}</strong>, from <strong>${start}</strong> to <strong>${end}</strong>, under Appendix VII, Section II, Part I, K.S.R., on account of: <strong>${reason || 'the reason stated below'}</strong>.${medicalNote}`;
+    } else if (type === 'compensation') {
+      subject = 'Application for Compensation Leave — reg.';
+      const days = val('comp_days') || duration;
+      const dutyDates = val('comp_dates') || '____________';
+      declLine = '';
+      para = `I request you to kindly grant me Compensation Leave of <strong>${days} day(s)</strong> under Appendix VII, Section III, Part I, K.S.R., in lieu of duty performed by me on the holiday(s) / beyond office hours on <strong>${dutyDates}</strong>. I have not availed of any other compensatory arrangement in respect of this duty.`;
+    }
+
+    return `
+      <div class="text-right mb-4">Place: <strong>${place}</strong><br>Date: <strong>${appdate}</strong></div>
+      <div class="mb-4">From<br><br><strong>${name}</strong> (PEN: ${pen || 'N/A'})<br>${designation}<br>${office}</div>
+      <div class="mb-4">To<br><br><strong>${controlling}</strong><br>${office}</div>
+      <div class="mb-4">Respected Sir/Madam,</div>
+      <div class="mb-4" style="padding-left:40px;"><strong>Sub:</strong> ${subject}</div>
+      <div class="mb-4 text-justify">${para}</div>
+      ${declLine}
+      <div class="signature-block">Yours faithfully,<br>
+        <div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div>
+        (<strong>${name}</strong>)</div>
+      <div class="clear"></div>
+      <hr>
+      <div class="mb-4"><strong>Remarks / Recommendation of the Controlling Officer:</strong></div>
+      <div style="height:60px;"></div>
+      <div class="text-right">Signature (with date) and Designation</div>`;
+  }
+
+  // ---------------------------------------------------------------------
+  // Show only the print pages that belong to the current type's family,
+  // and make sure the actual last visible page doesn't force a trailing
+  // blank page.
+  // ---------------------------------------------------------------------
+  function updatePrintVisibility(type, family) {
+    const set = (id, show) => document.getElementById(id).classList.toggle('hidden-print', !show);
+    const isForm13Family = (family === 'general' || family === 'familyleave' || family === 'lwa');
+    set('print_cover', isForm13Family);
+    set('print_form13', isForm13Family);
+    set('print_lwa_noc', type === 'lwa_abroad');
+    set('print_lwa_report', family === 'lwa');
+    set('print_lwa_appended', family === 'lwa');
+    set('print_lwa_dec', family === 'lwa');
+    set('print_family_dec', family === 'familyleave');
+    set('print_simple', family === 'simple');
+
+    const pages = Array.from(document.querySelectorAll('.page'));
+    pages.forEach(p => { p.style.pageBreakAfter = ''; });
+    const visible = pages.filter(p => !p.classList.contains('hidden-print'));
+    if (visible.length) visible[visible.length - 1].style.pageBreakAfter = 'auto';
+  }
+
+  // ---------------------------------------------------------------------
+  // Populate every data binding across the printable document
+  // ---------------------------------------------------------------------
   function syncFormData() {
     const type = document.getElementById('leave_type').value;
+    const t = LEAVE_TYPES[type] || {};
+    const family = t.family || '';
 
-    const fields = ['name', 'pen', 'designation', 'emp_type', 'office', 'controlling', 'pay', 'probation', 'address', 'allowances', 'duration_str', 'holidays', 'last_leave', 'lwa_country', 'lwa_employer', 'place', 'reason'];
-    fields.forEach(field => {
+    const nilFields = ['allowances', 'holidays'];
+    const naFields = ['lwa_country', 'lwa_employer', 'probation', 'last_leave'];
+    const plainFields = ['name', 'pen', 'designation', 'emp_type', 'office', 'controlling', 'pay', 'address', 'duration_str', 'place', 'reason'];
+
+    [...plainFields, ...nilFields, ...naFields].forEach(field => {
       const el = document.getElementById(field);
-      let val = el ? el.value : '';
-      if (!val) { val = (field === 'lwa_country' || field === 'lwa_employer' || field === 'probation') ? 'N/A' : 'Nil'; }
-      document.querySelectorAll('.out-' + field).forEach(t => t.innerText = val);
+      let value = el ? el.value.trim() : '';
+      if (!value) {
+        if (nilFields.includes(field)) value = 'Nil';
+        else if (naFields.includes(field)) value = 'N/A';
+      }
+      document.querySelectorAll('.out-' + field).forEach(node => node.textContent = value);
     });
 
     const dateFields = ['dob', 'entry', 'start', 'end', 'app_date'];
     dateFields.forEach(field => {
-      const val = document.getElementById(field) ? formatDate(document.getElementById(field).value) : '';
-      document.querySelectorAll('.out-' + field).forEach(t => t.innerText = val);
+      const el = document.getElementById(field);
+      const value = el ? formatDate(el.value) : '';
+      document.querySelectorAll('.out-' + field).forEach(node => node.textContent = value);
     });
 
-    const nameMap = {
-      'earned': 'Earned / Half Pay / Commuted Leave', 'casual': 'Special Casual Leave', 'paternity': 'Paternity Leave',
-      'maternity': 'Maternity Leave', 'lwa_88': 'Leave Without Allowance', 'lwa_abroad': 'Leave Without Allowance', 'lwa_study': 'Leave Without Allowance'
-    };
-    const ruleMap = {
-      'earned': '(under Rule 78/83/84, Part I, K.S.R)', 'casual': '(under Appendix VII, Section II, K.S.R)',
-      'paternity': '(under Rule 102B, Part I, K.S.R)', 'maternity': '(under Rule 100, Part I, K.S.R)',
-      'lwa_88': '(under Rule 88, Part I, K.S.R)', 'lwa_abroad': '(under Appendix XII-A, Part I, K.S.R)', 'lwa_study': '(under Appendix XII-B/C, Part I, K.S.R)'
-    };
-
-    document.querySelectorAll('.out-leave_name').forEach(t => t.innerText = nameMap[type] || 'Leave');
-    document.querySelectorAll('.out-leave_rule').forEach(t => t.innerText = ruleMap[type] || '');
-
-    const isAppxLWA = (type === 'lwa_abroad' || type === 'lwa_study');
-    document.getElementById('print_lwa_noc').classList.toggle('hidden-print', !isAppxLWA);
-    document.getElementById('print_lwa_report').classList.toggle('hidden-print', !isAppxLWA);
-    document.getElementById('print_lwa_appended').classList.toggle('hidden-print', !isAppxLWA);
-    document.getElementById('print_lwa_dec').classList.toggle('hidden-print', !isAppxLWA);
+    document.querySelectorAll('.out-leave_name').forEach(node => node.textContent = t.nature || t.label || 'Leave');
+    document.querySelectorAll('.out-leave_rule').forEach(node => node.textContent = t.rule ? ('(under ' + t.rule + ')') : '');
+    document.querySelectorAll('.out-rule_plain').forEach(node => node.textContent = t.rule || '');
 
     const attchText = document.getElementById('cover_attachments');
-    if (isAppxLWA) {
-      attchText.innerText = "I have attached Form No. 13, the required Proformas, NOC Application, and all mandatory declarations regarding the loss of service benefits.";
+    if (family === 'lwa') {
+      attchText.textContent = 'I have attached Form No. 13, the required LWA Proforma,' + (type === 'lwa_abroad' ? ' the No Objection / prior-intimation application,' : '') + ' and all mandatory declarations regarding the loss of service benefits, along with proof of my ' + (type === 'lwa_abroad' ? 'foreign employment' : type === 'lwa_india' ? 'employment within India' : type === 'lwa_study' ? 'admission to the course of study' : "spouse's posting") + '.';
+    } else if (family === 'familyleave') {
+      attchText.textContent = 'I have attached Form No. 13 (Rule 113, Part I, K.S.R.) along with the required medical certificate / supporting document.';
     } else {
-      attchText.innerText = "I have attached the statutory Form No. 13 along with this letter.";
+      attchText.textContent = 'I have attached the statutory Form No. 13 (Rule 113, Part I, K.S.R.) along with this letter.';
+    }
+
+    updatePrintVisibility(type, family);
+
+    if (family === 'familyleave') {
+      document.getElementById('family_dec_title').textContent = buildFamilyDecTitle(type);
+      document.getElementById('family_dec_body').innerHTML = buildFamilyDecBody(type);
+    }
+    if (family === 'simple') {
+      document.getElementById('simple_title').textContent = (t.label || 'APPLICATION').toUpperCase();
+      document.getElementById('simple_body').innerHTML = buildSimpleBody(type);
     }
   }
 
-  // Screen Deck Preview Toggle
+  // ---------------------------------------------------------------------
+  // Screen Deck Preview Toggle (unchanged logic — it already only clones
+  // pages without .hidden-print, which now works across all 17 types)
+  // ---------------------------------------------------------------------
   function toggleScreenPreview() {
     const form = document.getElementById('leaveForm');
     if (!form.checkValidity()) { form.reportValidity(); return; }
-    
+
     syncFormData();
-    
+
     const deck = document.getElementById('screen-preview-deck');
     const target = document.getElementById('preview-render-target');
-    
+
     target.innerHTML = '';
     const activePages = document.querySelectorAll('#document-preview .page:not(.hidden-print)');
-    
+
     activePages.forEach(page => {
       const card = document.createElement('div');
       card.className = 'page-preview-card';
       card.innerHTML = page.innerHTML;
       target.appendChild(card);
     });
-
     deck.style.display = 'block';
     deck.scrollIntoView({ behavior: 'smooth' });
-    
-    // Ensure sliders apply to the new cloned targets
-    updateSignature();
   }
 
   // Generate PDF Logic
   function generatePDF() {
     const form = document.getElementById('leaveForm');
     if (!form.checkValidity()) { form.reportValidity(); return; }
-    
+
     syncFormData();
     setTimeout(() => { window.print(); }, 150);
   }
+
+  // ---------------------------------------------------------------------
+  // Boot
+  // ---------------------------------------------------------------------
+  populateLeaveTypeDropdown();
+  populateSclReasons();
 </script>
 </body>
 </html>
