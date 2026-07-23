@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KSR Leave Application Generator</title>
+<title>KSR &amp; Kerala Service Forms Generator</title>
 <style>
   /* -----------------------------------------------------------------------
      SHARED "DOCUMENT PAGE" LOOK
@@ -114,13 +114,28 @@
     .type-select-block { background: #eff6ff; border-color: #bfdbfe; }
     .type-select-block label { color: #1e40af; }
 
-    /* On-Screen PDF Preview Deck — sized and padded to mirror the @page
-       print margins exactly, so what you see here is what prints. */
-    #screen-preview-deck { display: none; background: #525659; padding: 30px; border-radius: 8px; margin-top: 30px; }
-    #screen-preview-deck .page-preview-card { margin: 0 auto 30px auto; width: 210mm; min-height: 297mm; padding: 15mm 20mm; box-shadow: 0 4px 10px rgba(0,0,0,0.3); box-sizing: border-box; }
+    /* Preview Modal — the page cards inside are sized and padded to mirror
+       the @page print margins exactly, so what you see here is what prints. */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.75); z-index: 1000; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+    .modal-overlay.open { display: flex; }
+    .modal-dialog { background: #525659; border-radius: 10px; max-width: 900px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); margin-bottom: 30px; }
+    .modal-toolbar { position: sticky; top: 0; z-index: 2; background: #0f172a; color: #fff; padding: 14px 20px; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .modal-toolbar h3 { margin: 0; font-size: 1.05rem; white-space: nowrap; }
+    .modal-sig-controls { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; flex: 1; min-width: 260px; }
+    .modal-sig-controls .sig-adjust-row { color: #e2e8f0; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+    .modal-sig-controls .sig-adjust-row label { min-width: 40px; font-weight: 600; }
+    .modal-sig-controls .sig-adjust-row input[type="range"] { width: 110px; accent-color: var(--accent); }
+    .modal-sig-controls .sig-adjust-row span { min-width: 40px; text-align: right; color: #fff; font-variant-numeric: tabular-nums; }
+    .modal-close-btn { background: none; border: none; color: #fff; font-size: 1.7rem; line-height: 1; cursor: pointer; padding: 0 4px; }
+    .modal-close-btn:hover { color: #cbd5e1; }
+    .modal-body { padding: 30px; }
+    .modal-body .page-preview-card { margin: 0 auto 30px auto; width: 210mm; min-height: 297mm; padding: 15mm 20mm; box-shadow: 0 4px 10px rgba(0,0,0,0.3); box-sizing: border-box; }
+    .modal-body .page-preview-card:last-child { margin-bottom: 0; }
     @media (max-width: 720px) {
       .grid, .grid-3 { grid-template-columns: 1fr; }
-      #screen-preview-deck .page-preview-card { width: 100%; padding: 8mm; min-height: 0; }
+      .modal-body { padding: 14px; }
+      .modal-body .page-preview-card { width: 100%; padding: 8mm; min-height: 0; }
+      .modal-toolbar { padding: 12px 14px; }
     }
   }
   /* --- PDF EXPORT STYLES (A4 Format, page mechanics only — the visual
@@ -139,12 +154,12 @@
 <!-- UI FORM SECTION -->
 <div class="screen-only">
   <div class="app-header">
-    <h1>KSR Leave Application Generator</h1>
-    <p>Form 13, LWA proformas, and every leave application under the Kerala Service Rules — with signature capture &amp; live preview.</p>
+    <h1>KSR &amp; Kerala Service Forms Generator</h1>
+    <p>Leave applications, insurance &amp; accident-benefit forms, transfer of charge, advances, and more — with signature capture &amp; live preview.</p>
   </div>
   <div class="container">
     <div class="disclaimer-banner">
-      <strong>Before you rely on this:</strong> this tool drafts your application in the standard KSR formats so you have a clean starting point — it is not an official Government of Kerala product and is not legal advice. Rule numbers, appendices, and required enclosures are amended from time to time by Government Orders, and offices sometimes have local variations. Please confirm current requirements — and whether your office needs a wet-ink signature rather than a printed one — with your DDO / Head of Office before submission.
+      <strong>Before you rely on this:</strong> this tool drafts your application in the standard KSR/KFC formats so you have a clean starting point — it is not an official Government of Kerala product and is not legal advice. Rule numbers, appendices, and required enclosures are amended from time to time by Government Orders, and offices sometimes have local variations. Please confirm current requirements — and whether your office needs a wet-ink signature rather than a printed one — with your DDO / Head of Office before submission. GPF and GIS are deliberately not included here: both are now handled through dedicated online modules (SPARK for GPF, the "Viswas" portal for GIS) where a manual paper application is generally no longer accepted.
     </div>
     <form id="leaveForm" onsubmit="event.preventDefault();">
 
@@ -179,31 +194,37 @@
 
       <!-- SMART DATE CALCULATOR -->
       <div class="section">
-        <h2>2. Leave Duration &amp; Routing</h2>
-        <div class="date-calc-box mb-4">
-          <p style="margin-top:0; font-size: 0.9rem; color: #0369a1; font-weight: 600;">Smart Date Engine: Enter Start &amp; End Date to auto-calculate duration, OR enter Start Date &amp; Duration to auto-calculate End Date.</p>
-          <div class="grid-3">
-            <div class="form-group"><label class="required">Leave Start Date</label><input type="date" id="start" required onchange="calculateFromDates()"></div>
-            <div class="form-group"><label class="required">Leave End Date</label><input type="date" id="end" required onchange="calculateFromDates()"></div>
-            <div class="form-group"><label class="required">Leave Duration</label>
-              <div style="display:flex; gap:5px;">
-                <input type="number" id="dur_num" style="width:50%" oninput="calculateEndDate()">
-                <select id="dur_unit" style="width:50%" onchange="calculateEndDate()">
-                  <option value="days">Days</option><option value="months">Months</option><option value="years">Years</option>
-                </select>
+        <h2>2. Application Routing &amp; Dates</h2>
+        <div id="leave_routing_fields">
+          <div class="date-calc-box mb-4">
+            <p style="margin-top:0; font-size: 0.9rem; color: #0369a1; font-weight: 600;">Smart Date Engine: Enter Start &amp; End Date to auto-calculate duration, OR enter Start Date &amp; Duration to auto-calculate End Date.</p>
+            <div class="grid-3">
+              <div class="form-group"><label class="required">Leave Start Date</label><input type="date" id="start" onchange="calculateFromDates()"></div>
+              <div class="form-group"><label class="required">Leave End Date</label><input type="date" id="end" onchange="calculateFromDates()"></div>
+              <div class="form-group"><label class="required">Leave Duration</label>
+                <div style="display:flex; gap:5px;">
+                  <input type="number" id="dur_num" style="width:50%" oninput="calculateEndDate()">
+                  <select id="dur_unit" style="width:50%" onchange="calculateEndDate()">
+                    <option value="days">Days</option><option value="months">Months</option><option value="years">Years</option>
+                  </select>
+                </div>
               </div>
             </div>
+            <div class="form-group full-width mt-4"><label class="required">Formal Duration String (Printed on Forms)</label><input type="text" id="duration_str" placeholder="e.g., 5 Years or 120 Days"></div>
           </div>
-          <div class="form-group full-width mt-4"><label class="required">Formal Duration String (Printed on Forms)</label><input type="text" id="duration_str" required placeholder="e.g., 5 Years or 120 Days"></div>
+          <div class="grid">
+            <div class="form-group full-width"><label class="required">Ground / Reason / Purpose of Leave</label><input type="text" id="reason">
+              <div class="help-text">Auto-filled based on the application type you selected above — feel free to edit the wording.</div>
+            </div>
+            <div class="form-group"><label class="required">Address During Leave</label><textarea id="address" rows="2"></textarea></div>
+          </div>
         </div>
-        <div class="grid">
-          <div class="form-group full-width"><label class="required">Ground / Reason / Purpose of Leave</label><input type="text" id="reason" required>
-            <div class="help-text">Auto-filled based on the application type you selected above — feel free to edit the wording.</div>
-          </div>
-          <div class="form-group"><label class="required">Address During Leave</label><textarea id="address" rows="2" required></textarea></div>
+        <div class="grid" style="margin-top:20px;">
           <div class="form-group"><label class="required">Application Place</label><input type="text" id="place" required></div>
           <div class="form-group"><label class="required">Application Date</label><input type="date" id="app_date" required></div>
-          <div class="form-group full-width"><label class="required">Forward To (Controlling Officer Designation)</label><input type="text" id="controlling" required></div>
+          <div class="form-group full-width"><label class="required">Forward To (Recipient's Designation)</label><input type="text" id="controlling" required>
+            <div class="help-text" id="controlling_hint" style="display:none;"></div>
+          </div>
         </div>
       </div>
 
@@ -223,12 +244,12 @@
           <div class="sig-adjust-box">
             <div class="sig-adjust-row">
               <label for="sig_scale">Size</label>
-              <input type="range" id="sig_scale" min="50" max="150" value="100" step="1" oninput="updateSigTransform()">
+              <input type="range" id="sig_scale" min="50" max="150" value="100" step="1" oninput="updateSigTransform('main')">
               <span id="sig_scale_val">100%</span>
             </div>
             <div class="sig-adjust-row">
               <label for="sig_rotate">Rotate</label>
-              <input type="range" id="sig_rotate" min="-180" max="180" value="0" step="1" oninput="updateSigTransform()">
+              <input type="range" id="sig_rotate" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('main')">
               <span id="sig_rotate_val">0&deg;</span>
             </div>
             <button type="button" class="reset-sig-btn" onclick="resetSigTransform()">Reset to default</button>
@@ -278,6 +299,18 @@
         </div>
       </div>
 
+      <!-- CONDITIONAL: NON-LEAVE SERVICE / INSURANCE / ADVANCE FORMS -->
+      <div id="sec_service" class="section hidden-section">
+        <h2>4. Application Particulars</h2>
+        <p class="sub-hint" id="service_form_desc"></p>
+        <div class="grid">
+          <div class="form-group" id="svc_date1_wrap"><label id="lbl_svc_date1">Date</label><input type="date" id="svc_date1"></div>
+          <div class="form-group" id="svc_text1_wrap"><label id="lbl_svc_text1">Detail 1</label><input type="text" id="svc_text1"></div>
+          <div class="form-group" id="svc_text2_wrap"><label id="lbl_svc_text2">Detail 2</label><input type="text" id="svc_text2"></div>
+          <div class="form-group full-width" id="svc_textarea1_wrap"><label id="lbl_svc_textarea1">Additional Details</label><textarea id="svc_textarea1" rows="2"></textarea></div>
+        </div>
+      </div>
+
       <!-- METADATA (FORM 13) -->
       <div class="section" id="sec_form13meta">
         <h2>5. Additional Form Data</h2>
@@ -289,19 +322,34 @@
       </div>
 
       <div class="btn-group">
-        <button type="button" class="print-btn secondary-btn" onclick="toggleScreenPreview()">Preview Application Forms</button>
+        <button type="button" class="print-btn secondary-btn" onclick="openPreviewModal()">Preview Application Forms</button>
         <button type="button" class="print-btn" onclick="generatePDF()">Download / Print PDF</button>
       </div>
       <p class="privacy-note">All data stays in your browser on your device — nothing here is uploaded, stored, or sent anywhere.</p>
     </form>
-    <!-- ON-SCREEN PREVIEW DECK -->
-    <div id="screen-preview-deck">
-      <div style="text-align:center; color:white; margin-bottom:20px;">
-        <h3 style="margin:0;">Interactive Application Preview</h3>
-        <p style="font-size:0.85rem; color:#cbd5e1;">Review all generated pages and signature placements below before printing.</p>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay screen-only" id="preview_modal" onclick="if(event.target === this) closePreviewModal();">
+  <div class="modal-dialog" role="dialog" aria-modal="true" aria-label="Application preview">
+    <div class="modal-toolbar">
+      <h3>Application Preview</h3>
+      <div class="modal-sig-controls" id="modal_sig_controls" style="display:none;">
+        <div class="sig-adjust-row">
+          <label for="sig_scale_modal">Size</label>
+          <input type="range" id="sig_scale_modal" min="50" max="150" value="100" step="1" oninput="updateSigTransform('modal')">
+          <span id="sig_scale_val_modal">100%</span>
+        </div>
+        <div class="sig-adjust-row">
+          <label for="sig_rotate_modal">Rotate</label>
+          <input type="range" id="sig_rotate_modal" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('modal')">
+          <span id="sig_rotate_val_modal">0&deg;</span>
+        </div>
       </div>
-      <div id="preview-render-target"></div>
+      <button type="button" class="modal-close-btn" onclick="closePreviewModal()" aria-label="Close preview">&times;</button>
     </div>
+    <div class="modal-body" id="preview-render-target"></div>
   </div>
 </div>
 
@@ -495,6 +543,72 @@
     <div id="simple_body"></div>
   </div>
 
+  <!-- PAGE: GENERIC SERVICE / INSURANCE / ADVANCE APPLICATION LETTER -->
+  <div class="page hidden-print" id="print_service_letter">
+    <div class="page-title" id="service_letter_title">APPLICATION</div>
+    <div id="service_letter_body"></div>
+  </div>
+
+  <!-- PAGE: TRANSFER OF CHARGE — K.F.C. FORM No. 7 -->
+  <div class="page hidden-print" id="print_toc7">
+    <div class="page-title">K.F.C. FORM No. 7<br><span style="font-size:10pt; font-weight:normal;">[See Chapter IV, Article 81(a)] &mdash; REPORT OF TRANSFER OF CHARGE</span></div>
+    <table class="form-table">
+      <tr><td>1. Office</td><td>:</td><td><span class="out-office"></span></td></tr>
+      <tr><td>2. Post</td><td>:</td><td><span class="out-designation"></span></td></tr>
+      <tr><td>3. Date &amp; time of transfer of charge</td><td>:</td><td><span class="out-svc_date1"></span></td></tr>
+      <tr><td>4. Name &amp; designation of applicant (one of the two officers effecting the transfer)</td><td>:</td><td><span class="out-name"></span>, <span class="out-designation"></span></td></tr>
+      <tr><td>5. Name &amp; designation of the other officer</td><td>:</td><td><span class="out-svc_text1"></span></td></tr>
+      <tr><td>6. Remarks</td><td>:</td><td><span class="out-svc_textarea1"></span></td></tr>
+    </table>
+    <div class="mb-4 text-justify">Certified that charge of the above post was made over and received between the officers named above on the date and time shown, and that this report is submitted in terms of Article 81(a), Chapter IV, K.F.C.</div>
+    <div class="flex-space mt-8">
+      <div class="text-center">Signature of Relieved Officer<div class="sig-slot"></div></div>
+      <div class="text-center">Signature of Relieving Officer<div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div></div>
+    </div>
+    <div class="clear"></div>
+    <div class="mt-8 text-center">Countersigned:<br><br><br>Signature &amp; Designation of Next Superior Officer</div>
+  </div>
+
+  <!-- PAGE: TRANSFER OF CHARGE — K.F.C. FORM No. 8 / 8A -->
+  <div class="page hidden-print" id="print_toc8">
+    <div class="page-title">K.F.C. FORM No. 8 / 8A<br><span style="font-size:10pt; font-weight:normal;">ACKNOWLEDGMENT OF PERMANENT ADVANCE &amp; STOCK ON TRANSFER OF CHARGE</span></div>
+    <div class="mb-4 text-justify">
+      I, <strong><span class="out-name"></span></strong>, <span class="out-designation"></span>, <span class="out-office"></span>, hereby acknowledge having taken charge, on <strong><span class="out-svc_date1"></span></strong>, from <strong><span class="out-svc_text1"></span></strong>, of the following, as verified and found correct:
+    </div>
+    <table class="form-table">
+      <tr><td>(a) Permanent Advance / Stock particulars handed over</td><td>:</td><td><span class="out-svc_text2"></span></td></tr>
+      <tr><td>(b) Additional remarks</td><td>:</td><td><span class="out-svc_textarea1"></span></td></tr>
+    </table>
+    <div class="mb-4 text-justify">This acknowledgment is furnished for attachment to my first salary bill in the new post, as required under the Kerala Financial Code.</div>
+    <div class="signature-block">
+      Signature of Relieving Officer<br>
+      <div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div>
+      (<span class="out-name bold"></span>)
+    </div>
+    <div class="clear"></div>
+  </div>
+
+  <!-- PAGE: INDEMNITY BOND — K.F.C. FORM No. 9 -->
+  <div class="page hidden-print" id="print_indemnity">
+    <div class="page-title">K.F.C. FORM No. 9<br><span style="font-size:10pt; font-weight:normal;">INDEMNITY BOND</span><br><span style="font-size:9pt; font-weight:normal;">(To receive pay, leave salary and other emoluments due to a deceased Government servant)</span></div>
+    <div class="mb-4 text-justify">
+      KNOW ALL MEN BY THESE PRESENTS that I/We, <strong><span class="out-svc_text1"></span></strong>, do hereby bind myself/ourselves to indemnify the Governor of Kerala against all claims of whatsoever nature that may hereafter be made against the Government in respect of the pay, leave salary, and other emoluments due to late <strong><span class="out-name"></span></strong>, who was working as <strong><span class="out-designation"></span></strong> at <strong><span class="out-office"></span></strong> (PEN: <span class="out-pen"></span>), and who died on <strong><span class="out-svc_date1"></span></strong>, amounting to <strong>Rs. <span class="out-svc_text2"></span></strong>, which sum I/we am/are claiming as legal heir(s)/nominee(s) of the deceased.
+    </div>
+    <div class="mb-4 text-justify"><span class="out-svc_textarea1"></span></div>
+    <div class="mb-4 text-justify">IN WITNESS WHEREOF I/We have set my/our hand(s) this <span class="out-app_date"></span> at <span class="out-place"></span>.</div>
+    <div class="signature-block">
+      Signature(s) of Claimant(s)<br>
+      <div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div>
+    </div>
+    <div class="clear"></div>
+    <div class="mt-8">
+      <div class="bold mb-2">Witnesses:</div>
+      1. Name &amp; Address: ____________________________________________<br><br>
+      2. Name &amp; Address: ____________________________________________
+    </div>
+    <div class="mb-4 text-justify mt-8" style="font-size:10pt; font-style:italic;">Note: This bond ordinarily needs to be executed on non-judicial stamp paper of the value prescribed by the Treasury/DDO, and may require a surety depending on the amount claimed. Please confirm the current requirement before execution.</div>
+  </div>
+
 </div>
 <script>
   // ---------------------------------------------------------------------
@@ -507,8 +621,25 @@
   //   simple      -> a single stand-alone application letter (no Form 13,
   //                  since Casual/Special Casual Leave is not treated as
   //                  "leave" under the rules)
+  //   letter      -> a single stand-alone service/insurance/advance letter
+  //   toc         -> Transfer of Charge bundle (K.F.C. Form 7 + 8/8A)
+  //   indemnity   -> Indemnity Bond (K.F.C. Form 9)
+  //
+  // The non-leave types below (letter/toc/indemnity families) were added
+  // after checking, one by one, whether each is still a manual/paper
+  // process or has moved to a SPARK/Viswas online module. GPF and GIS were
+  // deliberately left OUT of this generator because both are now handled
+  // through dedicated online modules (SPARK for GPF, the "Viswas" portal
+  // for GIS) where manual paper applications are no longer accepted for at
+  // least some of their core transactions — generating a paper form for
+  // those would be actively unhelpful. SLI, Jeevan Raksha (renamed from
+  // GPAIS), FBS, Transfer of Charge, Probation Declaration, Pay Revision/
+  // Higher-Grade Option, NPS registration, HBA, Motor Vehicle Advance, and
+  // the deceased-employee Indemnity Bond all still rely on a manually
+  // submitted application as far as could be verified.
   // ---------------------------------------------------------------------
-  const GROUP_ORDER = ['General Leave (Form 13)', 'Leave Without Allowance (LWA)', 'Family & Medical Leave', 'Casual & Special Leave'];
+  const GROUP_ORDER = ['General Leave (Form 13)', 'Leave Without Allowance (LWA)', 'Family & Medical Leave', 'Casual & Special Leave',
+    'Insurance & Accident Benefits', 'Service & Establishment Matters', 'Advances & Loans', 'Estate / Death Benefit Claims'];
 
   const LEAVE_TYPES = {
     el:          { label: 'Earned Leave',                    group: GROUP_ORDER[0], rule: 'Rule 78, Part I, K.S.R.',                nature: 'Earned Leave', family: 'general' },
@@ -531,7 +662,54 @@
     cl:           { label: 'Casual Leave',                    group: GROUP_ORDER[3], rule: 'Appendix VII, Part I, K.S.R.',             nature: 'Casual Leave', family: 'simple' },
     scl:          { label: 'Special Casual Leave',            group: GROUP_ORDER[3], rule: 'Appendix VII, Section II, Part I, K.S.R.', nature: 'Special Casual Leave', family: 'simple' },
     compensation: { label: 'Compensation Leave',              group: GROUP_ORDER[3], rule: 'Appendix VII, Section III, Part I, K.S.R.', nature: 'Compensation Leave', family: 'simple' },
+
+    sli_proposal:  { label: 'SLI — New Policy Proposal',      group: GROUP_ORDER[4], rule: 'Kerala State Insurance Department', family: 'letter',
+      desc: 'Submitted with the first premium at your District Insurance Office.', hint: 'Typically your District Insurance Officer.',
+      svc: { t1: 'Sum Assured Proposed (₹)', t2: 'Nominee Name & Relationship', ta1: 'Existing SLI policy numbers, if any' } },
+    sli_nomination:{ label: 'SLI — Change of Nomination',     group: GROUP_ORDER[4], rule: 'Kerala State Insurance Department', family: 'letter',
+      desc: 'Fill in your own details above, then the new nomination below.', hint: 'Typically your District Insurance Officer.',
+      svc: { t1: 'Policy Number', t2: 'New Nominee(s), Relationship & Share', ta1: 'Reason for change' } },
+    sli_loan:      { label: 'SLI — Loan Against Policy',      group: GROUP_ORDER[4], rule: 'Kerala State Insurance Department', family: 'letter',
+      desc: 'Fill in your own details above, then the policy and loan details below.', hint: 'Typically your District Insurance Officer.',
+      svc: { t1: 'Policy Number', t2: 'Loan Amount Required (₹)', ta1: 'Purpose of loan' } },
+    sli_claim:     { label: 'SLI — Claim (Maturity / Death)', group: GROUP_ORDER[4], rule: 'Kerala State Insurance Department', family: 'letter',
+      desc: "Fill in the policyholder's details above, then the claim details below.", hint: 'Typically your District Insurance Officer.',
+      svc: { d1: 'Date of Maturity / Date of Death', t1: 'Policy Number', t2: 'Claim Amount (₹)', ta1: 'Additional details' } },
+    jr_nomination: { label: 'Jeevan Raksha (GPAIS) — Nomination', group: GROUP_ORDER[4], rule: 'Kerala State Insurance Department (formerly GPAIS)', family: 'letter',
+      desc: 'A fresh nomination is required following the 2025 renaming to Jeevan Raksha.', hint: 'Typically your District Insurance Officer / Head of Office.',
+      svc: { t1: 'Nominee Name & Relationship', t2: 'Share of each nominee, if more than one', ta1: 'Additional nominees / remarks' } },
+    jr_claim:      { label: 'Jeevan Raksha (GPAIS) — Claim',   group: GROUP_ORDER[4], rule: 'Kerala State Insurance Department (formerly GPAIS)', family: 'letter',
+      desc: "Fill in the employee's details above, then the accident/death details below.", hint: 'Typically your District Insurance Officer / Head of Office.',
+      svc: { d1: 'Date of Death / Accident', t1: 'Cause (Natural Death / Accident)', t2: 'Claim Amount (₹)', ta1: 'Circumstances / additional details' } },
+    fbs_closure:   { label: 'Family Benefit Scheme — Closure / Claim', group: GROUP_ORDER[4], rule: 'Family Benefit Scheme (FBS)', family: 'letter',
+      desc: "Fill in the deceased employee's details above, then the claim details below.", hint: 'Typically your Head of Office / DDO.',
+      svc: { d1: 'Date of Death', t1: 'FBS Account Number', t2: 'Relationship of claimant to deceased', ta1: 'Additional details' } },
+
+    toc:           { label: 'Transfer of Charge Report',      group: GROUP_ORDER[5], rule: 'Article 81(a), Chapter IV, K.F.C. (Form 7 & Form 8/8A)', family: 'toc',
+      desc: 'Fill in your own details above (either officer), then the other officer and handover particulars below.', hint: 'Typically the next superior officer, for countersignature.',
+      svc: { d1: 'Date & time of handover', t1: 'Name & designation of the other officer', t2: 'Permanent advance (₹) & stock particulars handed over', ta1: 'Additional remarks' } },
+    probation:     { label: 'Probation Declaration',          group: GROUP_ORDER[5], rule: 'Kerala Service Rules / Special Rules', family: 'letter',
+      desc: 'Fill in your own details above, then your probation particulars below.', hint: 'Typically your Head of Department.',
+      svc: { d1: 'Date of commencement of probation', t1: 'Post in which probation is declared', t2: 'Period of interruption, if any', ta1: 'Additional details' } },
+    pay_option:    { label: 'Pay Revision / Higher Grade Option', group: GROUP_ORDER[5], rule: 'Pay Revision Rules / Time Bound Higher Grade Scheme', family: 'letter',
+      desc: 'Fill in your own details above, then the option particulars below.', hint: 'Typically your DDO / Head of Office.',
+      svc: { d1: 'Date from which option is exercised', t1: 'Occasion (Pay Revision / Higher Grade / Promotion)', t2: 'Present pay & scale', ta1: 'Reason / remarks' } },
+    nps_reg:       { label: 'NPS Subscriber Registration',    group: GROUP_ORDER[5], rule: 'National Pension System (for those who joined on/after 01.04.2013)', family: 'letter',
+      desc: 'Fill in your own details above, then your registration particulars below. Your DDO still needs to certify and forward this along with the official subscriber registration form.', hint: 'Typically your DDO.',
+      svc: { d1: 'Date of joining service', t1: 'Bank account number & branch (for NPS)', t2: 'Nominee name & relationship', ta1: 'Additional details' } },
+
+    hba:           { label: 'House Building Advance (HBA) Application', group: GROUP_ORDER[6], rule: 'Kerala Financial Code, Form No. 29', family: 'letter',
+      desc: 'Fill in your own details above, then the advance particulars below.', hint: 'Typically your Head of Department / Finance (HBA) Department.',
+      svc: { t1: 'Purpose (construction / purchase / extension / repair / site + house)', t2: 'Estimated cost & advance amount required (₹)', ta1: 'Property / site details' } },
+    mva:           { label: 'Motor Vehicle Advance Application', group: GROUP_ORDER[6], rule: 'Kerala Financial Code (Motor Vehicle Advance scheme)', family: 'letter',
+      desc: 'Covers cycles, two-wheelers and cars, conventional or electric, under the current scheme.', hint: 'Typically your Head of Department.',
+      svc: { t1: 'Type of vehicle (cycle / two-wheeler / car; conventional or electric)', t2: 'Estimated cost & advance amount required (₹)', ta1: 'Additional details' } },
+
+    indemnity:     { label: "Indemnity Bond — Deceased Employee's Dues", group: GROUP_ORDER[7], rule: 'Kerala Financial Code, Form No. 9', family: 'indemnity',
+      desc: "Fill in the DECEASED employee's own details above (name, PEN, designation, office). Your own details as claimant go in the fields below.", hint: 'Typically the Treasury Officer / DDO.',
+      svc: { d1: 'Date of death of employee', t1: 'Name & relationship of claimant(s) to deceased', t2: 'Amount claimed (₹)', ta1: "Claimant's address / surety details, if required" } },
   };
+
 
   const REASON_DEFAULTS = {
     el: 'Private affairs',
@@ -625,14 +803,23 @@
     const type = document.getElementById('leave_type').value;
     const t = LEAVE_TYPES[type];
     const family = t ? t.family : '';
+    const isNonLeaveService = (family === 'letter' || family === 'toc' || family === 'indemnity');
 
     document.getElementById('sec_lwa').classList.toggle('hidden-section', family !== 'lwa');
     document.getElementById('sec_family').classList.toggle('hidden-section', family !== 'familyleave');
     document.getElementById('sec_scl').classList.toggle('hidden-section', type !== 'scl');
     document.getElementById('sec_compensation').classList.toggle('hidden-section', type !== 'compensation');
-    document.getElementById('sec_form13meta').classList.toggle('hidden-section', family === 'simple');
+    document.getElementById('sec_service').classList.toggle('hidden-section', !isNonLeaveService);
+    document.getElementById('sec_form13meta').classList.toggle('hidden-section', family === 'simple' || isNonLeaveService);
+    // the leave-specific date engine/ground/address only make sense for
+    // actual leave applications, not the non-leave service/insurance/advance forms
+    document.getElementById('leave_routing_fields').classList.toggle('hidden-section', isNonLeaveService);
 
     document.getElementById('rule_hint').textContent = t ? ('Governed by ' + t.rule + (family === 'lwa' ? ' — capped at 5 years across the entire service, subject to eligibility.' : '')) : '';
+
+    const controllingHint = document.getElementById('controlling_hint');
+    if (t && t.hint) { controllingHint.textContent = t.hint; controllingHint.style.display = 'block'; }
+    else { controllingHint.style.display = 'none'; }
 
     if (family === 'lwa') {
       const lwaLabels = {
@@ -660,6 +847,20 @@
       const wrap3 = document.getElementById('field_fam3_wrap');
       if (l[2]) { wrap3.classList.remove('hidden-section'); document.getElementById('lbl_fam3').textContent = l[2]; }
       else { wrap3.classList.add('hidden-section'); }
+    }
+
+    if (isNonLeaveService && t.svc) {
+      document.getElementById('service_form_desc').textContent = t.desc || '';
+      const svc = t.svc;
+      const showField = (wrapId, lblId, text) => {
+        const wrap = document.getElementById(wrapId);
+        if (text) { wrap.classList.remove('hidden-section'); document.getElementById(lblId).textContent = text; }
+        else { wrap.classList.add('hidden-section'); }
+      };
+      showField('svc_date1_wrap', 'lbl_svc_date1', svc.d1);
+      showField('svc_text1_wrap', 'lbl_svc_text1', svc.t1);
+      showField('svc_text2_wrap', 'lbl_svc_text2', svc.t2);
+      showField('svc_textarea1_wrap', 'lbl_svc_textarea1', svc.ta1);
     }
 
     if (type === 'scl') {
@@ -771,25 +972,33 @@
   }
 
   // ---------------------------------------------------------------------
-  // Signature size & rotation controls. Both are applied as a single CSS
-  // transform driven by two custom properties on :root, so every signature
-  // instance across the document — the small capture-preview thumbnail,
-  // every print page, and every cloned page in the on-screen Preview Deck —
-  // updates together without having to touch each <img> individually.
+  // Signature size & rotation controls. There are two synced sets of
+  // sliders — one in the Digital Signature section, one in the preview
+  // modal's toolbar — both driving the same two CSS custom properties on
+  // :root, so every signature instance across the document (capture
+  // thumbnail, every print page, every cloned page in the preview modal)
+  // updates together, and adjusting from either location keeps both
+  // slider pairs in sync.
   // ---------------------------------------------------------------------
-  function updateSigTransform() {
-    const scale = document.getElementById('sig_scale').value;
-    const rotate = document.getElementById('sig_rotate').value;
+  function updateSigTransform(source) {
+    const scaleId = source === 'modal' ? 'sig_scale_modal' : 'sig_scale';
+    const rotateId = source === 'modal' ? 'sig_rotate_modal' : 'sig_rotate';
+    const scale = document.getElementById(scaleId).value;
+    const rotate = document.getElementById(rotateId).value;
+
     document.documentElement.style.setProperty('--sig-scale', scale / 100);
     document.documentElement.style.setProperty('--sig-rotate', rotate + 'deg');
-    document.getElementById('sig_scale_val').textContent = scale + '%';
-    document.getElementById('sig_rotate_val').textContent = rotate + '\u00b0';
+
+    ['sig_scale', 'sig_scale_modal'].forEach(id => { const el = document.getElementById(id); if (el) el.value = scale; });
+    ['sig_rotate', 'sig_rotate_modal'].forEach(id => { const el = document.getElementById(id); if (el) el.value = rotate; });
+    ['sig_scale_val', 'sig_scale_val_modal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = scale + '%'; });
+    ['sig_rotate_val', 'sig_rotate_val_modal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = rotate + '\u00b0'; });
   }
 
   function resetSigTransform() {
-    document.getElementById('sig_scale').value = 100;
-    document.getElementById('sig_rotate').value = 0;
-    updateSigTransform();
+    ['sig_scale', 'sig_scale_modal'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 100; });
+    ['sig_rotate', 'sig_rotate_modal'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 0; });
+    updateSigTransform('main');
   }
 
   // Format date to DD/MM/YYYY
@@ -888,6 +1097,73 @@
       <div class="text-right">Signature (with date) and Designation</div>`;
   }
 
+  function buildServiceLetterTitle(type) {
+    const map = {
+      sli_proposal: 'Proposal for State Life Insurance Policy',
+      sli_nomination: 'Application for Change of Nomination — SLI',
+      sli_loan: 'Application for Loan Against SLI Policy',
+      sli_claim: 'Claim Application — SLI Policy',
+      jr_nomination: 'Nomination — Jeevan Raksha (GPAIS)',
+      jr_claim: 'Claim Application — Jeevan Raksha (GPAIS)',
+      fbs_closure: 'Closure / Claim Application — Family Benefit Scheme',
+      probation: 'Declaration of Probation',
+      pay_option: 'Option for Pay Revision / Higher Grade',
+      nps_reg: 'Application for NPS Subscriber Registration',
+      hba: 'Application for House Building Advance',
+      mva: 'Application for Motor Vehicle Advance',
+    };
+    return map[type] || 'Application';
+  }
+
+  function buildServiceLetterBody(type) {
+    const name = val('name'), pen = val('pen'), designation = val('designation'), office = val('office');
+    const controlling = val('controlling'), place = val('place'), appdate = fval('app_date');
+    const d1 = fval('svc_date1'), t1 = val('svc_text1'), t2 = val('svc_text2'), ta1 = val('svc_textarea1');
+
+    let para = '';
+    if (type === 'sli_proposal') {
+      para = `I request that I may be enrolled as a policyholder under the State Life Insurance Scheme, with a Sum Assured of <strong>${t1 || '____________'}</strong>. I nominate <strong>${t2 || '____________'}</strong> to receive the benefits under this policy in the event of my death.${ta1 ? ` I already hold the following SLI polic(y/ies): ${ta1}.` : ''} I enclose the proposal form and the first premium receipt/challan.`;
+    } else if (type === 'sli_nomination') {
+      para = `I request that my nomination under SLI Policy No. <strong>${t1 || '____________'}</strong> be changed. My new nomination is: <strong>${t2 || '____________'}</strong>.${ta1 ? ` Reason for this change: ${ta1}.` : ''}`;
+    } else if (type === 'sli_loan') {
+      para = `I request that a loan of <strong>Rs. ${t2 || '____________'}</strong> be sanctioned against my SLI Policy No. <strong>${t1 || '____________'}</strong>, for the purpose of ${ta1 || 'the reason stated below'}.`;
+    } else if (type === 'sli_claim') {
+      para = `I submit this claim in respect of SLI Policy No. <strong>${t1 || '____________'}</strong>, on account of the event dated <strong>${d1}</strong>, for an amount of <strong>Rs. ${t2 || '____________'}</strong>.${ta1 ? ` Additional details: ${ta1}.` : ''} I enclose the policy document and supporting documents.`;
+    } else if (type === 'jr_nomination') {
+      para = `Consequent to the revision of the Group Personal Accident Insurance Scheme as "Jeevan Raksha", I submit my nomination as follows: <strong>${t1 || '____________'}</strong>.${t2 ? ` Share of each nominee: ${t2}.` : ''}${ta1 ? ` ${ta1}` : ''}`;
+    } else if (type === 'jr_claim') {
+      para = `I submit this claim under the Jeevan Raksha (Group Personal Accident Insurance) Scheme, on account of <strong>${t1 || 'the event'}</strong> dated <strong>${d1}</strong>, for an amount of <strong>Rs. ${t2 || '____________'}</strong>.${ta1 ? ` Circumstances: ${ta1}.` : ''}`;
+    } else if (type === 'fbs_closure') {
+      para = `I submit this application for closure/claim under the Family Benefit Scheme, FBS Account No. <strong>${t1 || '____________'}</strong>, on account of the death of the subscriber on <strong>${d1}</strong>. I am the <strong>${t2 || '____________'}</strong> of the deceased.${ta1 ? ` Additional details: ${ta1}.` : ''}`;
+    } else if (type === 'probation') {
+      para = `I declare that I have satisfactorily completed my period of probation in the post of <strong>${t1 || '____________'}</strong>, commencing from <strong>${d1}</strong>.${t2 ? ` Period of interruption, if any: ${t2}.` : ''} I request that my probation in this post be declared as satisfactorily completed.${ta1 ? ` ${ta1}` : ''}`;
+    } else if (type === 'pay_option') {
+      para = `I hereby exercise my option to have the benefit of <strong>${t1 || 'the pay revision / higher grade'}</strong> take effect from <strong>${d1}</strong>. My present pay and scale is <strong>${t2 || '____________'}</strong>.${ta1 ? ` Reason/remarks: ${ta1}.` : ''} I understand that this option, once exercised, is final and binding.`;
+    } else if (type === 'nps_reg') {
+      para = `I request that I be registered as a subscriber under the National Pension System (NPS), having joined service on <strong>${d1}</strong>. My bank account for NPS purposes is <strong>${t1 || '____________'}</strong>, and I nominate <strong>${t2 || '____________'}</strong> as my nominee.${ta1 ? ` ${ta1}` : ''} I enclose the duly filled subscriber registration form for certification and forwarding.`;
+    } else if (type === 'hba') {
+      para = `I request that a House Building Advance be sanctioned to me for the purpose of <strong>${t1 || '____________'}</strong>.${t2 ? ` Estimated cost and advance amount required: ${t2}.` : ''}${ta1 ? ` Property/site details: ${ta1}.` : ''} I enclose the documents required under the House Building Advance rules.`;
+    } else if (type === 'mva') {
+      para = `I request that a Motor Vehicle Advance be sanctioned to me for the purchase of <strong>${t1 || '____________'}</strong>.${t2 ? ` Estimated cost and advance amount required: ${t2}.` : ''}${ta1 ? ` ${ta1}` : ''}`;
+    }
+
+    return `
+      <div class="text-right mb-4">Place: <strong>${place}</strong><br>Date: <strong>${appdate}</strong></div>
+      <div class="mb-4">From<br><br><strong>${name}</strong> (PEN: ${pen || 'N/A'})<br>${designation}<br>${office}</div>
+      <div class="mb-4">To<br><br><strong>${controlling}</strong><br>${office}</div>
+      <div class="mb-4">Respected Sir/Madam,</div>
+      <div class="mb-4" style="padding-left:40px;"><strong>Sub:</strong> ${buildServiceLetterTitle(type)} — reg.</div>
+      <div class="mb-4 text-justify">${para}</div>
+      <div class="signature-block">Yours faithfully,<br>
+        <div class="sig-slot"><img class="sig-img-target" style="display:none;" alt="Signature"></div>
+        (<strong>${name}</strong>)</div>
+      <div class="clear"></div>
+      <hr>
+      <div class="mb-4"><strong>Remarks / Recommendation:</strong></div>
+      <div style="height:60px;"></div>
+      <div class="text-right">Signature (with date) and Designation</div>`;
+  }
+
   // ---------------------------------------------------------------------
   // Show only the print pages that belong to the current type's family,
   // and make sure the actual last visible page doesn't force a trailing
@@ -904,6 +1180,10 @@
     set('print_lwa_dec', family === 'lwa');
     set('print_family_dec', family === 'familyleave');
     set('print_simple', family === 'simple');
+    set('print_service_letter', family === 'letter');
+    set('print_toc7', family === 'toc');
+    set('print_toc8', family === 'toc');
+    set('print_indemnity', family === 'indemnity');
 
     const pages = Array.from(document.querySelectorAll('.page'));
     pages.forEach(p => { p.style.pageBreakAfter = ''; });
@@ -920,7 +1200,7 @@
     const family = t.family || '';
 
     const nilFields = ['allowances', 'holidays'];
-    const naFields = ['lwa_country', 'lwa_employer', 'probation', 'last_leave'];
+    const naFields = ['lwa_country', 'lwa_employer', 'probation', 'last_leave', 'svc_text1', 'svc_text2', 'svc_textarea1'];
     const plainFields = ['name', 'pen', 'designation', 'emp_type', 'office', 'controlling', 'pay', 'address', 'duration_str', 'place', 'reason'];
 
     [...plainFields, ...nilFields, ...naFields].forEach(field => {
@@ -933,11 +1213,11 @@
       document.querySelectorAll('.out-' + field).forEach(node => node.textContent = value);
     });
 
-    const dateFields = ['dob', 'entry', 'start', 'end', 'app_date'];
+    const dateFields = ['dob', 'entry', 'start', 'end', 'app_date', 'svc_date1'];
     dateFields.forEach(field => {
       const el = document.getElementById(field);
       const value = el ? formatDate(el.value) : '';
-      document.querySelectorAll('.out-' + field).forEach(node => node.textContent = value);
+      document.querySelectorAll('.out-' + field).forEach(node => node.textContent = value || 'N/A');
     });
 
     document.querySelectorAll('.out-leave_name').forEach(node => node.textContent = t.nature || t.label || 'Leave');
@@ -963,39 +1243,58 @@
       document.getElementById('simple_title').textContent = (t.label || 'APPLICATION').toUpperCase();
       document.getElementById('simple_body').innerHTML = buildSimpleBody(type);
     }
+    if (family === 'letter') {
+      document.getElementById('service_letter_title').textContent = buildServiceLetterTitle(type);
+      document.getElementById('service_letter_body').innerHTML = buildServiceLetterBody(type);
+    }
   }
 
   // ---------------------------------------------------------------------
-  // Screen Deck Preview Toggle (unchanged logic — it already only clones
-  // pages without .hidden-print, which now works across all 17 types)
+  // Preview Modal — clones every non-hidden .page into the modal body, the
+  // same way the old inline deck did, then shows the overlay. The modal's
+  // own signature controls (in its toolbar) only appear once a signature
+  // has actually been captured.
   // ---------------------------------------------------------------------
-  function toggleScreenPreview() {
+  function openPreviewModal() {
     const form = document.getElementById('leaveForm');
     if (!form.checkValidity()) { form.reportValidity(); return; }
 
     syncFormData();
 
-    const deck = document.getElementById('screen-preview-deck');
     const target = document.getElementById('preview-render-target');
-
     target.innerHTML = '';
     const activePages = document.querySelectorAll('#document-preview .page:not(.hidden-print)');
-
     activePages.forEach(page => {
       const card = document.createElement('div');
       card.className = 'page-preview-card';
       card.innerHTML = page.innerHTML;
       target.appendChild(card);
     });
-    deck.style.display = 'block';
-    deck.scrollIntoView({ behavior: 'smooth' });
+
+    const hasSignature = document.getElementById('sig_preview_container').style.display !== 'none';
+    document.getElementById('modal_sig_controls').style.display = hasSignature ? 'flex' : 'none';
+
+    document.getElementById('preview_modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
+
+  function closePreviewModal() {
+    document.getElementById('preview_modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('preview_modal').classList.contains('open')) {
+      closePreviewModal();
+    }
+  });
 
   // Generate PDF Logic
   function generatePDF() {
     const form = document.getElementById('leaveForm');
     if (!form.checkValidity()) { form.reportValidity(); return; }
 
+    closePreviewModal();
     syncFormData();
     setTimeout(() => { window.print(); }, 150);
   }
