@@ -141,15 +141,41 @@
     .reset-sig-btn { align-self: flex-start; background: none; border: 1.5px solid var(--line); color: var(--text-soft); font-size: .78rem; padding: 6px 13px; border-radius: 20px; cursor: pointer; transition: all .15s ease; }
     .reset-sig-btn:hover { background: var(--surface); border-color: var(--accent); color: var(--accent-deep); }
 
-    /* type-select highlight block */
-    .type-select-block { background: linear-gradient(180deg, var(--accent-soft), var(--surface) 70%); border: 1.5px solid #C7E2DB; }
-    .type-select-block label { color: var(--accent-deep); }
-    .type-select-block select#leave_type { font-size: 1.02rem; font-weight: 600; padding: 13px 14px; }
+    .visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    /* Dashboard: category-grouped application cards */
+    .dashboard-section { background: linear-gradient(180deg, var(--accent-soft), var(--surface) 55%); border: 1.5px solid #C7E2DB; }
+    .category-block { margin-bottom: 24px; }
+    .category-block:last-child { margin-bottom: 0; }
+    .category-block h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: .96rem; color: var(--ink); margin: 0 0 12px; display: flex; align-items: center; gap: 9px; }
+    .category-block h3::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--cat-color, var(--accent)); flex-shrink: 0; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+    .app-type-card { text-align: left; cursor: pointer; background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-card); transition: transform .13s ease, box-shadow .13s ease, border-color .13s ease; font-family: inherit; }
+    .app-type-card:hover, .app-type-card:focus-visible { border-color: var(--cat-color, var(--accent)); transform: translateY(-2px); box-shadow: var(--shadow-card-hover); outline: none; }
+    .app-type-card .card-name { display: block; font-weight: 600; font-size: .93rem; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
+    .app-type-card .card-rule { display: block; font-family: "IBM Plex Mono", monospace; font-size: .68rem; color: var(--text-soft); line-height: 1.4; }
     .category-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; background: var(--text-soft); vertical-align: middle; }
+
+    /* Form Modal: sections inside reuse .section/h2 markup verbatim (so no
+       HTML had to be rewritten to move them here) but read as sub-sections
+       of one dialog rather than standalone dashboard cards. */
+    .form-modal-dialog { background: var(--surface); max-width: 760px; }
+    .form-modal-dialog .modal-toolbar { background: var(--ink); }
+    .modal-toolbar-title h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 0; }
+    .modal-toolbar-title .rule-hint { margin-top: 4px; color: #CFE4DE; font-size: .78rem; }
+    .modal-toolbar-title .rule-hint #rule_hint { color: #CFE4DE; }
+    .form-modal-dialog .modal-body { padding: 28px 30px 30px; }
+    .form-modal-dialog .modal-body .section { box-shadow: none; border: none; border-radius: 0; padding: 22px 0; margin: 0; background: transparent; }
+    .form-modal-dialog .modal-body .section:first-of-type { padding-top: 0; }
+    .form-modal-dialog .modal-body .section:not(:first-of-type) { border-top: 1px solid var(--line); }
+    .form-modal-dialog .modal-body .step-badge { display: none; }
+    .form-modal-dialog .modal-body h2 { border-bottom: none; padding-bottom: 0; margin-bottom: 16px; font-size: 1.02rem; }
+    @media (max-width: 720px) { .form-modal-dialog .modal-body { padding: 20px; } }
 
     /* Preview Modal — the page cards inside are sized and padded to mirror
        the @page print margins exactly, so what you see here is what prints. */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+    #preview_modal { z-index: 1100; }
     .modal-overlay.open { display: flex; }
     .modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); margin-bottom: 30px; }
     .modal-toolbar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 16px 22px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
@@ -211,20 +237,10 @@
     </div>
     <form id="leaveForm" onsubmit="event.preventDefault();">
 
-      <!-- LEAVE TYPE -->
-      <div class="section type-select-block">
-        <div class="form-group full-width">
-          <label class="required">Select Application Type</label>
-          <select id="leave_type" required onchange="toggleSections()">
-            <option value="" disabled selected>-- Select Application Type --</option>
-          </select>
-          <div class="rule-hint"><span class="category-dot" id="category_dot"></span><span id="rule_hint"></span></div>
-        </div>
-      </div>
-
       <!-- EMPLOYEE DETAILS -->
       <div class="section">
         <h2><span class="step-badge">1</span> Employee Profile</h2>
+        <p class="sub-hint">Fill this in once — it is reused for every application you generate below.</p>
         <div class="grid">
           <div class="form-group"><label class="required">Full Name</label><input type="text" id="name" required></div>
           <div class="form-group"><label class="required">PEN Number</label><input type="text" id="pen" required></div>
@@ -240,7 +256,64 @@
         </div>
       </div>
 
-      <!-- SMART DATE CALCULATOR -->
+      <!-- DIGITAL SIGNATURE CAPTURE ENGINE -->
+      <div class="section">
+        <h2><span class="step-badge">2</span> Digital Signature (Auto Background Isolation)</h2>
+        <div class="form-group full-width">
+          <label>Upload Photo / Scan of Signature</label>
+          <input type="file" id="sig_upload" accept="image/*" onchange="processSignatureUpload(this)">
+          <div class="help-text">Upload any snapshot of your signature on paper. The app isolates the ink, strips the background, and places it above signature lines across all generated pages. Everything happens in your browser — the image is never uploaded anywhere. Note: many offices still require a wet-ink signature on the printed copy, so check before treating this as sufficient on its own.</div>
+        </div>
+        <div class="sig-preview-box" id="sig_preview_container" style="display:none;">
+          <div>
+            <span style="font-size:0.85rem; font-weight:600; color:#334155; display:block; margin-bottom:8px;">Captured Signature:</span>
+            <div class="sig-thumb-frame"><img id="sig_preview_img" src="" alt="Signature Preview"></div>
+          </div>
+          <div class="sig-adjust-box">
+            <div class="sig-adjust-row">
+              <label for="sig_scale">Size</label>
+              <input type="range" id="sig_scale" min="50" max="150" value="100" step="1" oninput="updateSigTransform('main')">
+              <span id="sig_scale_val">100%</span>
+            </div>
+            <div class="sig-adjust-row">
+              <label for="sig_rotate">Rotate</label>
+              <input type="range" id="sig_rotate" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('main')">
+              <span id="sig_rotate_val">0&deg;</span>
+            </div>
+            <button type="button" class="reset-sig-btn" onclick="resetSigTransform()">Reset to default</button>
+          </div>
+        </div>
+        <div class="help-text" id="sig_adjust_help" style="display:none; margin-top:8px;">Size and rotation apply to the signature everywhere it appears — check the live preview before printing, since a large increase can overlap nearby text.</div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="section dashboard-section">
+        <h2><span class="step-badge">3</span> Choose an Application</h2>
+        <p class="sub-hint">Click a card to open that application's fields, preview, and download together.</p>
+        <div id="dashboard_categories"></div>
+      </div>
+
+      <!-- Hidden but still fully functional: every existing type-selection
+           function (toggleSections, syncFormData, etc.) reads this select's
+           value, so dashboard cards just set it programmatically and call
+           the same functions rather than duplicating any logic. -->
+      <select id="leave_type" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+
+      <!-- FORM MODAL: opens when a dashboard card is clicked. Stays nested
+           inside <form> (even though it renders as a fixed overlay) so its
+           required fields still participate in leaveForm.checkValidity(). -->
+      <div class="modal-overlay" id="form_modal">
+        <div class="modal-dialog form-modal-dialog" role="dialog" aria-modal="true" aria-label="Application form">
+          <div class="modal-toolbar">
+            <div class="modal-toolbar-title">
+              <h3 id="form_modal_title">Application</h3>
+              <div class="rule-hint"><span class="category-dot" id="category_dot"></span><span id="rule_hint"></span></div>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="closeFormModal()" aria-label="Close">&times;</button>
+          </div>
+          <div class="modal-body">
+
+<!-- SMART DATE CALCULATOR -->
       <div class="section">
         <h2><span class="step-badge">2</span> Application Routing &amp; Dates</h2>
         <div id="leave_routing_fields">
@@ -274,36 +347,6 @@
             <div class="help-text" id="controlling_hint" style="display:none;"></div>
           </div>
         </div>
-      </div>
-
-      <!-- DIGITAL SIGNATURE CAPTURE ENGINE -->
-      <div class="section">
-        <h2><span class="step-badge">3</span> Digital Signature (Auto Background Isolation)</h2>
-        <div class="form-group full-width">
-          <label>Upload Photo / Scan of Signature</label>
-          <input type="file" id="sig_upload" accept="image/*" onchange="processSignatureUpload(this)">
-          <div class="help-text">Upload any snapshot of your signature on paper. The app isolates the ink, strips the background, and places it above signature lines across all generated pages. Everything happens in your browser — the image is never uploaded anywhere. Note: many offices still require a wet-ink signature on the printed copy, so check before treating this as sufficient on its own.</div>
-        </div>
-        <div class="sig-preview-box" id="sig_preview_container" style="display:none;">
-          <div>
-            <span style="font-size:0.85rem; font-weight:600; color:#334155; display:block; margin-bottom:8px;">Captured Signature:</span>
-            <div class="sig-thumb-frame"><img id="sig_preview_img" src="" alt="Signature Preview"></div>
-          </div>
-          <div class="sig-adjust-box">
-            <div class="sig-adjust-row">
-              <label for="sig_scale">Size</label>
-              <input type="range" id="sig_scale" min="50" max="150" value="100" step="1" oninput="updateSigTransform('main')">
-              <span id="sig_scale_val">100%</span>
-            </div>
-            <div class="sig-adjust-row">
-              <label for="sig_rotate">Rotate</label>
-              <input type="range" id="sig_rotate" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('main')">
-              <span id="sig_rotate_val">0&deg;</span>
-            </div>
-            <button type="button" class="reset-sig-btn" onclick="resetSigTransform()">Reset to default</button>
-          </div>
-        </div>
-        <div class="help-text" id="sig_adjust_help" style="display:none; margin-top:8px;">Size and rotation apply to the signature everywhere it appears — check the preview below before printing, since a large increase can overlap nearby text.</div>
       </div>
 
       <!-- CONDITIONAL: LWA DETAILS -->
@@ -397,7 +440,12 @@
         <button type="button" class="print-btn" onclick="generatePDF()">Download / Print PDF</button>
       </div>
       <p class="privacy-note">All data stays in your browser on your device — nothing here is uploaded, stored, or sent anywhere.</p>
-    </form>
+    
+          </div>
+        </div>
+      </div>
+
+</form>
   </div>
 </div>
 
@@ -685,6 +733,13 @@
   const GROUP_ORDER = ['General Leave (Form 13)', 'Leave Without Allowance (LWA)', 'Family & Medical Leave', 'Casual & Special Leave',
     'Insurance & Accident Benefits', 'Service & Establishment Matters', 'Advances & Loans', 'Estate / Death Benefit Claims'];
 
+  const CATEGORY_COLOR_VAR = {
+    'General Leave (Form 13)': '--cat-general', 'Leave Without Allowance (LWA)': '--cat-lwa',
+    'Family & Medical Leave': '--cat-family', 'Casual & Special Leave': '--cat-casual',
+    'Insurance & Accident Benefits': '--cat-insurance', 'Service & Establishment Matters': '--cat-service',
+    'Advances & Loans': '--cat-advance', 'Estate / Death Benefit Claims': '--cat-estate',
+  };
+
   const LEAVE_TYPES = {
     el:          { label: 'Earned Leave',                    group: GROUP_ORDER[0], rule: 'Rule 78, Part I, K.S.R.',                nature: 'Earned Leave', family: 'general' },
     hpl:         { label: 'Half Pay Leave',                   group: GROUP_ORDER[0], rule: 'Rule 83, Part I, K.S.R.',                nature: 'Half Pay Leave', family: 'general' },
@@ -815,6 +870,85 @@
     });
   }
 
+  // ---------------------------------------------------------------------
+  // Dashboard: one card per application type, grouped under its category.
+  // Clicking a card drives the same hidden <select> + toggleSections() that
+  // already power every type-specific field, so none of that logic had to
+  // be duplicated or rewritten for the new dashboard/modal navigation.
+  // ---------------------------------------------------------------------
+  function populateDashboard() {
+    const container = document.getElementById('dashboard_categories');
+    container.innerHTML = '';
+    GROUP_ORDER.forEach(groupName => {
+      const keys = Object.keys(LEAVE_TYPES).filter(k => LEAVE_TYPES[k].group === groupName);
+      if (!keys.length) return;
+      const block = document.createElement('div');
+      block.className = 'category-block';
+      if (CATEGORY_COLOR_VAR[groupName]) block.style.setProperty('--cat-color', 'var(' + CATEGORY_COLOR_VAR[groupName] + ')');
+      const h3 = document.createElement('h3');
+      h3.textContent = groupName;
+      block.appendChild(h3);
+      const grid = document.createElement('div');
+      grid.className = 'card-grid';
+      keys.forEach(key => {
+        const t = LEAVE_TYPES[key];
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'app-type-card';
+        card.innerHTML = '<span class="card-name">' + t.label + '</span><span class="card-rule">' + t.rule + '</span>';
+        card.addEventListener('click', () => selectAndOpen(key));
+        grid.appendChild(card);
+      });
+      block.appendChild(grid);
+      container.appendChild(block);
+    });
+  }
+
+  // Required Employee Profile fields must be valid BEFORE a form modal
+  // opens over them — otherwise a validation bubble for a field the modal
+  // is now covering would be confusing or invisible. Checking each field's
+  // own validity (rather than the whole form's) lets this run safely while
+  // the modal-only fields are still hidden/unfilled.
+  const PROFILE_REQUIRED_IDS = ['name', 'pen', 'designation', 'office', 'dob', 'entry', 'pay'];
+  function profileIsComplete() {
+    for (const id of PROFILE_REQUIRED_IDS) {
+      const el = document.getElementById(id);
+      if (!el.checkValidity()) {
+        el.reportValidity();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function selectAndOpen(key) {
+    if (!profileIsComplete()) return;
+    document.getElementById('leave_type').value = key;
+    toggleSections();
+    openFormModal();
+  }
+
+  function updateBodyScrollLock() {
+    const anyOpen = document.getElementById('form_modal').classList.contains('open') ||
+                    document.getElementById('preview_modal').classList.contains('open');
+    document.body.style.overflow = anyOpen ? 'hidden' : '';
+  }
+
+  function openFormModal() {
+    const type = document.getElementById('leave_type').value;
+    const t = LEAVE_TYPES[type];
+    if (!t) return;
+    document.getElementById('form_modal_title').textContent = t.label;
+    document.getElementById('form_modal').classList.add('open');
+    updateBodyScrollLock();
+  }
+
+  function closeFormModal() {
+    document.getElementById('form_modal').classList.remove('open');
+    updateBodyScrollLock();
+  }
+
   function populateSclReasons() {
     const sel = document.getElementById('scl_reason');
     sel.innerHTML = '';
@@ -861,12 +995,6 @@
 
     document.getElementById('rule_hint').textContent = t ? ('Governed by ' + t.rule + (family === 'lwa' ? ' — capped at 5 years across the entire service, subject to eligibility.' : '')) : '';
 
-    const CATEGORY_COLOR_VAR = {
-      'General Leave (Form 13)': '--cat-general', 'Leave Without Allowance (LWA)': '--cat-lwa',
-      'Family & Medical Leave': '--cat-family', 'Casual & Special Leave': '--cat-casual',
-      'Insurance & Accident Benefits': '--cat-insurance', 'Service & Establishment Matters': '--cat-service',
-      'Advances & Loans': '--cat-advance', 'Estate / Death Benefit Claims': '--cat-estate',
-    };
     const dot = document.getElementById('category_dot');
     if (t && CATEGORY_COLOR_VAR[t.group]) { dot.style.background = 'var(' + CATEGORY_COLOR_VAR[t.group] + ')'; dot.style.visibility = 'visible'; }
     else { dot.style.visibility = 'hidden'; }
@@ -1399,18 +1527,18 @@
     document.getElementById('modal_sig_controls').style.display = hasSignature ? 'flex' : 'none';
 
     document.getElementById('preview_modal').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    updateBodyScrollLock();
   }
 
   function closePreviewModal() {
     document.getElementById('preview_modal').classList.remove('open');
-    document.body.style.overflow = '';
+    updateBodyScrollLock();
   }
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.getElementById('preview_modal').classList.contains('open')) {
-      closePreviewModal();
-    }
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('preview_modal').classList.contains('open')) { closePreviewModal(); }
+    else if (document.getElementById('form_modal').classList.contains('open')) { closeFormModal(); }
   });
 
   // Generate PDF Logic
@@ -1420,13 +1548,17 @@
 
     closePreviewModal();
     syncFormData();
-    setTimeout(() => { window.print(); }, 150);
+    setTimeout(() => {
+      window.print();
+      closeFormModal();
+    }, 150);
   }
 
   // ---------------------------------------------------------------------
   // Boot
   // ---------------------------------------------------------------------
   populateLeaveTypeDropdown();
+  populateDashboard();
   populateSclReasons();
 </script>
 </body>
