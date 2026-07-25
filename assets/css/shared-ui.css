@@ -16,6 +16,7 @@
   --cat-general: #0F7D6E; --cat-lwa: #AE5539; --cat-family: #B15C74;
   --cat-casual: #4C6FA0; --cat-insurance: #B8863A; --cat-service: #74547F;
   --cat-advance: #3F7A5C; --cat-estate: #52525B; --cat-national: #A6762E;
+  --gold: #D8B87A; --gold-deep: #B8934F; --gold-soft: #F7EEDC;
 }
 * { box-sizing: border-box; }
 body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; background-color: var(--paper); color: var(--text); margin: 0; padding: 0 0 70px 0; -webkit-font-smoothing: antialiased; }
@@ -157,4 +158,81 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
   .modal-toolbar { padding: 12px 14px; }
   .modal-footer { padding: 12px 14px; }
   .modal-footer .print-btn { width: 100%; }
+}
+
+/* =============================================================================
+   TOP NAV + STATE SWITCHER
+   The nav replaces the old full hero — compact, sticky, utility-first. The
+   switcher is the one component here worth the extra polish: searchable,
+   keyboard-navigable, and it's the single control that decides everything
+   the content area below shows.
+   ============================================================================= */
+.top-nav { position: sticky; top: 0; z-index: 200; background: linear-gradient(155deg, var(--ink), var(--ink-2)); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 18px; box-shadow: 0 2px 24px rgba(0,0,0,.18); }
+.top-nav::after { content: ""; position: absolute; inset: auto 0 0 0; height: 3px; background: linear-gradient(90deg, var(--cat-insurance), var(--cat-lwa), var(--cat-family), var(--cat-general), var(--cat-casual), var(--cat-service), var(--cat-advance), var(--cat-estate)); }
+.nav-brand { display: flex; align-items: center; gap: 10px; color: #F4F1E7; text-decoration: none; }
+.nav-brand .app-seal { width: 32px; height: 32px; flex-shrink: 0; }
+.nav-brand .brand-word { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.05rem; letter-spacing: .1px; white-space: nowrap; }
+
+.state-switcher { position: relative; flex-shrink: 0; }
+.state-switcher-trigger { display: flex; align-items: center; gap: 9px; background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.2); color: #fff; padding: 9px 8px 9px 14px; border-radius: 30px; cursor: pointer; font-family: inherit; font-size: .88rem; font-weight: 600; transition: background-color .15s ease, border-color .15s ease; }
+.state-switcher-trigger:hover, .state-switcher-trigger:focus-visible { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.36); outline: none; }
+.state-switcher-trigger .trigger-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.state-switcher-trigger .chevron { width: 26px; height: 26px; padding: 5px; border-radius: 50%; background: rgba(255,255,255,.08); transition: transform .2s ease; }
+.state-switcher.open .state-switcher-trigger .chevron { transform: rotate(180deg); }
+
+.state-switcher-panel { position: absolute; top: calc(100% + 12px); right: 0; width: min(360px, 88vw); max-height: min(70vh, 520px); background: var(--surface); border-radius: var(--radius-lg); box-shadow: 0 28px 64px -14px rgba(20,30,28,.4); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; z-index: 210; opacity: 0; transform: translateY(-8px) scale(.98); pointer-events: none; transition: opacity .15s ease, transform .15s ease; }
+.state-switcher.open .state-switcher-panel { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.state-search-wrap { padding: 12px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.state-search-wrap input { width: 100%; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 10px 13px; font-size: .89rem; font-family: inherit; color: var(--text); }
+.state-search-wrap input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.state-list { overflow-y: auto; padding: 6px; flex: 1; }
+.state-list-label { font-family: "IBM Plex Mono", monospace; font-size: .64rem; letter-spacing: .07em; text-transform: uppercase; color: var(--text-soft); padding: 10px 12px 5px; }
+.state-option { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; background: none; border: none; padding: 9px 11px; border-radius: 9px; cursor: pointer; font-family: inherit; font-size: .87rem; color: var(--text); }
+.state-option .opt-name { display: flex; align-items: center; gap: 8px; }
+.state-option .opt-region { font-size: .72rem; color: var(--text-soft); flex-shrink: 0; }
+.state-option:hover, .state-option.kbd-active { background: var(--accent-soft); }
+.state-option[data-live="true"] .opt-name::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.state-option[data-live="true"] { font-weight: 700; color: var(--accent-deep); }
+.state-empty-result { padding: 24px 16px; text-align: center; color: var(--text-soft); font-size: .85rem; }
+
+/* =============================================================================
+   DASHBOARD CONTENT AREA — swaps based on the selected state
+   ============================================================================= */
+.state-content { animation: fadeSlideIn .28s ease both; }
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.state-hero { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.state-hero h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.5rem; color: var(--ink); margin: 0; }
+.state-hero-meta { font-family: "IBM Plex Mono", monospace; font-size: .78rem; color: var(--text-soft); }
+.state-open-tool-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 30px; font-weight: 600; font-size: .92rem; box-shadow: 0 10px 24px -10px rgba(20,42,44,.4); transition: background-color .15s ease, transform .12s ease; }
+.state-open-tool-btn:hover { background: var(--ink-2); transform: translateY(-1px); }
+
+.category-block h3 { display: flex; align-items: center; gap: 9px; }
+.category-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--cat-color, var(--accent)); }
+.hub-dashboard .category-block h3::before { display: none; } /* icon replaces the plain dot, hub dashboard only — Kerala's own internal dashboard keeps its dot */
+
+.app-type-card .card-name { display: flex; align-items: center; gap: 8px; }
+
+.empty-state-panel { text-align: center; padding: 56px 24px; background: var(--surface); border: 1.5px dashed var(--line); border-radius: var(--radius-lg); }
+.empty-state-panel .empty-icon { width: 52px; height: 52px; color: var(--line); margin: 0 auto 18px; }
+.empty-state-panel h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.25rem; color: var(--ink); margin: 0 0 8px; }
+.empty-state-panel p { color: var(--text-soft); font-size: .92rem; max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .state-content { animation: none; }
+  .state-switcher-panel, .state-switcher-trigger .chevron, .app-type-card, .state-open-tool-btn { transition: none; }
+}
+
+/* Deep-link highlight: a card reached via a dashboard link gets a brief,
+   one-time pulse plus a lasting gold border, so it's easy to re-find after
+   scrolling to fill in the Employee Profile section first. */
+.app-type-card.deep-link-target { border-color: var(--gold-deep); box-shadow: 0 0 0 3px var(--gold-soft); animation: deepLinkPulse 1.6s ease-out 1; }
+@keyframes deepLinkPulse { 0% { box-shadow: 0 0 0 0 rgba(216,184,122,.55); } 100% { box-shadow: 0 0 0 10px rgba(216,184,122,0); } }
+@media (prefers-reduced-motion: reduce) { .app-type-card.deep-link-target { animation: none; } }
+
+@media (max-width: 720px) {
+  .top-nav { padding: 12px 16px; flex-wrap: nowrap; }
+  .nav-brand .brand-word { display: none; } /* seal alone reads fine at this width, saves room for the switcher */
+  .state-switcher-panel { position: fixed; top: auto; bottom: 0; left: 0; right: 0; width: 100%; max-height: 78vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; transform: translateY(100%); }
+  .state-switcher.open .state-switcher-panel { transform: translateY(0); }
+  .state-hero { flex-direction: column; align-items: flex-start; }
 }
