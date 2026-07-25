@@ -8,16 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <title>Sarkari Forms Hub</title>
 <link rel="stylesheet" href="assets/css/shared-ui.css">
-<style>
-  /* Hub-only: the hero IS the state grid, not a banner above it — the
-     point of this page is to show the shape of a nationwide undertaking
-     with one piece already lit up, so the grid gets top billing. */
-  .hub-lede { max-width: 640px; margin: 0 auto 28px; text-align: center; color: var(--text-soft); font-size: .95rem; line-height: 1.6; }
-</style>
 </head>
 <body>
-  <div class="app-header">
-    <div class="app-header-inner">
+  <nav class="top-nav">
+    <a href="index.html" class="nav-brand">
       <svg class="app-seal" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seal emblem">
         <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/>
         <circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="1.4"/>
@@ -25,17 +19,29 @@
         <text x="32" y="30" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="600" font-size="11" fill="currentColor">भारत</text>
         <text x="32" y="41" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="500" font-size="5.5" letter-spacing="1.5" fill="currentColor">FORMS HUB</text>
       </svg>
-      <div class="app-header-text">
-        <h1>Sarkari Forms Hub</h1>
-        <p>Government service forms, leave applications, and statements for India — one state at a time. Everything drafts in your browser; nothing is uploaded, stored, or sent anywhere.</p>
+      <span class="brand-word">Sarkari Forms Hub</span>
+    </a>
+    <div class="state-switcher" id="state_switcher">
+      <button type="button" class="state-switcher-trigger" id="switcher_trigger" aria-haspopup="listbox" aria-expanded="false">
+        <span class="trigger-dot" id="trigger_dot"></span>
+        <span id="trigger_label">Select a state</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="state-switcher-panel" role="listbox" aria-label="Choose a state or union territory">
+        <div class="state-search-wrap">
+          <input type="text" id="state_search" placeholder="Search states or union territories&hellip;" autocomplete="off">
+        </div>
+        <div class="state-list" id="state_list"></div>
       </div>
     </div>
-  </div>
-  <div class="container">
+  </nav>
+
+  <div class="container hub-dashboard">
     <div class="disclaimer-banner">
       <strong>Before you rely on this:</strong> these tools draft applications and statements in standard government formats so you have a clean, correctly-cited starting point — they are not official government products and are not legal or tax advice. Rules are amended from time to time; please confirm current requirements with your own office before submission.
     </div>
-    <p class="hub-lede">Pick a state to open its service-forms generator, or a national tool below.</p>
+
+    <div id="state_content_area"></div>
 
     <div class="section dashboard-section">
       <h2><span class="step-badge">&#9733;</span> National Tools</h2>
@@ -43,64 +49,217 @@
       <div id="national_tools" class="card-grid"></div>
     </div>
 
-    <div class="section dashboard-section">
-      <h2><span class="step-badge">&#9670;</span> State &amp; UT Service Forms</h2>
-      <p class="sub-hint">Kerala is live today. Every other state and union territory is on the roadmap — each one gets the same rule-by-rule care before it ships, so it isn't built until it can cite its own service rules correctly.</p>
-      <div id="state_categories"></div>
-    </div>
     <p class="privacy-note">All data stays in your browser on your device — nothing here is uploaded, stored, or sent anywhere.</p>
   </div>
 
   <script>
+    // ---------------------------------------------------------------------
+    // DATA
+    // ---------------------------------------------------------------------
+    const GROUP_ORDER = ['General Leave (Form 13)', 'Leave Without Allowance (LWA)', 'Family & Medical Leave', 'Casual & Special Leave',
+      'Insurance & Accident Benefits', 'Service & Establishment Matters', 'Advances & Loans', 'Estate / Death Benefit Claims'];
+    const CATEGORY_COLOR_VAR = {
+      'General Leave (Form 13)': '--cat-general', 'Leave Without Allowance (LWA)': '--cat-lwa',
+      'Family & Medical Leave': '--cat-family', 'Casual & Special Leave': '--cat-casual',
+      'Insurance & Accident Benefits': '--cat-insurance', 'Service & Establishment Matters': '--cat-service',
+      'Advances & Loans': '--cat-advance', 'Estate / Death Benefit Claims': '--cat-estate',
+    };
+    // One small hand-drawn icon per category — chosen for what the category actually
+    // is about (a calendar for routine leave, a paper plane for going elsewhere, a
+    // heart for family matters), not decoration for its own sake.
+    const CATEGORY_ICONS = {
+      'General Leave (Form 13)': '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+      'Leave Without Allowance (LWA)': '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>',
+      'Family & Medical Leave': '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z"/>',
+      'Casual & Special Leave': '<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/>',
+      'Insurance & Accident Benefits': '<path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5z"/>',
+      'Service & Establishment Matters': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/>',
+      'Advances & Loans': '<circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/>',
+      'Estate / Death Benefit Claims': '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+    };
+    const KERALA_TYPES = {"el":{"label":"Earned Leave","group":"General Leave (Form 13)","rule":"Rule 78, Part I, K.S.R."},"hpl":{"label":"Half Pay Leave","group":"General Leave (Form 13)","rule":"Rule 83, Part I, K.S.R."},"commuted":{"label":"Commuted Leave","group":"General Leave (Form 13)","rule":"Rule 84, Part I, K.S.R."},"leavenotdue":{"label":"Leave Not Due","group":"General Leave (Form 13)","rule":"Rule 85, Part I, K.S.R."},"lwa_abroad":{"label":"LWA \u2014 Employment Abroad","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-A, Part I, K.S.R."},"lwa_india":{"label":"LWA \u2014 Employment within India","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-A, Part I, K.S.R."},"lwa_study":{"label":"LWA \u2014 Higher Studies","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-B, Part I, K.S.R."},"lwa_spouse":{"label":"LWA \u2014 Joining Spouse","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-C, Part I, K.S.R."},"maternity":{"label":"Maternity Leave","group":"Family & Medical Leave","rule":"Rule 100, Part I, K.S.R."},"miscarriage":{"label":"Miscarriage / Abortion Leave","group":"Family & Medical Leave","rule":"Rule 101, Part I, K.S.R."},"hysterectomy":{"label":"Hysterectomy Leave","group":"Family & Medical Leave","rule":"Rule 101-A, Part I, K.S.R."},"paternity":{"label":"Paternity Leave","group":"Family & Medical Leave","rule":"Rule 102-B, Part I, K.S.R."},"adoption":{"label":"Child Adoption Leave","group":"Family & Medical Leave","rule":"Part I, K.S.R. (Child Adoption Leave provisions \u2014 confirm current rule number with your DDO)"},"hospital":{"label":"Hospital Leave","group":"Family & Medical Leave","rule":"Rule 103, Part I, K.S.R."},"cl":{"label":"Casual Leave","group":"Casual & Special Leave","rule":"Appendix VII, Part I, K.S.R."},"scl":{"label":"Special Casual Leave","group":"Casual & Special Leave","rule":"Appendix VII, Section II, Part I, K.S.R."},"compensation":{"label":"Compensation Leave","group":"Casual & Special Leave","rule":"Appendix VII, Section III, Part I, K.S.R."},"sli_proposal":{"label":"SLI \u2014 New Policy Proposal","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"sli_nomination":{"label":"SLI \u2014 Change of Nomination","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"sli_loan":{"label":"SLI \u2014 Loan Against Policy","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"sli_claim":{"label":"SLI \u2014 Claim (Maturity / Death)","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"jr_nomination":{"label":"Jeevan Raksha (GPAIS) \u2014 Nomination","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department (formerly GPAIS)"},"jr_claim":{"label":"Jeevan Raksha (GPAIS) \u2014 Claim","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department (formerly GPAIS)"},"fbs_closure":{"label":"Family Benefit Scheme \u2014 Closure / Claim","group":"Insurance & Accident Benefits","rule":"Family Benefit Scheme (FBS)"},"toc":{"label":"Transfer of Charge Report","group":"Service & Establishment Matters","rule":"Article 81(a), Chapter IV, K.F.C. (Form 7 & Form 8/8A)"},"probation":{"label":"Probation Declaration","group":"Service & Establishment Matters","rule":"Kerala Service Rules / Special Rules"},"pay_option":{"label":"Pay Revision / Higher Grade Option","group":"Service & Establishment Matters","rule":"Pay Revision Rules / Time Bound Higher Grade Scheme"},"nps_reg":{"label":"NPS Subscriber Registration","group":"Service & Establishment Matters","rule":"National Pension System (for those who joined on/after 01.04.2013)"},"hba":{"label":"House Building Advance (HBA) Application","group":"Advances & Loans","rule":"Kerala Financial Code, Form No. 29"},"mva":{"label":"Motor Vehicle Advance Application","group":"Advances & Loans","rule":"Kerala Financial Code (Motor Vehicle Advance scheme)"},"indemnity":{"label":"Indemnity Bond \u2014 Deceased Employee's Dues","group":"Estate / Death Benefit Claims","rule":"Kerala Financial Code, Form No. 9"}};
+
     const NATIONAL_TOOLS = [
-      { name: 'Income Tax Statement Generator', status: 'pending', note: 'Old vs New regime, HRA &amp; 80C/80D, printable statement — in progress' },
+      { name: 'Income Tax Statement Generator', note: 'Old vs New regime, HRA &amp; 80C/80D, printable statement — in progress' },
     ];
 
-    const REGIONS = [
-      { name: 'South India', states: [
-        { name: 'Andhra Pradesh' }, { name: 'Karnataka' }, { name: 'Kerala', page: 'kerala', note: 'KSR &amp; Service Forms, Leave Applications, Insurance &amp; Advances' }, { name: 'Tamil Nadu' }, { name: 'Telangana' },
-      ]},
-      { name: 'North India', states: [
-        { name: 'Haryana' }, { name: 'Himachal Pradesh' }, { name: 'Punjab' }, { name: 'Rajasthan' }, { name: 'Uttar Pradesh' }, { name: 'Uttarakhand' },
-      ]},
-      { name: 'West &amp; Central India', states: [
-        { name: 'Chhattisgarh' }, { name: 'Goa' }, { name: 'Gujarat' }, { name: 'Madhya Pradesh' }, { name: 'Maharashtra' },
-      ]},
-      { name: 'East India', states: [
-        { name: 'Bihar' }, { name: 'Jharkhand' }, { name: 'Odisha' }, { name: 'West Bengal' },
-      ]},
-      { name: 'Northeast India', states: [
-        { name: 'Arunachal Pradesh' }, { name: 'Assam' }, { name: 'Manipur' }, { name: 'Meghalaya' }, { name: 'Mizoram' }, { name: 'Nagaland' }, { name: 'Sikkim' }, { name: 'Tripura' },
-      ]},
-      { name: 'Union Territories', states: [
-        { name: 'Andaman &amp; Nicobar Islands' }, { name: 'Chandigarh' }, { name: 'Dadra &amp; Nagar Haveli and Daman &amp; Diu' }, { name: 'Delhi (NCT)' }, { name: 'Jammu &amp; Kashmir' }, { name: 'Ladakh' }, { name: 'Lakshadweep' }, { name: 'Puducherry' },
-      ]},
-    ];
+    // Kerala is handled separately (it's live); every other entry here is on
+    // the roadmap. Region is kept as searchable metadata in the switcher, not
+    // as a grouping — with 35 mostly-identical "coming soon" entries, a flat
+    // searchable list scans faster than eight subheaded clusters.
+    const OTHER_STATES = [
+      ['Andhra Pradesh','South'], ['Karnataka','South'], ['Tamil Nadu','South'], ['Telangana','South'],
+      ['Haryana','North'], ['Himachal Pradesh','North'], ['Punjab','North'], ['Rajasthan','North'], ['Uttar Pradesh','North'], ['Uttarakhand','North'],
+      ['Chhattisgarh','West & Central'], ['Goa','West & Central'], ['Gujarat','West & Central'], ['Madhya Pradesh','West & Central'], ['Maharashtra','West & Central'],
+      ['Bihar','East'], ['Jharkhand','East'], ['Odisha','East'], ['West Bengal','East'],
+      ['Arunachal Pradesh','Northeast'], ['Assam','Northeast'], ['Manipur','Northeast'], ['Meghalaya','Northeast'], ['Mizoram','Northeast'], ['Nagaland','Northeast'], ['Sikkim','Northeast'], ['Tripura','Northeast'],
+      ['Andaman & Nicobar Islands','Union Territory'], ['Chandigarh','Union Territory'], ['Dadra & Nagar Haveli and Daman & Diu','Union Territory'], ['Delhi (NCT)','Union Territory'], ['Jammu & Kashmir','Union Territory'], ['Ladakh','Union Territory'], ['Lakshadweep','Union Territory'], ['Puducherry','Union Territory'],
+    ].map(([name, region]) => ({ key: slugify(name), name, region }));
 
-    function cardHtml(item) {
-      const isLive = !!item.page;
-      const pill = isLive ? '<span class="status-pill live">Live</span>' : '<span class="status-pill pending">Coming soon</span>';
-      const note = item.note || 'On the roadmap';
-      if (isLive) {
-        return '<a class="app-type-card" href="' + item.page + '.html">' +
-          '<span class="card-name">' + item.name + ' ' + pill + '</span>' +
-          '<span class="card-rule">' + note + '</span></a>';
+    function slugify(s) { return s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+
+    const ALL_ENTRIES = [{ key: 'kerala', name: 'Kerala', region: 'South', live: true }, ...OTHER_STATES.map(s => ({ ...s, live: false }))];
+
+    // ---------------------------------------------------------------------
+    // STATE SWITCHER
+    // ---------------------------------------------------------------------
+    let currentKey = null;
+    let kbdIndex = -1;
+
+    function renderStateList(filter) {
+      const q = (filter || '').trim().toLowerCase();
+      const list = document.getElementById('state_list');
+      const live = ALL_ENTRIES.filter(e => e.live && matches(e, q));
+      const rest = ALL_ENTRIES.filter(e => !e.live && matches(e, q));
+      let html = '';
+      if (live.length) {
+        html += '<div class="state-list-label">Live now</div>';
+        html += live.map(optionHtml).join('');
       }
-      return '<div class="app-type-card is-pending" role="note" aria-label="' + item.name + ', coming soon">' +
-        '<span class="card-name">' + item.name + ' ' + pill + '</span>' +
-        '<span class="card-rule">' + note + '</span></div>';
+      if (rest.length) {
+        html += '<div class="state-list-label">On the roadmap</div>';
+        html += rest.map(optionHtml).join('');
+      }
+      if (!live.length && !rest.length) {
+        html = '<div class="state-empty-result">No state matches &ldquo;' + escapeHtml(filter) + '&rdquo;.</div>';
+      }
+      list.innerHTML = html;
+      kbdIndex = -1;
+    }
+    function matches(e, q) { return !q || e.name.toLowerCase().includes(q) || e.region.toLowerCase().includes(q); }
+    function optionHtml(e) {
+      return '<button type="button" class="state-option" role="option" data-key="' + e.key + '" data-live="' + e.live + '">' +
+        '<span class="opt-name">' + e.name + '</span><span class="opt-region">' + (e.live ? 'Live' : e.region) + '</span></button>';
+    }
+    function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    function openSwitcher() {
+      document.getElementById('state_switcher').classList.add('open');
+      document.getElementById('switcher_trigger').setAttribute('aria-expanded', 'true');
+      const search = document.getElementById('state_search');
+      search.value = '';
+      renderStateList('');
+      setTimeout(() => search.focus(), 10);
+    }
+    function closeSwitcher() {
+      document.getElementById('state_switcher').classList.remove('open');
+      document.getElementById('switcher_trigger').setAttribute('aria-expanded', 'false');
+    }
+    function toggleSwitcher() {
+      document.getElementById('state_switcher').classList.contains('open') ? closeSwitcher() : openSwitcher();
     }
 
-    function renderDashboard() {
-      document.getElementById('national_tools').innerHTML = NATIONAL_TOOLS.map(cardHtml).join('');
-      const container = document.getElementById('state_categories');
-      container.innerHTML = REGIONS.map(function (region) {
-        const cards = region.states.map(cardHtml).join('');
-        return '<div class="category-block"><h3>' + region.name + '</h3><div class="card-grid">' + cards + '</div></div>';
+    function selectState(key) {
+      currentKey = key;
+      const entry = ALL_ENTRIES.find(e => e.key === key);
+      if (!entry) return;
+      document.getElementById('trigger_label').textContent = entry.name;
+      document.getElementById('trigger_dot').style.background = entry.live ? 'var(--gold)' : 'var(--line)';
+      closeSwitcher();
+      window.location.hash = key;
+      try { localStorage.setItem('sfh_last_state', key); } catch (e) { /* private browsing or blocked — fine, just skip persistence */ }
+      renderStateContent(entry);
+    }
+
+    function renderStateContent(entry) {
+      const area = document.getElementById('state_content_area');
+      // restart the entrance animation on every switch
+      area.style.animation = 'none'; void area.offsetWidth; area.style.animation = '';
+      if (entry.live) {
+        area.innerHTML = renderKeralaHtml();
+      } else {
+        area.innerHTML = renderComingSoonHtml(entry.name);
+      }
+    }
+
+    function renderKeralaHtml() {
+      const blocks = GROUP_ORDER.map(groupName => {
+        const keys = Object.keys(KERALA_TYPES).filter(k => KERALA_TYPES[k].group === groupName);
+        if (!keys.length) return '';
+        const cards = keys.map(k => {
+          const t = KERALA_TYPES[k];
+          return '<a class="app-type-card" href="kerala.html?type=' + k + '">' +
+            '<span class="card-name">' + t.label + '</span><span class="card-rule">' + t.rule + '</span></a>';
+        }).join('');
+        return '<div class="category-block" style="--cat-color: var(' + CATEGORY_COLOR_VAR[groupName] + ')">' +
+          '<h3><svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + CATEGORY_ICONS[groupName] + '</svg>' + groupName + '</h3>' +
+          '<div class="card-grid">' + cards + '</div></div>';
       }).join('');
+      const count = Object.keys(KERALA_TYPES).length;
+      return '<div class="state-content">' +
+        '<div class="state-hero"><h2>Kerala — KSR &amp; Service Forms</h2>' +
+        '<a class="state-open-tool-btn" href="kerala.html">Open the full tool &rarr;</a></div>' +
+        '<p class="state-hero-meta">' + count + ' application types across ' + GROUP_ORDER.length + ' categories &middot; leave, insurance, advances &amp; estate claims</p>' +
+        '<div style="margin-top:22px;">' + blocks + '</div></div>';
     }
 
-    renderDashboard();
+    function renderComingSoonHtml(name) {
+      return '<div class="state-content"><div class="empty-state-panel">' +
+        '<svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>' +
+        '<h2>' + name + ' is on the roadmap</h2>' +
+        '<p>Every state gets the same rule-by-rule care Kerala did before it ships — citing the actual service rules, not guessed ones — so ' + name + ' isn\u2019t built yet rather than built carelessly. Check back, or pick Kerala above to see what a finished state looks like.</p>' +
+        '</div></div>';
+    }
+
+    function renderNationalTools() {
+      document.getElementById('national_tools').innerHTML = NATIONAL_TOOLS.map(t =>
+        '<div class="app-type-card is-pending" role="note" aria-label="' + t.name + ', coming soon">' +
+        '<span class="card-name">' + t.name + ' <span class="status-pill pending">Coming soon</span></span>' +
+        '<span class="card-rule">' + t.note + '</span></div>'
+      ).join('');
+    }
+
+    // ---------------------------------------------------------------------
+    // Wiring
+    // ---------------------------------------------------------------------
+    document.getElementById('switcher_trigger').addEventListener('click', toggleSwitcher);
+    document.addEventListener('click', (e) => {
+      const switcher = document.getElementById('state_switcher');
+      if (switcher.classList.contains('open') && !switcher.contains(e.target)) closeSwitcher();
+    });
+    document.getElementById('state_search').addEventListener('input', (e) => renderStateList(e.target.value));
+    document.getElementById('state_list').addEventListener('click', (e) => {
+      const btn = e.target.closest('.state-option');
+      if (btn) selectState(btn.dataset.key);
+    });
+    document.addEventListener('keydown', (e) => {
+      const switcher = document.getElementById('state_switcher');
+      if (!switcher.classList.contains('open')) return;
+      const options = Array.from(document.querySelectorAll('.state-option'));
+      if (e.key === 'Escape') { closeSwitcher(); document.getElementById('switcher_trigger').focus(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); kbdIndex = Math.min(kbdIndex + 1, options.length - 1); highlightKbd(options); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); kbdIndex = Math.max(kbdIndex - 1, 0); highlightKbd(options); }
+      else if (e.key === 'Enter' && kbdIndex >= 0 && options[kbdIndex]) { e.preventDefault(); selectState(options[kbdIndex].dataset.key); }
+    });
+    function highlightKbd(options) {
+      options.forEach((o, i) => o.classList.toggle('kbd-active', i === kbdIndex));
+      if (options[kbdIndex]) options[kbdIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    // ---------------------------------------------------------------------
+    // Boot: hash in the URL wins (so links/bookmarks are shareable), then a
+    // remembered last visit, then Kerala by default since it's the only
+    // state with anything to show yet.
+    // ---------------------------------------------------------------------
+    function boot() {
+      renderNationalTools();
+      const fromHash = window.location.hash.replace('#', '');
+      let initial = ALL_ENTRIES.find(e => e.key === fromHash);
+      if (!initial) {
+        let remembered = null;
+        try { remembered = localStorage.getItem('sfh_last_state'); } catch (e) { /* ignore */ }
+        initial = ALL_ENTRIES.find(e => e.key === remembered);
+      }
+      selectState((initial || ALL_ENTRIES[0]).key);
+    }
+    window.addEventListener('hashchange', () => {
+      const key = window.location.hash.replace('#', '');
+      if (key && key !== currentKey) {
+        const entry = ALL_ENTRIES.find(e => e.key === key);
+        if (entry) selectState(entry.key);
+      }
+    });
+    boot();
   </script>
 </body>
 </html>
