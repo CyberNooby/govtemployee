@@ -1,0 +1,160 @@
+/* =============================================================================
+   SHARED UI / APP CHROME
+   The platform's own design system — reused by index.html (the hub) and every
+   tool page. This is a separate world from shared-document.css: it's free to
+   be as modern as we like, since it never has to resemble a government form.
+   ============================================================================= */
+:root {
+  --ink: #142A2C; --ink-2: #1F3D3F;
+  --paper: #F5F3ED; --surface: #FFFFFF; --surface-2: #FBFAF6;
+  --accent: #0F7D6E; --accent-deep: #0A5F53; --accent-soft: #E4F1EE;
+  --text: #1C2624; --text-soft: #5C6864; --line: #E3DFD1;
+  --req: #C0392B; --radius-lg: 16px; --radius: 12px; --radius-sm: 8px;
+  --shadow-card: 0 1px 2px rgba(20,30,28,.04), 0 12px 28px -14px rgba(20,30,28,.16);
+  --shadow-card-hover: 0 1px 2px rgba(20,30,28,.05), 0 18px 36px -14px rgba(20,30,28,.22);
+  /* per-category accent colors, referenced by JS to color type/state indicators */
+  --cat-general: #0F7D6E; --cat-lwa: #AE5539; --cat-family: #B15C74;
+  --cat-casual: #4C6FA0; --cat-insurance: #B8863A; --cat-service: #74547F;
+  --cat-advance: #3F7A5C; --cat-estate: #52525B; --cat-national: #A6762E;
+}
+* { box-sizing: border-box; }
+body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; background-color: var(--paper); color: var(--text); margin: 0; padding: 0 0 70px 0; -webkit-font-smoothing: antialiased; }
+
+.app-header { background: linear-gradient(155deg, var(--ink), var(--ink-2)); color: #F4F1E7; padding: 44px 20px 52px; text-align: center; position: relative; overflow: hidden; }
+.app-header::after { content: ""; position: absolute; inset: auto 0 0 0; height: 4px; background: linear-gradient(90deg, var(--cat-insurance), var(--cat-lwa), var(--cat-family), var(--cat-general), var(--cat-casual), var(--cat-service), var(--cat-advance), var(--cat-estate)); }
+.app-header-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 20px; }
+.app-seal { flex-shrink: 0; width: 62px; height: 62px; color: #D8B87A; }
+.app-header-text { text-align: left; }
+.app-header h1 { margin: 0; font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.85rem; letter-spacing: .1px; }
+.app-header p { margin: 8px 0 0 0; color: #C8D6D1; font-size: .95rem; line-height: 1.5; max-width: 520px; }
+
+/* Breadcrumb: every tool page links back up to the hub */
+.breadcrumb-bar { max-width: 760px; margin: 0 auto 18px; position: relative; z-index: 1; }
+.breadcrumb-bar a { color: #C8D6D1; font-size: .82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; opacity: .9; transition: opacity .15s ease; }
+.breadcrumb-bar a:hover { opacity: 1; text-decoration: underline; }
+
+.container { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+.disclaimer-banner { background: #FBF3E3; border: 1px solid #EAD9AE; color: #7A5A1E; padding: 14px 18px; border-radius: var(--radius-sm); font-size: .82rem; line-height: 1.55; margin: 26px auto; max-width: 940px; }
+.privacy-note { text-align: center; font-size: .78rem; color: var(--text-soft); margin: 14px 0 22px; }
+
+.section { background: var(--surface); padding: 30px 32px; margin-bottom: 22px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); border: 1px solid var(--line); transition: box-shadow .2s ease; }
+.section h2 { margin: 0 0 22px; font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.18rem; padding-bottom: 14px; border-bottom: 1px solid var(--line); color: var(--ink); display: flex; align-items: center; gap: 12px; }
+.step-badge { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-deep); font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: .8rem; display: inline-flex; align-items: center; justify-content: center; }
+.section .sub-hint { font-size: .87rem; color: var(--text-soft); margin: -14px 0 20px; line-height: 1.5; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 22px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+.full-width { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; }
+.form-group label { font-size: .82rem; font-weight: 600; margin-bottom: 7px; color: var(--text-soft); letter-spacing: .01em; }
+.required::after { content: " *"; color: var(--req); font-weight: bold; }
+.form-group input, .form-group select, .form-group textarea {
+  border: 1.5px solid var(--line); background: var(--surface-2); padding: 11px 13px; border-radius: var(--radius-sm);
+  font-size: .96rem; font-family: inherit; color: var(--text); transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.form-group input::placeholder, .form-group textarea::placeholder { color: #A8A296; }
+.help-text { font-size: .76rem; color: var(--text-soft); margin-top: 6px; line-height: 1.45; }
+.hidden-section { display: none; }
+.rule-hint { font-size: .82rem; color: var(--accent-deep); margin-top: 10px; font-style: italic; min-height: 1.2em; }
+.info-callout { font-size: .84rem; color: var(--accent-deep); background: var(--accent-soft); border: 1px solid #C7E2DB; padding: 9px 13px; border-radius: var(--radius-sm); margin-top: 8px; display: none; }
+
+.btn-group { display: flex; gap: 14px; margin-top: 22px; }
+.print-btn {
+  background: var(--accent); color: #fff; border: none; padding: 16px 32px; font-size: 1.05rem; font-family: "Public Sans", sans-serif;
+  border-radius: var(--radius); cursor: pointer; flex: 1; font-weight: 600; box-shadow: 0 10px 24px -10px rgba(15,125,110,.55);
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+.print-btn:hover { background: var(--accent-deep); transform: translateY(-1px); box-shadow: 0 14px 28px -10px rgba(15,125,110,.6); }
+.print-btn:active { transform: translateY(0); }
+.secondary-btn { background: var(--ink); box-shadow: 0 10px 24px -10px rgba(20,42,44,.45); }
+.secondary-btn:hover { background: var(--ink-2); box-shadow: 0 14px 28px -10px rgba(20,42,44,.5); }
+
+.highlight-box { background: var(--accent-soft); border: 1px solid #C7E2DB; padding: 16px 18px; border-radius: var(--radius); }
+
+.sig-preview-box { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin-top: 12px; border: 1.5px dashed var(--line); padding: 16px; border-radius: var(--radius); background: var(--surface-2); }
+.sig-thumb-frame { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 8px; display: flex; align-items: center; justify-content: center; min-width: 150px; min-height: 70px; overflow: hidden; }
+.sig-thumb-frame img { max-height: 55px; max-width: 150px; object-fit: contain; }
+.sig-adjust-box { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 240px; }
+.sig-adjust-row { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--text-soft); }
+.sig-adjust-row label { min-width: 42px; font-weight: 600; }
+.sig-adjust-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+.sig-adjust-row span { min-width: 42px; text-align: right; font-variant-numeric: tabular-nums; font-family: "IBM Plex Mono", monospace; color: var(--ink); font-size: .78rem; }
+.reset-sig-btn { align-self: flex-start; background: none; border: 1.5px solid var(--line); color: var(--text-soft); font-size: .78rem; padding: 6px 13px; border-radius: 20px; cursor: pointer; transition: all .15s ease; }
+.reset-sig-btn:hover { background: var(--surface); border-color: var(--accent); color: var(--accent-deep); }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* Dashboard: category-grouped cards. Used for the hub's tool/state picker
+   AND for any tool that needs an internal "choose a sub-type" step. */
+.dashboard-section { background: linear-gradient(180deg, var(--accent-soft), var(--surface) 55%); border: 1.5px solid #C7E2DB; }
+.category-block { margin-bottom: 24px; }
+.category-block:last-child { margin-bottom: 0; }
+.category-block h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: .96rem; color: var(--ink); margin: 0 0 12px; display: flex; align-items: center; gap: 9px; }
+.category-block h3::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--cat-color, var(--accent)); flex-shrink: 0; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.app-type-card { display: block; text-align: left; text-decoration: none; cursor: pointer; background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-card); transition: transform .13s ease, box-shadow .13s ease, border-color .13s ease; font-family: inherit; }
+.app-type-card:hover, .app-type-card:focus-visible { border-color: var(--cat-color, var(--accent)); transform: translateY(-2px); box-shadow: var(--shadow-card-hover); outline: none; }
+.app-type-card .card-name { display: block; font-weight: 600; font-size: .93rem; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
+.app-type-card .card-rule { display: block; font-family: "IBM Plex Mono", monospace; font-size: .68rem; color: var(--text-soft); line-height: 1.4; }
+.category-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; background: var(--text-soft); vertical-align: middle; }
+
+/* "Coming soon" state for a card — dashboard cards platform-wide can be
+   toggled into this muted, non-committal state (used for unbuilt states). */
+.app-type-card.is-pending { cursor: default; opacity: .6; }
+.app-type-card.is-pending:hover { transform: none; box-shadow: var(--shadow-card); border-color: var(--line); }
+.status-pill { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: .62rem; font-weight: 600; letter-spacing: .03em; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; margin-left: 8px; vertical-align: middle; }
+.status-pill.live { background: var(--accent-soft); color: var(--accent-deep); }
+.status-pill.pending { background: #EEECE2; color: var(--text-soft); }
+
+/* Form Modal: an optional sub-dialog for tools that offer many sub-types
+   (e.g. Kerala's 20+ application types). Sections inside reuse .section/h2
+   markup verbatim but read as sub-sections of one dialog. */
+.form-modal-dialog { background: var(--surface); max-width: 760px; }
+.form-modal-dialog .modal-toolbar { background: var(--ink); }
+.modal-toolbar-title h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 0; }
+.modal-toolbar-title .rule-hint { margin-top: 4px; color: #CFE4DE; font-size: .78rem; }
+.modal-toolbar-title .rule-hint span { color: #CFE4DE; }
+.form-modal-dialog .modal-body { padding: 28px 30px 30px; }
+.form-modal-dialog .modal-body .section { box-shadow: none; border: none; border-radius: 0; padding: 22px 0; margin: 0; background: transparent; }
+.form-modal-dialog .modal-body .section:first-of-type { padding-top: 0; }
+.form-modal-dialog .modal-body .section:not(:first-of-type) { border-top: 1px solid var(--line); }
+.form-modal-dialog .modal-body .step-badge { display: none; }
+.form-modal-dialog .modal-body h2 { border-bottom: none; padding-bottom: 0; margin-bottom: 16px; font-size: 1.02rem; }
+@media (max-width: 720px) { .form-modal-dialog .modal-body { padding: 20px; } }
+
+/* Preview Modal — every tool's page cards inside are sized and padded to
+   mirror the @page print margins exactly, so preview == PDF. The Download
+   / Print button lives in a sticky footer here (not beside "Preview"),
+   so it's reachable from anywhere in a long, multi-page scroll. */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+#preview_modal { z-index: 1100; }
+.modal-overlay.open { display: flex; }
+.modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); margin-bottom: 30px; }
+.modal-toolbar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 16px 22px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.modal-toolbar h3 { margin: 0; font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.08rem; white-space: nowrap; }
+.modal-sig-controls { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; flex: 1; min-width: 260px; }
+.modal-sig-controls .sig-adjust-row { color: #D8E0DD; font-size: .8rem; display: flex; align-items: center; gap: 8px; }
+.modal-sig-controls .sig-adjust-row label { min-width: 40px; font-weight: 600; }
+.modal-sig-controls .sig-adjust-row input[type="range"] { width: 110px; accent-color: #D8B87A; }
+.modal-sig-controls .sig-adjust-row span { min-width: 40px; text-align: right; color: #fff; font-family: "IBM Plex Mono", monospace; font-size: .76rem; }
+.modal-close-btn { background: none; border: none; color: #fff; font-size: 1.7rem; line-height: 1; cursor: pointer; padding: 0 4px; opacity: .85; transition: opacity .15s ease; }
+.modal-close-btn:hover { opacity: 1; }
+.modal-body { padding: 30px; }
+.modal-body .page-preview-card { margin: 0 auto 30px auto; width: 210mm; min-height: 297mm; padding: 15mm 20mm; box-shadow: 0 10px 30px -8px rgba(0,0,0,.4); box-sizing: border-box; border-radius: 2px; }
+.modal-body .page-preview-card:last-child { margin-bottom: 0; }
+.modal-footer { position: sticky; bottom: 0; z-index: 2; background: var(--surface); padding: 16px 22px; border-top: 1px solid var(--line); border-radius: 0 0 var(--radius-lg) var(--radius-lg); display: flex; justify-content: flex-end; }
+.modal-footer .print-btn { flex: 0 0 auto; padding: 14px 30px; }
+
+@media (max-width: 720px) {
+  .grid, .grid-3 { grid-template-columns: 1fr; }
+  .section { padding: 24px 20px; }
+  .app-header-inner { flex-direction: column; text-align: center; }
+  .app-header-text { text-align: center; }
+  .modal-body { padding: 14px; }
+  .modal-body .page-preview-card { width: 100%; padding: 8mm; min-height: 0; }
+  .modal-toolbar { padding: 12px 14px; }
+  .modal-footer { padding: 12px 14px; }
+  .modal-footer .print-btn { width: 100%; }
+}
