@@ -1079,6 +1079,24 @@
   populateLeaveTypeDropdown();
   populateDashboard();
   populateSclReasons();
+  applyDeepLinkFromDashboard();
+
+  // ---------------------------------------------------------------------
+  // Optional deep link from the dashboard (index.html?...&type=KEY links
+  // here as kerala.html?type=KEY). Deliberately does NOT auto-open the
+  // modal — Employee Profile validity is still checked first, same as
+  // clicking a card directly — it just highlights which card to click and
+  // scrolls you to where to start, for continuity coming from the dashboard.
+  // ---------------------------------------------------------------------
+  function applyDeepLinkFromDashboard() {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    if (!type || !LEAVE_TYPES[type]) return;
+    const cards = Array.from(document.querySelectorAll('.app-type-card'));
+    const target = cards.find(c => c.textContent.trim().startsWith(LEAVE_TYPES[type].label));
+    if (target) target.classList.add('deep-link-target');
+    document.getElementById('name').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 </script>
 </body>
 </html>
