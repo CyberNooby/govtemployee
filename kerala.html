@@ -82,17 +82,26 @@
         <div class="help-text" id="sig_adjust_help" style="display:none; margin-top:8px;">Size and rotation apply to the signature everywhere it appears — check the live preview before printing, since a large increase can overlap nearby text.</div>
       </div>
       <!-- DASHBOARD -->
-      <div class="section dashboard-section">
+      <div class="section dashboard-section" id="dashboard_section_wrapper">
         <h2><span class="step-badge">3</span> Choose an Application</h2>
         <p class="sub-hint">Click a card to open that application's fields, preview, and download together.</p>
         <div id="dashboard_categories"></div>
       </div>
+      <!-- Shown INSTEAD of the section above when arriving with a specific
+           type already chosen (from the dashboard's "?type=" link) — the
+           choice was already made, so this confirms it rather than asking
+           again, and "inline_type_fields_target" receives that type's own
+           fields (relocated from the form modal below) directly into the
+           page flow instead of behind a click. -->
+      <div class="section hidden-section" id="type_confirm_strip"></div>
+      <div id="inline_type_fields_target"></div>
       <!-- Hidden but still fully functional: every existing type-selection
            function (toggleSections, syncFormData, etc.) reads this select's
            value, so dashboard cards just set it programmatically and call
            the same functions rather than duplicating any logic. -->
       <select id="leave_type" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
-      <!-- FORM MODAL: opens when a dashboard card is clicked. Stays nested
+      <!-- FORM MODAL: opens when a dashboard card is clicked (only reached
+           when arriving with no type pre-chosen — see above). Stays nested
            inside <form> (even though it renders as a fixed overlay) so its
            required fields still participate in leaveForm.checkValidity(). -->
       <div class="modal-overlay" id="form_modal">
@@ -107,7 +116,7 @@
           <div class="modal-body">
 <!-- SMART DATE CALCULATOR -->
       <div class="section">
-        <h2><span class="step-badge">2</span> Application Routing &amp; Dates</h2>
+        <h2><span class="step-badge">3</span> Application Routing &amp; Dates</h2>
         <div id="leave_routing_fields">
           <div class="highlight-box mb-4">
             <p style="margin-top:0; font-size: 0.9rem; color: #0369a1; font-weight: 600;">Smart Date Engine: Enter Start &amp; End Date to auto-calculate duration, OR enter Start Date &amp; Duration to auto-calculate End Date.</p>
@@ -1090,33 +1099,46 @@
     }
   }
   // ---------------------------------------------------------------------
-  // Optional deep link from the dashboard (index.html links here as
-  // kerala.html?type=KEY). Still respects the same rule as clicking a card
-  // directly — Employee Profile must be valid first — but rather than
-  // stopping there, it watches the profile fields and automatically
-  // continues into the chosen type the moment they're all valid, so picking
-  // it once on the dashboard is enough. It only auto-continues once.
+  // Deep link from the dashboard (index.html links here as
+  // kerala.html?type=KEY). The choice was already made there, so this does
+  // NOT show the "Choose an Application" picker again — it hides it,
+  // confirms what was chosen, and moves that type's own fields (normally
+  // inside the form modal) directly into the page flow. Nothing needs a
+  // second click. Landing on kerala.html with no "type" still shows the
+  // full picker as before, since in that case nothing's been chosen yet.
   // ---------------------------------------------------------------------
-  let pendingDeepLinkType = null;
-  function silentProfileIsComplete() {
-    return PROFILE_REQUIRED_IDS.every(id => document.getElementById(id).checkValidity());
+  function activateDeepLinkInlineMode(type) {
+    const t = LEAVE_TYPES[type];
+    if (!t) return;
+    document.getElementById('leave_type').value = type;
+    toggleSections();
+
+    document.getElementById('dashboard_section_wrapper').classList.add('hidden-section');
+
+    const strip = document.getElementById('type_confirm_strip');
+    strip.classList.remove('hidden-section');
+    const icon = CATEGORY_COLOR_VAR[t.group] ? '<svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;">' + (CATEGORY_ICONS[t.group] || '') + '</svg>' : '';
+    strip.style.setProperty('--modal-accent', CATEGORY_COLOR_VAR[t.group] ? 'var(' + CATEGORY_COLOR_VAR[t.group] + ')' : 'var(--accent)');
+    strip.innerHTML =
+      '<div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">' +
+        '<div style="display:flex; align-items:center; gap:14px;">' + icon +
+          '<div><div style="font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-soft);">Completing</div>' +
+          '<h2 style="margin:2px 0 0; font-family:\'Fraunces\',Georgia,serif; font-weight:600; font-size:1.25rem; color:var(--ink);">' + t.label + '</h2>' +
+          '<div class="rule-hint" style="margin-top:2px;">Governed by ' + t.rule + '</div></div>' +
+        '</div>' +
+        '<button type="button" class="reset-sig-btn" onclick="changeApplicationType()">Change application &rarr;</button>' +
+      '</div>';
+
+    // Relocate the modal's own field sections (not a copy — the same live
+    // elements, so every existing id-based reference keeps working exactly
+    // as before) out of the modal and into the normal page flow. Once
+    // outside .form-modal-dialog, the existing CSS already renders them as
+    // ordinary cards instead of modal sub-sections — no new styling needed.
+    const modalBody = document.querySelector('.form-modal-dialog .modal-body');
+    document.getElementById('inline_type_fields_target').appendChild(modalBody);
   }
-  function applyDeepLinkFromDashboard() {
-    const params = new URLSearchParams(window.location.search);
-    const type = params.get('type');
-    if (!type || !LEAVE_TYPES[type]) return;
-    pendingDeepLinkType = type;
-    const cards = Array.from(document.querySelectorAll('.app-type-card'));
-    const target = cards.find(c => c.textContent.trim().includes(LEAVE_TYPES[type].label));
-    if (target) target.classList.add('deep-link-target');
-    document.getElementById('name').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    PROFILE_REQUIRED_IDS.forEach(id => document.getElementById(id).addEventListener('change', maybeContinueDeepLink));
-  }
-  function maybeContinueDeepLink() {
-    if (!pendingDeepLinkType || !silentProfileIsComplete()) return;
-    const type = pendingDeepLinkType;
-    pendingDeepLinkType = null; // auto-continue only once
-    selectAndOpen(type);
+  function changeApplicationType() {
+    window.location.href = 'kerala.html'; // deliberate fresh start — see chat notes on this trade-off
   }
   // ---------------------------------------------------------------------
   // Boot
@@ -1124,7 +1146,10 @@
   populateLeaveTypeDropdown();
   populateDashboard();
   populateSclReasons();
-  applyDeepLinkFromDashboard();
+  (function bootDeepLink() {
+    const type = new URLSearchParams(window.location.search).get('type');
+    if (type && LEAVE_TYPES[type]) activateDeepLinkInlineMode(type);
+  })();
 </script>
 </body>
 </html>
