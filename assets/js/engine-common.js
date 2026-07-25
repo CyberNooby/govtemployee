@@ -38,8 +38,20 @@ function updateBodyScrollLock() {
                   (previewModal && previewModal.classList.contains('open'));
   document.body.style.overflow = anyOpen ? 'hidden' : '';
 }
-function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add('open'); updateBodyScrollLock(); }
-function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('open'); updateBodyScrollLock(); }
+const _modalCloseTimers = {};
+function openModal(id) {
+  const el = document.getElementById(id); if (!el) return;
+  if (_modalCloseTimers[id]) { clearTimeout(_modalCloseTimers[id]); delete _modalCloseTimers[id]; }
+  el.classList.add('open'); // display:flex now, still at its pre-animation opacity/transform
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
+  updateBodyScrollLock();
+}
+function closeModal(id) {
+  const el = document.getElementById(id); if (!el) return;
+  el.classList.remove('visible'); // starts the fade/scale-out
+  _modalCloseTimers[id] = setTimeout(() => { el.classList.remove('open'); updateBodyScrollLock(); }, 200);
+  updateBodyScrollLock();
+}
 function closePreviewModal() { closeModal('preview_modal'); }
 
 document.addEventListener('keydown', function (e) {
