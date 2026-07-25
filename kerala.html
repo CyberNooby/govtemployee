@@ -507,6 +507,21 @@
     'Insurance & Accident Benefits': '--cat-insurance', 'Service & Establishment Matters': '--cat-service',
     'Advances & Loans': '--cat-advance', 'Estate / Death Benefit Claims': '--cat-estate',
   };
+  // Same icon set as the hub dashboard (index.html) — kept identical so a
+  // form recognised there by its icon reads the same way here.
+  const CATEGORY_ICONS = {
+    'General Leave (Form 13)': '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    'Leave Without Allowance (LWA)': '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>',
+    'Family & Medical Leave': '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z"/>',
+    'Casual & Special Leave': '<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/>',
+    'Insurance & Accident Benefits': '<path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5z"/>',
+    'Service & Establishment Matters': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/>',
+    'Advances & Loans': '<circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/>',
+    'Estate / Death Benefit Claims': '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  };
+  function categoryIconSvg(groupName) {
+    return '<svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (CATEGORY_ICONS[groupName] || '') + '</svg>';
+  }
   const LEAVE_TYPES = {
     el:          { label: 'Earned Leave',                    group: GROUP_ORDER[0], rule: 'Rule 78, Part I, K.S.R.',                nature: 'Earned Leave', family: 'general' },
     hpl:         { label: 'Half Pay Leave',                   group: GROUP_ORDER[0], rule: 'Rule 83, Part I, K.S.R.',                nature: 'Half Pay Leave', family: 'general' },
@@ -641,7 +656,7 @@
       block.className = 'category-block';
       if (CATEGORY_COLOR_VAR[groupName]) block.style.setProperty('--cat-color', 'var(' + CATEGORY_COLOR_VAR[groupName] + ')');
       const h3 = document.createElement('h3');
-      h3.textContent = groupName;
+      h3.innerHTML = categoryIconSvg(groupName) + groupName;
       block.appendChild(h3);
       const grid = document.createElement('div');
       grid.className = 'card-grid';
@@ -685,7 +700,8 @@
     const type = document.getElementById('leave_type').value;
     const t = LEAVE_TYPES[type];
     if (!t) return;
-    document.getElementById('form_modal_title').textContent = t.label;
+    document.getElementById('form_modal_title').innerHTML = (CATEGORY_COLOR_VAR[t.group] ? '<svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (CATEGORY_ICONS[t.group] || '') + '</svg>' : '') + t.label;
+    document.getElementById('form_modal').style.setProperty('--modal-accent', CATEGORY_COLOR_VAR[t.group] ? 'var(' + CATEGORY_COLOR_VAR[t.group] + ')' : 'var(--accent)');
     openModal('form_modal'); // shared engine
   }
   function closeFormModal() {
@@ -1074,29 +1090,41 @@
     }
   }
   // ---------------------------------------------------------------------
+  // Optional deep link from the dashboard (index.html links here as
+  // kerala.html?type=KEY). Still respects the same rule as clicking a card
+  // directly — Employee Profile must be valid first — but rather than
+  // stopping there, it watches the profile fields and automatically
+  // continues into the chosen type the moment they're all valid, so picking
+  // it once on the dashboard is enough. It only auto-continues once.
+  // ---------------------------------------------------------------------
+  let pendingDeepLinkType = null;
+  function silentProfileIsComplete() {
+    return PROFILE_REQUIRED_IDS.every(id => document.getElementById(id).checkValidity());
+  }
+  function applyDeepLinkFromDashboard() {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    if (!type || !LEAVE_TYPES[type]) return;
+    pendingDeepLinkType = type;
+    const cards = Array.from(document.querySelectorAll('.app-type-card'));
+    const target = cards.find(c => c.textContent.trim().includes(LEAVE_TYPES[type].label));
+    if (target) target.classList.add('deep-link-target');
+    document.getElementById('name').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    PROFILE_REQUIRED_IDS.forEach(id => document.getElementById(id).addEventListener('change', maybeContinueDeepLink));
+  }
+  function maybeContinueDeepLink() {
+    if (!pendingDeepLinkType || !silentProfileIsComplete()) return;
+    const type = pendingDeepLinkType;
+    pendingDeepLinkType = null; // auto-continue only once
+    selectAndOpen(type);
+  }
+  // ---------------------------------------------------------------------
   // Boot
   // ---------------------------------------------------------------------
   populateLeaveTypeDropdown();
   populateDashboard();
   populateSclReasons();
   applyDeepLinkFromDashboard();
-
-  // ---------------------------------------------------------------------
-  // Optional deep link from the dashboard (index.html?...&type=KEY links
-  // here as kerala.html?type=KEY). Deliberately does NOT auto-open the
-  // modal — Employee Profile validity is still checked first, same as
-  // clicking a card directly — it just highlights which card to click and
-  // scrolls you to where to start, for continuity coming from the dashboard.
-  // ---------------------------------------------------------------------
-  function applyDeepLinkFromDashboard() {
-    const params = new URLSearchParams(window.location.search);
-    const type = params.get('type');
-    if (!type || !LEAVE_TYPES[type]) return;
-    const cards = Array.from(document.querySelectorAll('.app-type-card'));
-    const target = cards.find(c => c.textContent.trim().startsWith(LEAVE_TYPES[type].label));
-    if (target) target.classList.add('deep-link-target');
-    document.getElementById('name').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
 </script>
 </body>
 </html>
