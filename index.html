@@ -3,39 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Fallback for browsers/crawlers that don't run the JS redirect below -->
-<meta http-equiv="refresh" content="0; url=https://script.google.com/macros/s/AKfycbxTZinst9bmeFYzoOPTkHj4bForaH1DPXW60KsNAJPBOfSOOo9IeD8tdMFM6ZwUyX0/exec">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <title>Sarkari Forms Hub</title>
+<link rel="stylesheet" href="assets/css/shared-ui.css">
 <style>
-  :root { --ink: #142A2C; --ink-2: #1F3D3F; --paper: #F5F3ED; --accent: #0F7D6E; --text-soft: #5C6864; }
-  * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(155deg, var(--ink), var(--ink-2)); font-family: system-ui, -apple-system, sans-serif; }
-  .redirect-card { text-align: center; color: #F4F1E7; padding: 40px; max-width: 380px; }
-  .redirect-card svg { width: 56px; height: 56px; color: #D8B87A; margin-bottom: 18px; }
-  .redirect-card h1 { font-size: 1.3rem; margin: 0 0 8px; }
-  .redirect-card p { color: #C8D6D1; font-size: .92rem; margin: 0 0 22px; line-height: 1.5; }
-  .redirect-card a { color: #fff; background: var(--accent); text-decoration: none; padding: 10px 20px; border-radius: 10px; font-size: .88rem; font-weight: 600; display: inline-block; }
-  .spinner { width: 22px; height: 22px; border: 2.5px solid rgba(255,255,255,.25); border-top-color: #D8B87A; border-radius: 50%; margin: 0 auto 18px; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Hub-only: the hero IS the state grid, not a banner above it — the
+     point of this page is to show the shape of a nationwide undertaking
+     with one piece already lit up, so the grid gets top billing. */
+  .hub-lede { max-width: 640px; margin: 0 auto 28px; text-align: center; color: var(--text-soft); font-size: .95rem; line-height: 1.6; }
 </style>
 </head>
 <body>
-  <div class="redirect-card">
-    <div class="spinner"></div>
-    <h1>Sarkari Forms Hub</h1>
-    <p>Taking you to the app&hellip;</p>
-    <a id="manual-link" href="https://script.google.com/macros/s/AKfycbxTZinst9bmeFYzoOPTkHj4bForaH1DPXW60KsNAJPBOfSOOo9IeD8tdMFM6ZwUyX0/exec">Click here if you're not redirected automatically</a>
+  <div class="app-header">
+    <div class="app-header-inner">
+      <svg class="app-seal" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seal emblem">
+        <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/>
+        <circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="0.6"/>
+        <text x="32" y="30" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="600" font-size="11" fill="currentColor">भारत</text>
+        <text x="32" y="41" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="500" font-size="5.5" letter-spacing="1.5" fill="currentColor">FORMS HUB</text>
+      </svg>
+      <div class="app-header-text">
+        <h1>Sarkari Forms Hub</h1>
+        <p>Government service forms, leave applications, and statements for India — one state at a time. Everything drafts in your browser; nothing is uploaded, stored, or sent anywhere.</p>
+      </div>
+    </div>
   </div>
+  <div class="container">
+    <div class="disclaimer-banner">
+      <strong>Before you rely on this:</strong> these tools draft applications and statements in standard government formats so you have a clean, correctly-cited starting point — they are not official government products and are not legal or tax advice. Rules are amended from time to time; please confirm current requirements with your own office before submission.
+    </div>
+    <p class="hub-lede">Pick a state to open its service-forms generator, or a national tool below.</p>
+
+    <div class="section dashboard-section">
+      <h2><span class="step-badge">&#9733;</span> National Tools</h2>
+      <p class="sub-hint">Not tied to any one state — these apply the same way across India.</p>
+      <div id="national_tools" class="card-grid"></div>
+    </div>
+
+    <div class="section dashboard-section">
+      <h2><span class="step-badge">&#9670;</span> State &amp; UT Service Forms</h2>
+      <p class="sub-hint">Kerala is live today. Every other state and union territory is on the roadmap — each one gets the same rule-by-rule care before it ships, so it isn't built until it can cite its own service rules correctly.</p>
+      <div id="state_categories"></div>
+    </div>
+    <p class="privacy-note">All data stays in your browser on your device — nothing here is uploaded, stored, or sent anywhere.</p>
+  </div>
+
   <script>
-    // Replace this with your deployed Apps Script /exec URL (see SETUP.md,
-    // step 6). Keep this in sync with the <meta refresh> and href above —
-    // all three are set from this one constant so there's only one place
-    // to edit next time the deployment URL changes.
-    var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTZinst9bmeFYzoOPTkHj4bForaH1DPXW60KsNAJPBOfSOOo9IeD8tdMFM6ZwUyX0/exec";
-    document.getElementById('manual-link').href = APPS_SCRIPT_URL;
-    if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === -1) {
-      window.location.replace(APPS_SCRIPT_URL);
+    const NATIONAL_TOOLS = [
+      { name: 'Income Tax Statement Generator', status: 'pending', note: 'Old vs New regime, HRA &amp; 80C/80D, printable statement — in progress' },
+    ];
+
+    const REGIONS = [
+      { name: 'South India', states: [
+        { name: 'Andhra Pradesh' }, { name: 'Karnataka' }, { name: 'Kerala', page: 'kerala', note: 'KSR &amp; Service Forms, Leave Applications, Insurance &amp; Advances' }, { name: 'Tamil Nadu' }, { name: 'Telangana' },
+      ]},
+      { name: 'North India', states: [
+        { name: 'Haryana' }, { name: 'Himachal Pradesh' }, { name: 'Punjab' }, { name: 'Rajasthan' }, { name: 'Uttar Pradesh' }, { name: 'Uttarakhand' },
+      ]},
+      { name: 'West &amp; Central India', states: [
+        { name: 'Chhattisgarh' }, { name: 'Goa' }, { name: 'Gujarat' }, { name: 'Madhya Pradesh' }, { name: 'Maharashtra' },
+      ]},
+      { name: 'East India', states: [
+        { name: 'Bihar' }, { name: 'Jharkhand' }, { name: 'Odisha' }, { name: 'West Bengal' },
+      ]},
+      { name: 'Northeast India', states: [
+        { name: 'Arunachal Pradesh' }, { name: 'Assam' }, { name: 'Manipur' }, { name: 'Meghalaya' }, { name: 'Mizoram' }, { name: 'Nagaland' }, { name: 'Sikkim' }, { name: 'Tripura' },
+      ]},
+      { name: 'Union Territories', states: [
+        { name: 'Andaman &amp; Nicobar Islands' }, { name: 'Chandigarh' }, { name: 'Dadra &amp; Nagar Haveli and Daman &amp; Diu' }, { name: 'Delhi (NCT)' }, { name: 'Jammu &amp; Kashmir' }, { name: 'Ladakh' }, { name: 'Lakshadweep' }, { name: 'Puducherry' },
+      ]},
+    ];
+
+    function cardHtml(item) {
+      const isLive = !!item.page;
+      const pill = isLive ? '<span class="status-pill live">Live</span>' : '<span class="status-pill pending">Coming soon</span>';
+      const note = item.note || 'On the roadmap';
+      if (isLive) {
+        return '<a class="app-type-card" href="' + item.page + '.html">' +
+          '<span class="card-name">' + item.name + ' ' + pill + '</span>' +
+          '<span class="card-rule">' + note + '</span></a>';
+      }
+      return '<div class="app-type-card is-pending" role="note" aria-label="' + item.name + ', coming soon">' +
+        '<span class="card-name">' + item.name + ' ' + pill + '</span>' +
+        '<span class="card-rule">' + note + '</span></div>';
     }
+
+    function renderDashboard() {
+      document.getElementById('national_tools').innerHTML = NATIONAL_TOOLS.map(cardHtml).join('');
+      const container = document.getElementById('state_categories');
+      container.innerHTML = REGIONS.map(function (region) {
+        const cards = region.states.map(cardHtml).join('');
+        return '<div class="category-block"><h3>' + region.name + '</h3><div class="card-grid">' + cards + '</div></div>';
+      }).join('');
+    }
+
+    renderDashboard();
   </script>
 </body>
 </html>
