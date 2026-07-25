@@ -113,8 +113,10 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
    (e.g. Kerala's 20+ application types). Sections inside reuse .section/h2
    markup verbatim but read as sub-sections of one dialog. */
 .form-modal-dialog { background: var(--surface); max-width: 760px; }
-.form-modal-dialog .modal-toolbar { background: var(--ink); }
-.modal-toolbar-title h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 0; }
+.form-modal-dialog .modal-toolbar { background: var(--ink); position: relative; }
+.form-modal-dialog .modal-toolbar::after { content: ""; position: absolute; inset: auto 0 0 0; height: 3px; background: var(--modal-accent, var(--accent)); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.modal-toolbar-title h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px; }
+.modal-title-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--modal-accent, var(--accent)); }
 .modal-toolbar-title .rule-hint { margin-top: 4px; color: #CFE4DE; font-size: .78rem; }
 .modal-toolbar-title .rule-hint span { color: #CFE4DE; }
 .form-modal-dialog .modal-body { padding: 28px 30px 30px; }
@@ -129,10 +131,12 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
    mirror the @page print margins exactly, so preview == PDF. The Download
    / Print button lives in a sticky footer here (not beside "Preview"),
    so it's reachable from anywhere in a long, multi-page scroll. */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; opacity: 0; transition: opacity .18s ease; }
 #preview_modal { z-index: 1100; }
 .modal-overlay.open { display: flex; }
-.modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); margin-bottom: 30px; }
+.modal-overlay.open.visible { opacity: 1; }
+.modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); margin-bottom: 30px; transform: translateY(14px) scale(.98); transition: transform .2s ease; }
+.modal-overlay.open.visible .modal-dialog { transform: translateY(0) scale(1); }
 .modal-toolbar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 16px 22px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .modal-toolbar h3 { margin: 0; font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.08rem; white-space: nowrap; }
 .modal-sig-controls { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; flex: 1; min-width: 260px; }
@@ -208,7 +212,7 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 
 .category-block h3 { display: flex; align-items: center; gap: 9px; }
 .category-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--cat-color, var(--accent)); }
-.hub-dashboard .category-block h3::before { display: none; } /* icon replaces the plain dot, hub dashboard only — Kerala's own internal dashboard keeps its dot */
+.category-block h3::before { display: none; } /* icon replaces the plain dot everywhere category-block is used */
 
 .app-type-card .card-name { display: flex; align-items: center; gap: 8px; }
 
