@@ -129,20 +129,29 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 
 /* Preview Modal — every tool's page cards inside are sized and padded to
    mirror the @page print margins exactly, so preview == PDF. The Download
-   / Print button lives in a sticky footer here (not beside "Preview"),
-   so it's reachable from anywhere in a long, multi-page scroll. */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; opacity: 0; transition: opacity .18s ease; }
+   / Print button lives in a footer here (not beside "Preview"), so it's
+   reachable from anywhere in a long, multi-page scroll. The dialog itself
+   is a bounded, centered box — only .modal-body scrolls internally, the
+   toolbar/footer never move, matching how a real desktop dialog behaves
+   rather than the whole page scrolling underneath a floating box. */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: center; justify-content: center; padding: 30px 20px; overflow-y: auto; opacity: 0; transition: opacity .18s ease; }
 .modal-overlay.open { display: flex; }
 .modal-overlay.open.visible { opacity: 1; }
-.modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); margin-bottom: 30px; transform: translateY(14px) scale(.98); transition: transform .2s ease; }
+.modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; max-height: min(85vh, 800px); box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); transform: translateY(14px) scale(.98); transition: transform .2s ease; display: flex; flex-direction: column; }
 /* Settle to transform:none (not an identity translate/scale) once open — a
    transform value, even a no-op one, permanently creates a new CSS
    containing block for descendants. Left in place, that quietly breaks how
-   the sticky toolbar/footer track scrolling, which is exactly what caused
-   content to visibly "move under" the modal while scrolling the preview. */
+   fixed/sticky descendants track scrolling, which is exactly what caused
+   content to visibly "move under" the modal in an earlier version. */
 .modal-overlay.open.visible .modal-dialog { transform: none; }
-.modal-toolbar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 16px 22px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+/* Each "view" (form entry / preview) is itself a flex column filling the
+   bounded dialog — min-height:0 at every level here is load-bearing: it's
+   what lets .modal-body actually shrink and scroll instead of the flex
+   chain just growing taller than the dialog's own max-height. */
+.app-modal-view { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.modal-toolbar { position: relative; z-index: 2; background: var(--ink); color: #fff; padding: 16px 22px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; flex-shrink: 0; }
 .modal-toolbar h3 { margin: 0; font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.08rem; white-space: nowrap; }
+.app-modal-view > .rule-hint { flex-shrink: 0; }
 .modal-sig-controls { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; flex: 1; min-width: 260px; }
 .modal-sig-controls .sig-adjust-row { color: #D8E0DD; font-size: .8rem; display: flex; align-items: center; gap: 8px; }
 .modal-sig-controls .sig-adjust-row label { min-width: 40px; font-weight: 600; }
@@ -152,10 +161,10 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .modal-close-btn:hover { opacity: 1; }
 .modal-back-btn { background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.2); color: #fff; font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 7px 12px; border-radius: 20px; transition: background-color .15s ease; flex-shrink: 0; }
 .modal-back-btn:hover { background: rgba(255,255,255,.16); }
-.modal-body { padding: 30px; }
+.modal-body { padding: 30px; flex: 1 1 auto; overflow-y: auto; min-height: 0; }
 .modal-body .page-preview-card { margin: 0 auto 30px auto; width: 210mm; min-height: 297mm; padding: 15mm 20mm; box-shadow: 0 10px 30px -8px rgba(0,0,0,.4); box-sizing: border-box; border-radius: 2px; }
 .modal-body .page-preview-card:last-child { margin-bottom: 0; }
-.modal-footer { position: sticky; bottom: 0; z-index: 2; background: var(--surface); padding: 16px 22px; border-top: 1px solid var(--line); border-radius: 0 0 var(--radius-lg) var(--radius-lg); display: flex; justify-content: flex-end; }
+.modal-footer { position: relative; z-index: 2; background: var(--surface); padding: 16px 22px; border-top: 1px solid var(--line); border-radius: 0 0 var(--radius-lg) var(--radius-lg); display: flex; justify-content: flex-end; flex-shrink: 0; }
 .modal-footer .print-btn { flex: 0 0 auto; padding: 14px 30px; }
 
 @media (max-width: 720px) {
@@ -163,6 +172,8 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
   .section { padding: 24px 20px; }
   .app-header-inner { flex-direction: column; text-align: center; }
   .app-header-text { text-align: center; }
+  .modal-overlay { padding: 10px; }
+  .modal-dialog { max-height: 95vh; }
   .modal-body { padding: 14px; }
   .modal-body .page-preview-card { width: 100%; padding: 8mm; min-height: 0; }
   .modal-toolbar { padding: 12px 14px; }
