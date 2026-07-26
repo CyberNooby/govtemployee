@@ -58,7 +58,7 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 }
 .form-group input::placeholder, .form-group textarea::placeholder { color: #A8A296; }
 .help-text { font-size: .76rem; color: var(--text-soft); margin-top: 6px; line-height: 1.45; }
-.hidden-section { display: none; }
+.hidden-section { display: none !important; } /* a universal "hide this" utility must always win, regardless of any other rule's specificity or position in the file — this is exactly the category of bug that just broke panel visibility */
 .rule-hint { font-size: .82rem; color: var(--accent-deep); margin-top: 10px; font-style: italic; min-height: 1.2em; }
 .info-callout { font-size: .84rem; color: var(--accent-deep); background: var(--accent-soft); border: 1px solid #C7E2DB; padding: 9px 13px; border-radius: var(--radius-sm); margin-top: 8px; display: none; }
 
