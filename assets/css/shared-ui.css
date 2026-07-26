@@ -112,7 +112,7 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 /* Form Modal: an optional sub-dialog for tools that offer many sub-types
    (e.g. Kerala's 20+ application types). Sections inside reuse .section/h2
    markup verbatim but read as sub-sections of one dialog. */
-.form-modal-dialog { background: var(--surface); max-width: 760px; }
+.form-modal-dialog { background: var(--surface); max-width: 900px; }
 .form-modal-dialog .modal-toolbar { background: var(--ink); position: relative; }
 .form-modal-dialog .modal-toolbar::after { content: ""; position: absolute; inset: auto 0 0 0; height: 3px; background: var(--modal-accent, var(--accent)); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
 .modal-toolbar-title h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px; }
@@ -132,11 +132,15 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
    / Print button lives in a sticky footer here (not beside "Preview"),
    so it's reachable from anywhere in a long, multi-page scroll. */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: flex-start; justify-content: center; padding: 30px 20px; overflow-y: auto; opacity: 0; transition: opacity .18s ease; }
-#preview_modal { z-index: 1100; }
 .modal-overlay.open { display: flex; }
 .modal-overlay.open.visible { opacity: 1; }
 .modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); margin-bottom: 30px; transform: translateY(14px) scale(.98); transition: transform .2s ease; }
-.modal-overlay.open.visible .modal-dialog { transform: translateY(0) scale(1); }
+/* Settle to transform:none (not an identity translate/scale) once open — a
+   transform value, even a no-op one, permanently creates a new CSS
+   containing block for descendants. Left in place, that quietly breaks how
+   the sticky toolbar/footer track scrolling, which is exactly what caused
+   content to visibly "move under" the modal while scrolling the preview. */
+.modal-overlay.open.visible .modal-dialog { transform: none; }
 .modal-toolbar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 16px 22px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .modal-toolbar h3 { margin: 0; font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.08rem; white-space: nowrap; }
 .modal-sig-controls { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; flex: 1; min-width: 260px; }
@@ -146,6 +150,8 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .modal-sig-controls .sig-adjust-row span { min-width: 40px; text-align: right; color: #fff; font-family: "IBM Plex Mono", monospace; font-size: .76rem; }
 .modal-close-btn { background: none; border: none; color: #fff; font-size: 1.7rem; line-height: 1; cursor: pointer; padding: 0 4px; opacity: .85; transition: opacity .15s ease; }
 .modal-close-btn:hover { opacity: 1; }
+.modal-back-btn { background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.2); color: #fff; font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 7px 12px; border-radius: 20px; transition: background-color .15s ease; flex-shrink: 0; }
+.modal-back-btn:hover { background: rgba(255,255,255,.16); }
 .modal-body { padding: 30px; }
 .modal-body .page-preview-card { margin: 0 auto 30px auto; width: 210mm; min-height: 297mm; padding: 15mm 20mm; box-shadow: 0 10px 30px -8px rgba(0,0,0,.4); box-sizing: border-box; border-radius: 2px; }
 .modal-body .page-preview-card:last-child { margin-bottom: 0; }
@@ -226,12 +232,9 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
   .state-switcher-panel, .state-switcher-trigger .chevron, .app-type-card, .state-open-tool-btn { transition: none; }
 }
 
-/* Deep-link highlight: a card reached via a dashboard link gets a brief,
-   one-time pulse plus a lasting gold border, so it's easy to re-find after
-   scrolling to fill in the Employee Profile section first. */
-.app-type-card.deep-link-target { border-color: var(--gold-deep); box-shadow: 0 0 0 3px var(--gold-soft); animation: deepLinkPulse 1.6s ease-out 1; }
-@keyframes deepLinkPulse { 0% { box-shadow: 0 0 0 0 rgba(216,184,122,.55); } 100% { box-shadow: 0 0 0 10px rgba(216,184,122,0); } }
-@media (prefers-reduced-motion: reduce) { .app-type-card.deep-link-target { animation: none; } }
+/* Deep-link handling now relocates the chosen type's fields inline (see
+   kerala.html's activateDeepLinkInlineMode) rather than highlighting a card
+   to click — so there's no card-highlight style needed here any more. */
 
 @media (max-width: 720px) {
   .top-nav { padding: 12px 16px; flex-wrap: nowrap; }
