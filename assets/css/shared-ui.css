@@ -115,10 +115,10 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .form-modal-dialog { background: var(--surface); max-width: 900px; }
 .form-modal-dialog .modal-toolbar { background: var(--ink); position: relative; }
 .form-modal-dialog .modal-toolbar::after { content: ""; position: absolute; inset: auto 0 0 0; height: 3px; background: var(--modal-accent, var(--accent)); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
-.modal-toolbar-title h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px; }
+/* form_modal_title/.modal-toolbar-title retired — replaced by the
+   type-switcher dropdown plus a standalone .rule-hint caption below the
+   toolbar, styled by the plain .rule-hint rule elsewhere in this file. */
 .modal-title-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--modal-accent, var(--accent)); }
-.modal-toolbar-title .rule-hint { margin-top: 4px; color: #CFE4DE; font-size: .78rem; }
-.modal-toolbar-title .rule-hint span { color: #CFE4DE; }
 .form-modal-dialog .modal-body { padding: 28px 30px 30px; }
 .form-modal-dialog .modal-body .section { box-shadow: none; border: none; border-radius: 0; padding: 22px 0; margin: 0; background: transparent; }
 .form-modal-dialog .modal-body .section:first-of-type { padding-top: 0; }
@@ -191,6 +191,11 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .state-switcher.open .state-switcher-trigger .chevron { transform: rotate(180deg); }
 
 .state-switcher-panel { position: absolute; top: calc(100% + 12px); right: 0; width: min(360px, 88vw); max-height: min(70vh, 520px); background: var(--surface); border-radius: var(--radius-lg); box-shadow: 0 28px 64px -14px rgba(20,30,28,.4); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; z-index: 210; opacity: 0; transform: translateY(-8px) scale(.98); pointer-events: none; transition: opacity .15s ease, transform .15s ease; }
+/* Reused inside the application modal's toolbar (top-left) for the type
+   switcher — same component as the hub's state switcher, just opening
+   rightward from a left-anchored trigger instead of leftward from a
+   right-anchored one, so it doesn't run off the edge of the dialog. */
+.modal-toolbar .state-switcher-panel { right: auto; left: 0; }
 .state-switcher.open .state-switcher-panel { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 .state-search-wrap { padding: 12px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
 .state-search-wrap input { width: 100%; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 10px 13px; font-size: .89rem; font-family: inherit; color: var(--text); }
