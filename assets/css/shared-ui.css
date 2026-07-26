@@ -112,7 +112,7 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 /* Form Modal: an optional sub-dialog for tools that offer many sub-types
    (e.g. Kerala's 20+ application types). Sections inside reuse .section/h2
    markup verbatim but read as sub-sections of one dialog. */
-.form-modal-dialog { background: var(--surface); max-width: 900px; }
+.modal-dialog.form-modal-dialog { background: var(--surface); max-width: 900px; }
 .form-modal-dialog .modal-toolbar { background: var(--ink); position: relative; }
 .form-modal-dialog .modal-toolbar::after { content: ""; position: absolute; inset: auto 0 0 0; height: 3px; background: var(--modal-accent, var(--accent)); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
 /* form_modal_title/.modal-toolbar-title retired — replaced by the
