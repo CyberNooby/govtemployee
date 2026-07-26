@@ -33,11 +33,51 @@
     <div class="disclaimer-banner">
       <strong>Before you rely on this:</strong> this tool drafts your application in the standard KSR/KFC formats so you have a clean starting point — it is not an official Government of Kerala product and is not legal advice. Rule numbers, appendices, and required enclosures are amended from time to time by Government Orders, and offices sometimes have local variations. Please confirm current requirements — and whether your office needs a wet-ink signature rather than a printed one — with your DDO / Head of Office before submission. GPF and GIS are deliberately not included here: both are now handled through dedicated online modules (SPARK for GPF, the "Viswas" portal for GIS) where a manual paper application is generally no longer accepted.
     </div>
+    <!-- Shown only after the modal has been explicitly closed (× button) —
+         reopens it without losing anything already typed, since the fields
+         underneath are just hidden, not cleared. -->
+    <div class="section hidden-section" id="reopen_panel" style="text-align:center;">
+      <h2 style="justify-content:center;">Continue your application</h2>
+      <p class="sub-hint">You closed the application window. Nothing you entered was lost.</p>
+      <button type="button" class="print-btn" style="max-width:280px; margin:0 auto;" onclick="openModal('app_modal')">Reopen &rarr;</button>
+    </div>
     <form id="leaveForm" onsubmit="event.preventDefault();">
-      <!-- EMPLOYEE DETAILS -->
+      <select id="leave_type" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+      <!-- APPLICATION MODAL: opens automatically on page load. One dialog,
+           two views (form entry and preview) that swap in place rather than
+           two separate popups, so moving from filling in the form to
+           previewing it, and back, never loses anything. Employee Profile
+           and Digital Signature live inside it too — the whole application
+           is one continuous modal, and the type-switcher (top-left) lets
+           you change which of the 31 forms you're on without leaving it or
+           losing what you've already filled in elsewhere. Stays nested
+           inside <form> so its required fields still participate in
+           leaveForm.checkValidity(). -->
+      <div class="modal-overlay" id="app_modal">
+        <div class="modal-dialog form-modal-dialog" role="dialog" aria-modal="true" aria-label="Application">
+          <div class="app-modal-view" id="panel_form">
+          <div class="modal-toolbar">
+            <div class="state-switcher" id="type_switcher">
+              <button type="button" class="state-switcher-trigger" id="type_switcher_trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="type_switcher_icon"></span>
+                <span id="type_switcher_label">Choose application&hellip;</span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="state-switcher-panel" role="listbox" aria-label="Choose an application type">
+                <div class="state-search-wrap">
+                  <input type="text" id="type_search" placeholder="Search application types&hellip;" autocomplete="off">
+                </div>
+                <div class="state-list" id="type_list"></div>
+              </div>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="closeAppModal()" aria-label="Close">&times;</button>
+          </div>
+          <div class="rule-hint" id="modal_rule_caption" style="padding:10px 22px 0;"><span class="category-dot" id="category_dot"></span><span id="rule_hint"></span></div>
+          <div class="modal-body">
+<!-- EMPLOYEE DETAILS -->
       <div class="section">
         <h2><span class="step-badge">1</span> Employee Profile</h2>
-        <p class="sub-hint">Fill this in once — it is reused for every application you generate below.</p>
+        <p class="sub-hint">Fill this in once — it is reused for every application you generate.</p>
         <div class="grid">
           <div class="form-group"><label class="required">Full Name</label><input type="text" id="name" required></div>
           <div class="form-group"><label class="required">PEN Number</label><input type="text" id="pen" required></div>
@@ -68,39 +108,6 @@
         </div>
         <div class="help-text" id="sig_adjust_help" style="display:none; margin-top:8px;">You can adjust its size and rotation from the Preview step, once you're ready to generate your document.</div>
       </div>
-      <!-- DASHBOARD -->
-      <div class="section dashboard-section" id="dashboard_section_wrapper">
-        <h2><span class="step-badge">3</span> Choose an Application</h2>
-        <p class="sub-hint">Click a card to open that application's fields, preview, and download together.</p>
-        <div id="dashboard_categories"></div>
-      </div>
-      <!-- Shown INSTEAD of the "Choose an Application" grid when arriving
-           with a specific type already chosen (the dashboard's "?type="
-           link) — the choice was already made, so this confirms it with
-           one clear next step rather than presenting all 31 options again. -->
-      <div class="section hidden-section" id="type_confirm_strip"></div>
-      <!-- Hidden but still fully functional: every existing type-selection
-           function (toggleSections, syncFormData, etc.) reads this select's
-           value, so dashboard cards just set it programmatically and call
-           the same functions rather than duplicating any logic. -->
-      <select id="leave_type" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
-      <!-- APPLICATION MODAL: one dialog with two views (form entry and
-           preview) that swap in place, rather than two separate popups —
-           moving from filling in the form to previewing it, and back,
-           never loses anything or feels like starting over. Stays nested
-           inside <form> so its required fields still participate in
-           leaveForm.checkValidity(). -->
-      <div class="modal-overlay" id="app_modal">
-        <div class="modal-dialog form-modal-dialog" role="dialog" aria-modal="true" aria-label="Application">
-          <div class="app-modal-view" id="panel_form">
-          <div class="modal-toolbar">
-            <div class="modal-toolbar-title">
-              <h3 id="form_modal_title">Application</h3>
-              <div class="rule-hint"><span class="category-dot" id="category_dot"></span><span id="rule_hint"></span></div>
-            </div>
-            <button type="button" class="modal-close-btn" onclick="closeAppModal()" aria-label="Close">&times;</button>
-          </div>
-          <div class="modal-body">
 <!-- SMART DATE CALCULATOR -->
       <div class="section">
         <h2><span class="step-badge">3</span> Application Routing &amp; Dates</h2>
@@ -634,68 +641,69 @@
     });
   }
   // ---------------------------------------------------------------------
-  // Dashboard: one card per application type, grouped under its category.
-  // Clicking a card drives the same hidden <select> + toggleSections() that
-  // already power every type-specific field, so none of that logic had to
-  // be duplicated or rewritten for the dashboard/modal navigation.
+  // Type switcher: the dropdown replacing the old card grid, living inside
+  // the modal's toolbar. Reuses the exact same searchable-list pattern (and
+  // CSS classes) as the dashboard's state switcher on index.html, grouped
+  // by category instead of live/roadmap.
   // ---------------------------------------------------------------------
-  function populateDashboard() {
-    const container = document.getElementById('dashboard_categories');
-    container.innerHTML = '';
+  let typeKbdIndex = -1;
+  function populateTypeSwitcher() {
+    renderTypeList('');
+  }
+  function renderTypeList(filter) {
+    const q = (filter || '').trim().toLowerCase();
+    const list = document.getElementById('type_list');
+    let html = '';
     GROUP_ORDER.forEach(groupName => {
-      const keys = Object.keys(LEAVE_TYPES).filter(k => LEAVE_TYPES[k].group === groupName);
+      const keys = Object.keys(LEAVE_TYPES).filter(k => LEAVE_TYPES[k].group === groupName &&
+        (!q || LEAVE_TYPES[k].label.toLowerCase().includes(q) || groupName.toLowerCase().includes(q)));
       if (!keys.length) return;
-      const block = document.createElement('div');
-      block.className = 'category-block';
-      if (CATEGORY_COLOR_VAR[groupName]) block.style.setProperty('--cat-color', 'var(' + CATEGORY_COLOR_VAR[groupName] + ')');
-      const h3 = document.createElement('h3');
-      h3.innerHTML = categoryIconSvg(groupName) + groupName;
-      block.appendChild(h3);
-      const grid = document.createElement('div');
-      grid.className = 'card-grid';
-      keys.forEach(key => {
-        const t = LEAVE_TYPES[key];
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'app-type-card';
-        card.innerHTML = '<span class="card-name">' + t.label + '</span><span class="card-rule">' + t.rule + '</span>';
-        card.addEventListener('click', () => selectAndOpen(key));
-        grid.appendChild(card);
-      });
-      block.appendChild(grid);
-      container.appendChild(block);
+      html += '<div class="state-list-label">' + groupName + '</div>';
+      html += keys.map(k => '<button type="button" class="state-option" role="option" data-key="' + k + '">' +
+        '<span class="opt-name">' + LEAVE_TYPES[k].label + '</span></button>').join('');
     });
+    list.innerHTML = html || '<div class="state-empty-result">No application type matches &ldquo;' + filter + '&rdquo;.</div>';
+    typeKbdIndex = -1;
   }
-  // Required Employee Profile fields must be valid BEFORE a form modal
-  // opens over them — otherwise a validation bubble for a field the modal
-  // is now covering would be confusing or invisible. Checking each field's
-  // own validity (rather than the whole form's) lets this run safely while
-  // the modal-only fields are still hidden/unfilled.
-  const PROFILE_REQUIRED_IDS = ['name', 'pen', 'designation', 'office', 'dob', 'entry', 'pay'];
-  function profileIsComplete() {
-    for (const id of PROFILE_REQUIRED_IDS) {
-      const el = document.getElementById(id);
-      if (!el.checkValidity()) {
-        el.reportValidity();
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return false;
-      }
-    }
-    return true;
+  function openTypeSwitcher() {
+    document.getElementById('type_switcher').classList.add('open');
+    document.getElementById('type_switcher_trigger').setAttribute('aria-expanded', 'true');
+    const search = document.getElementById('type_search');
+    search.value = '';
+    renderTypeList('');
+    setTimeout(() => search.focus(), 10);
   }
-  function selectAndOpen(key) {
-    if (!profileIsComplete()) return;
+  function closeTypeSwitcher() {
+    document.getElementById('type_switcher').classList.remove('open');
+    document.getElementById('type_switcher_trigger').setAttribute('aria-expanded', 'false');
+  }
+  function toggleTypeSwitcher() {
+    document.getElementById('type_switcher').classList.contains('open') ? closeTypeSwitcher() : openTypeSwitcher();
+  }
+  function highlightTypeKbd(options) {
+    options.forEach((o, i) => o.classList.toggle('kbd-active', i === typeKbdIndex));
+    if (options[typeKbdIndex]) options[typeKbdIndex].scrollIntoView({ block: 'nearest' });
+  }
+  // ---------------------------------------------------------------------
+  // Selecting a type just sets the field and re-derives everything from
+  // it — there's no "open the modal" step to gate any more, since the
+  // modal is already open by the time anyone can pick from this list.
+  // Employee Profile / Digital Signature and anything else already typed
+  // are untouched by switching which application you're completing.
+  // ---------------------------------------------------------------------
+  function selectApplicationType(key) {
+    const t = LEAVE_TYPES[key];
+    if (!t) return;
     document.getElementById('leave_type').value = key;
     toggleSections();
-    openAppModal();
-  }
-  function openAppModal() {
-    const type = document.getElementById('leave_type').value;
-    const t = LEAVE_TYPES[type];
-    if (!t) return;
-    document.getElementById('form_modal_title').innerHTML = (CATEGORY_COLOR_VAR[t.group] ? '<svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (CATEGORY_ICONS[t.group] || '') + '</svg>' : '') + t.label;
+    document.getElementById('type_switcher_icon').innerHTML = CATEGORY_COLOR_VAR[t.group] ? '<svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">' + (CATEGORY_ICONS[t.group] || '') + '</svg>' : '';
+    document.getElementById('type_switcher_label').textContent = t.label;
     document.getElementById('app_modal').style.setProperty('--modal-accent', CATEGORY_COLOR_VAR[t.group] ? 'var(' + CATEGORY_COLOR_VAR[t.group] + ')' : 'var(--accent)');
-    showFormPanel(); // always start on the form-entry view, even if a previous session left it on preview
+    closeTypeSwitcher();
+  }
+  function openAppModal(initialKey) {
+    if (initialKey) selectApplicationType(initialKey);
+    showFormPanel(); // always start on the form-entry view
     openModal('app_modal'); // shared engine
   }
   function closeAppModal() {
@@ -1103,50 +1111,47 @@
       document.getElementById('toc8_body').innerHTML = buildToc8Body();
     }
   }
+  document.getElementById('app_modal').addEventListener('modal:closed', () => {
+    document.getElementById('reopen_panel').classList.remove('hidden-section');
+  });
   // ---------------------------------------------------------------------
-  // Deep link from the dashboard (index.html links here as
-  // kerala.html?type=KEY). The choice was already made there, so this does
-  // NOT show the "Choose an Application" picker again — it hides it and
-  // shows a single confirmation with one "Continue" button in its place,
-  // which opens the exact same application modal a card click would (same
-  // profile-completeness gate, same everything — just one pre-picked
-  // option instead of 31). Landing on kerala.html with no "type" still
-  // shows the full picker as before, since nothing's been chosen yet.
+  // Type-switcher wiring
   // ---------------------------------------------------------------------
-  function activateDeepLinkConfirm(type) {
-    const t = LEAVE_TYPES[type];
-    if (!t) return;
-    document.getElementById('dashboard_section_wrapper').classList.add('hidden-section');
-
-    const strip = document.getElementById('type_confirm_strip');
-    strip.classList.remove('hidden-section');
-    const icon = CATEGORY_COLOR_VAR[t.group] ? '<svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;">' + (CATEGORY_ICONS[t.group] || '') + '</svg>' : '';
-    strip.style.setProperty('--modal-accent', CATEGORY_COLOR_VAR[t.group] ? 'var(' + CATEGORY_COLOR_VAR[t.group] + ')' : 'var(--accent)');
-    strip.innerHTML =
-      '<div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">' +
-        '<div style="display:flex; align-items:center; gap:14px;">' + icon +
-          '<div><div style="font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-soft);">Completing</div>' +
-          '<h2 style="margin:2px 0 0; font-family:\'Fraunces\',Georgia,serif; font-weight:600; font-size:1.25rem; color:var(--ink);">' + t.label + '</h2>' +
-          '<div class="rule-hint" style="margin-top:2px;">Governed by ' + t.rule + '</div></div>' +
-        '</div>' +
-        '<div style="display:flex; gap:10px; flex-wrap:wrap;">' +
-          '<button type="button" class="reset-sig-btn" onclick="changeApplicationType()">Change application</button>' +
-          '<button type="button" class="print-btn" style="flex:0 0 auto; padding:12px 24px;" onclick="selectAndOpen(\'' + type + '\')">Continue &rarr;</button>' +
-        '</div>' +
-      '</div>';
-  }
-  function changeApplicationType() {
-    window.location.href = 'kerala.html'; // deliberate fresh start — see chat notes on this trade-off
-  }
+  document.getElementById('type_switcher_trigger').addEventListener('click', toggleTypeSwitcher);
+  document.addEventListener('click', (e) => {
+    const switcher = document.getElementById('type_switcher');
+    if (switcher.classList.contains('open') && !switcher.contains(e.target)) closeTypeSwitcher();
+  });
+  document.getElementById('type_search').addEventListener('input', (e) => renderTypeList(e.target.value));
+  document.getElementById('type_list').addEventListener('click', (e) => {
+    const btn = e.target.closest('.state-option');
+    if (btn) selectApplicationType(btn.dataset.key);
+  });
+  // Scoped to the search input (not `document`) and stops propagation on
+  // Escape specifically — that's what lets Escape close just this dropdown
+  // first, rather than the shared engine's document-level handler treating
+  // it as "close the whole application modal" before this ever sees it.
+  document.getElementById('type_search').addEventListener('keydown', (e) => {
+    const options = Array.from(document.querySelectorAll('#type_list .state-option'));
+    if (e.key === 'Escape') { e.stopPropagation(); closeTypeSwitcher(); document.getElementById('type_switcher_trigger').focus(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); typeKbdIndex = Math.min(typeKbdIndex + 1, options.length - 1); highlightTypeKbd(options); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); typeKbdIndex = Math.max(typeKbdIndex - 1, 0); highlightTypeKbd(options); }
+    else if (e.key === 'Enter' && typeKbdIndex >= 0 && options[typeKbdIndex]) { e.preventDefault(); selectApplicationType(options[typeKbdIndex].dataset.key); }
+  });
   // ---------------------------------------------------------------------
-  // Boot
+  // Boot — the application modal opens automatically. Whatever type came
+  // from the dashboard's "?type=" link is used; landing with no type (or
+  // an unrecognised one) falls back to the first item in the list rather
+  // than showing an empty state, so there's always something sensible on
+  // screen the moment the page loads.
   // ---------------------------------------------------------------------
   populateLeaveTypeDropdown();
-  populateDashboard();
+  populateTypeSwitcher();
   populateSclReasons();
-  (function bootDeepLink() {
-    const type = new URLSearchParams(window.location.search).get('type');
-    if (type && LEAVE_TYPES[type]) activateDeepLinkConfirm(type);
+  (function boot() {
+    const requested = new URLSearchParams(window.location.search).get('type');
+    const initialKey = (requested && LEAVE_TYPES[requested]) ? requested : Object.keys(LEAVE_TYPES)[0];
+    openAppModal(initialKey);
   })();
 </script>
 </body>
