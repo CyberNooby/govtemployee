@@ -49,7 +49,11 @@ function openModal(id) {
 function closeModal(id) {
   const el = document.getElementById(id); if (!el) return;
   el.classList.remove('visible'); // starts the fade/scale-out
-  _modalCloseTimers[id] = setTimeout(() => { el.classList.remove('open'); updateBodyScrollLock(); }, 200);
+  _modalCloseTimers[id] = setTimeout(() => {
+    el.classList.remove('open');
+    updateBodyScrollLock();
+    el.dispatchEvent(new CustomEvent('modal:closed')); // lets a page hook its own "on closed" behavior, regardless of what triggered the close (× button, Escape, etc.)
+  }, 200);
   updateBodyScrollLock();
 }
 
