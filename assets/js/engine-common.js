@@ -5,16 +5,19 @@
    markup calls these by name directly from onclick/onchange/oninput attributes,
    so a page never has to know it's calling into a shared file.
 
-   CONTRACT — a tool page gets Preview + Download/Print "for free" by
-   following these conventions:
+   CONTRACT — a tool page gets modal mechanics, signature capture, and
+   preview rendering "for free" by following these conventions:
      - exactly one <form> wraps the data-entry fields
-     - #preview_modal / #preview-render-target exist (see markup below)
-     - #form_modal exists ONLY if the tool needs a "pick a sub-type" step
-       (optional — e.g. Income Tax doesn't need one, Kerala's forms do)
+     - any modal a page defines uses the .modal-overlay class and is
+       opened/closed via openModal(id)/closeModal(id) — updateBodyScrollLock
+       and the Escape key handler work automatically for any number of
+       modals on the page, keyed off that class, not specific ids
      - the page defines a global function syncFormData() that fills every
        .out-xxx span / print-template target from current field values
      - #document-preview holds one or more .page elements (toggle a page
-       on/off for the current type via the .hidden-print class)
+       on/off for the current type via the .hidden-print class);
+       renderDocumentPreview(targetId) clones the active ones into any
+       container the page names
      - signature elements use the sig_* ids/classes documented inline below
    ============================================================================= */
 
@@ -32,10 +35,7 @@ function fval(id) { return formatDate(val(id)); }
 
 /* ---- modal mechanics ---------------------------------------------------- */
 function updateBodyScrollLock() {
-  const formModal = document.getElementById('form_modal');
-  const previewModal = document.getElementById('preview_modal');
-  const anyOpen = (formModal && formModal.classList.contains('open')) ||
-                  (previewModal && previewModal.classList.contains('open'));
+  const anyOpen = document.querySelector('.modal-overlay.open') !== null;
   document.body.style.overflow = anyOpen ? 'hidden' : '';
 }
 const _modalCloseTimers = {};
@@ -52,14 +52,11 @@ function closeModal(id) {
   _modalCloseTimers[id] = setTimeout(() => { el.classList.remove('open'); updateBodyScrollLock(); }, 200);
   updateBodyScrollLock();
 }
-function closePreviewModal() { closeModal('preview_modal'); }
 
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape') return;
-  const previewModal = document.getElementById('preview_modal');
-  const formModal = document.getElementById('form_modal');
-  if (previewModal && previewModal.classList.contains('open')) { closePreviewModal(); }
-  else if (formModal && formModal.classList.contains('open') && typeof closeFormModal === 'function') { closeFormModal(); }
+  const openModalEl = document.querySelector('.modal-overlay.open');
+  if (openModalEl) closeModal(openModalEl.id);
 });
 
 /* ---- signature capture: background-isolation canvas engine -------------
@@ -158,12 +155,12 @@ function calculateEndDate() {
   }
 }
 
-/* ---- Preview + PDF generation, driven by each page's own syncFormData() */
-function openPreviewModal() {
-  const form = document.querySelector('form');
-  if (form && !form.checkValidity()) { form.reportValidity(); return; }
-  if (typeof syncFormData === 'function') syncFormData();
-  const target = document.getElementById('preview-render-target');
+/* ---- Preview rendering, reusable regardless of how a page's modal(s)
+   are laid out. Each page's own script decides when to call this and what
+   to do with its result (open a modal, switch a view, etc.). ------------- */
+function renderDocumentPreview(targetId) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
   target.innerHTML = '';
   document.querySelectorAll('#document-preview .page:not(.hidden-print)').forEach(page => {
     const card = document.createElement('div');
@@ -171,19 +168,10 @@ function openPreviewModal() {
     card.innerHTML = page.innerHTML;
     target.appendChild(card);
   });
+}
+function updateSigControlsVisibility(controlsId) {
   const sigContainer = document.getElementById('sig_preview_container');
   const hasSignature = sigContainer && sigContainer.style.display !== 'none';
-  const sigControls = document.getElementById('modal_sig_controls');
-  if (sigControls) sigControls.style.display = hasSignature ? 'flex' : 'none';
-  openModal('preview_modal');
-}
-function generatePDF() {
-  const form = document.querySelector('form');
-  if (form && !form.checkValidity()) { form.reportValidity(); return; }
-  closePreviewModal();
-  if (typeof syncFormData === 'function') syncFormData();
-  setTimeout(() => {
-    window.print();
-    if (typeof closeFormModal === 'function') closeFormModal();
-  }, 150);
+  const controls = document.getElementById(controlsId);
+  if (controls) controls.style.display = hasSignature ? 'flex' : 'none';
 }
