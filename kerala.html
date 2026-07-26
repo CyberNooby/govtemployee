@@ -65,21 +65,8 @@
             <span style="font-size:0.85rem; font-weight:600; color:#334155; display:block; margin-bottom:8px;">Captured Signature:</span>
             <div class="sig-thumb-frame"><img id="sig_preview_img" src="" alt="Signature Preview"></div>
           </div>
-          <div class="sig-adjust-box">
-            <div class="sig-adjust-row">
-              <label for="sig_scale">Size</label>
-              <input type="range" id="sig_scale" min="50" max="150" value="100" step="1" oninput="updateSigTransform('main')">
-              <span id="sig_scale_val">100%</span>
-            </div>
-            <div class="sig-adjust-row">
-              <label for="sig_rotate">Rotate</label>
-              <input type="range" id="sig_rotate" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('main')">
-              <span id="sig_rotate_val">0&deg;</span>
-            </div>
-            <button type="button" class="reset-sig-btn" onclick="resetSigTransform()">Reset to default</button>
-          </div>
         </div>
-        <div class="help-text" id="sig_adjust_help" style="display:none; margin-top:8px;">Size and rotation apply to the signature everywhere it appears — check the live preview before printing, since a large increase can overlap nearby text.</div>
+        <div class="help-text" id="sig_adjust_help" style="display:none; margin-top:8px;">You can adjust its size and rotation from the Preview step, once you're ready to generate your document.</div>
       </div>
       <!-- DASHBOARD -->
       <div class="section dashboard-section" id="dashboard_section_wrapper">
@@ -87,31 +74,31 @@
         <p class="sub-hint">Click a card to open that application's fields, preview, and download together.</p>
         <div id="dashboard_categories"></div>
       </div>
-      <!-- Shown INSTEAD of the section above when arriving with a specific
-           type already chosen (from the dashboard's "?type=" link) — the
-           choice was already made, so this confirms it rather than asking
-           again, and "inline_type_fields_target" receives that type's own
-           fields (relocated from the form modal below) directly into the
-           page flow instead of behind a click. -->
+      <!-- Shown INSTEAD of the "Choose an Application" grid when arriving
+           with a specific type already chosen (the dashboard's "?type="
+           link) — the choice was already made, so this confirms it with
+           one clear next step rather than presenting all 31 options again. -->
       <div class="section hidden-section" id="type_confirm_strip"></div>
-      <div id="inline_type_fields_target"></div>
       <!-- Hidden but still fully functional: every existing type-selection
            function (toggleSections, syncFormData, etc.) reads this select's
            value, so dashboard cards just set it programmatically and call
            the same functions rather than duplicating any logic. -->
       <select id="leave_type" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
-      <!-- FORM MODAL: opens when a dashboard card is clicked (only reached
-           when arriving with no type pre-chosen — see above). Stays nested
-           inside <form> (even though it renders as a fixed overlay) so its
-           required fields still participate in leaveForm.checkValidity(). -->
-      <div class="modal-overlay" id="form_modal">
-        <div class="modal-dialog form-modal-dialog" role="dialog" aria-modal="true" aria-label="Application form">
+      <!-- APPLICATION MODAL: one dialog with two views (form entry and
+           preview) that swap in place, rather than two separate popups —
+           moving from filling in the form to previewing it, and back,
+           never loses anything or feels like starting over. Stays nested
+           inside <form> so its required fields still participate in
+           leaveForm.checkValidity(). -->
+      <div class="modal-overlay" id="app_modal">
+        <div class="modal-dialog form-modal-dialog" role="dialog" aria-modal="true" aria-label="Application">
+          <div class="app-modal-view" id="panel_form">
           <div class="modal-toolbar">
             <div class="modal-toolbar-title">
               <h3 id="form_modal_title">Application</h3>
               <div class="rule-hint"><span class="category-dot" id="category_dot"></span><span id="rule_hint"></span></div>
             </div>
-            <button type="button" class="modal-close-btn" onclick="closeFormModal()" aria-label="Close">&times;</button>
+            <button type="button" class="modal-close-btn" onclick="closeAppModal()" aria-label="Close">&times;</button>
           </div>
           <div class="modal-body">
 <!-- SMART DATE CALCULATOR -->
@@ -228,40 +215,37 @@
           <div class="form-group"><label>Date of return from last leave</label><input type="text" id="last_leave" placeholder="e.g., 05/01/2026 (EL) or NA"></div>
         </div>
       </div>
-      <div class="btn-group">
-        <button type="button" class="print-btn" onclick="openPreviewModal()">Preview Application Forms</button>
+      <div class="modal-footer">
+        <button type="button" class="print-btn" onclick="showPreviewPanel()">Preview Application &rarr;</button>
       </div>
-      <p class="privacy-note">Application data stays in your browser unless you choose to sign in and save your Employee Profile — nothing here is uploaded, stored, or sent anywhere otherwise.</p>
-    
+          </div>
+          </div>
+          <div class="app-modal-view hidden-section" id="panel_preview">
+            <div class="modal-toolbar">
+              <button type="button" class="modal-back-btn" onclick="showFormPanel()" aria-label="Back to form">&larr;</button>
+              <div class="modal-sig-controls" id="modal_sig_controls" style="display:none;">
+                <div class="sig-adjust-row">
+                  <label for="sig_scale_modal">Size</label>
+                  <input type="range" id="sig_scale_modal" min="50" max="400" value="100" step="1" oninput="updateSigTransform('modal')">
+                  <span id="sig_scale_val_modal">100%</span>
+                </div>
+                <div class="sig-adjust-row">
+                  <label for="sig_rotate_modal">Rotate</label>
+                  <input type="range" id="sig_rotate_modal" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('modal')">
+                  <span id="sig_rotate_val_modal">0&deg;</span>
+                </div>
+              </div>
+              <button type="button" class="modal-close-btn" onclick="closeAppModal()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="preview-render-target"></div>
+            <div class="modal-footer">
+              <button type="button" class="print-btn" onclick="generatePDF()">Print PDF</button>
+            </div>
           </div>
         </div>
       </div>
+      <p class="privacy-note">All data stays in your browser on your device — nothing here is uploaded, stored, or sent anywhere.</p>
 </form>
-  </div>
-</div>
-<!-- PREVIEW MODAL -->
-<div class="modal-overlay screen-only" id="preview_modal" onclick="if(event.target === this) closePreviewModal();">
-  <div class="modal-dialog" role="dialog" aria-modal="true" aria-label="Application preview">
-    <div class="modal-toolbar">
-      <h3>Application Preview</h3>
-      <div class="modal-sig-controls" id="modal_sig_controls" style="display:none;">
-        <div class="sig-adjust-row">
-          <label for="sig_scale_modal">Size</label>
-          <input type="range" id="sig_scale_modal" min="50" max="150" value="100" step="1" oninput="updateSigTransform('modal')">
-          <span id="sig_scale_val_modal">100%</span>
-        </div>
-        <div class="sig-adjust-row">
-          <label for="sig_rotate_modal">Rotate</label>
-          <input type="range" id="sig_rotate_modal" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('modal')">
-          <span id="sig_rotate_val_modal">0&deg;</span>
-        </div>
-      </div>
-      <button type="button" class="modal-close-btn" onclick="closePreviewModal()" aria-label="Close">&times;</button>
-    </div>
-    <div class="modal-body" id="preview-render-target"></div>
-    <div class="modal-footer">
-      <button type="button" class="print-btn" onclick="generatePDF()">Download / Print PDF</button>
-    </div>
   </div>
 </div>
 <!-- PRINT TEMPLATE SECTION -->
@@ -317,7 +301,7 @@
       </div>
     </div>
     <hr>
-    <br><br><br><br>
+    <br><br>
     <div class="bold mb-4">16. Remarks and/or recommendation of the Controlling Officer:</div>
     <div style="height: 40px;"></div>
     <div class="text-right">Signature (with date) and Designation</div>
@@ -703,18 +687,39 @@
     if (!profileIsComplete()) return;
     document.getElementById('leave_type').value = key;
     toggleSections();
-    openFormModal();
+    openAppModal();
   }
-  function openFormModal() {
+  function openAppModal() {
     const type = document.getElementById('leave_type').value;
     const t = LEAVE_TYPES[type];
     if (!t) return;
     document.getElementById('form_modal_title').innerHTML = (CATEGORY_COLOR_VAR[t.group] ? '<svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (CATEGORY_ICONS[t.group] || '') + '</svg>' : '') + t.label;
-    document.getElementById('form_modal').style.setProperty('--modal-accent', CATEGORY_COLOR_VAR[t.group] ? 'var(' + CATEGORY_COLOR_VAR[t.group] + ')' : 'var(--accent)');
-    openModal('form_modal'); // shared engine
+    document.getElementById('app_modal').style.setProperty('--modal-accent', CATEGORY_COLOR_VAR[t.group] ? 'var(' + CATEGORY_COLOR_VAR[t.group] + ')' : 'var(--accent)');
+    showFormPanel(); // always start on the form-entry view, even if a previous session left it on preview
+    openModal('app_modal'); // shared engine
   }
-  function closeFormModal() {
-    closeModal('form_modal'); // shared engine
+  function closeAppModal() {
+    closeModal('app_modal'); // shared engine
+  }
+  function showFormPanel() {
+    document.getElementById('panel_preview').classList.add('hidden-section');
+    document.getElementById('panel_form').classList.remove('hidden-section');
+  }
+  function showPreviewPanel() {
+    const form = document.querySelector('form');
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    syncFormData();
+    renderDocumentPreview('preview-render-target'); // shared engine
+    updateSigControlsVisibility('modal_sig_controls'); // shared engine
+    document.getElementById('panel_form').classList.add('hidden-section');
+    document.getElementById('panel_preview').classList.remove('hidden-section');
+  }
+  function generatePDF() {
+    syncFormData();
+    setTimeout(() => {
+      window.print();
+      closeAppModal();
+    }, 150);
   }
   function populateSclReasons() {
     const sel = document.getElementById('scl_reason');
@@ -1101,18 +1106,16 @@
   // ---------------------------------------------------------------------
   // Deep link from the dashboard (index.html links here as
   // kerala.html?type=KEY). The choice was already made there, so this does
-  // NOT show the "Choose an Application" picker again — it hides it,
-  // confirms what was chosen, and moves that type's own fields (normally
-  // inside the form modal) directly into the page flow. Nothing needs a
-  // second click. Landing on kerala.html with no "type" still shows the
-  // full picker as before, since in that case nothing's been chosen yet.
+  // NOT show the "Choose an Application" picker again — it hides it and
+  // shows a single confirmation with one "Continue" button in its place,
+  // which opens the exact same application modal a card click would (same
+  // profile-completeness gate, same everything — just one pre-picked
+  // option instead of 31). Landing on kerala.html with no "type" still
+  // shows the full picker as before, since nothing's been chosen yet.
   // ---------------------------------------------------------------------
-  function activateDeepLinkInlineMode(type) {
+  function activateDeepLinkConfirm(type) {
     const t = LEAVE_TYPES[type];
     if (!t) return;
-    document.getElementById('leave_type').value = type;
-    toggleSections();
-
     document.getElementById('dashboard_section_wrapper').classList.add('hidden-section');
 
     const strip = document.getElementById('type_confirm_strip');
@@ -1126,16 +1129,11 @@
           '<h2 style="margin:2px 0 0; font-family:\'Fraunces\',Georgia,serif; font-weight:600; font-size:1.25rem; color:var(--ink);">' + t.label + '</h2>' +
           '<div class="rule-hint" style="margin-top:2px;">Governed by ' + t.rule + '</div></div>' +
         '</div>' +
-        '<button type="button" class="reset-sig-btn" onclick="changeApplicationType()">Change application &rarr;</button>' +
+        '<div style="display:flex; gap:10px; flex-wrap:wrap;">' +
+          '<button type="button" class="reset-sig-btn" onclick="changeApplicationType()">Change application</button>' +
+          '<button type="button" class="print-btn" style="flex:0 0 auto; padding:12px 24px;" onclick="selectAndOpen(\'' + type + '\')">Continue &rarr;</button>' +
+        '</div>' +
       '</div>';
-
-    // Relocate the modal's own field sections (not a copy — the same live
-    // elements, so every existing id-based reference keeps working exactly
-    // as before) out of the modal and into the normal page flow. Once
-    // outside .form-modal-dialog, the existing CSS already renders them as
-    // ordinary cards instead of modal sub-sections — no new styling needed.
-    const modalBody = document.querySelector('.form-modal-dialog .modal-body');
-    document.getElementById('inline_type_fields_target').appendChild(modalBody);
   }
   function changeApplicationType() {
     window.location.href = 'kerala.html'; // deliberate fresh start — see chat notes on this trade-off
@@ -1148,7 +1146,7 @@
   populateSclReasons();
   (function bootDeepLink() {
     const type = new URLSearchParams(window.location.search).get('type');
-    if (type && LEAVE_TYPES[type]) activateDeepLinkInlineMode(type);
+    if (type && LEAVE_TYPES[type]) activateDeepLinkConfirm(type);
   })();
 </script>
 </body>
