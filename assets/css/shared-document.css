@@ -36,6 +36,17 @@
 .form-table td:nth-child(1) { width: 50%; }
 .form-table td:nth-child(2) { width: 2%; text-align: center; }
 .form-table td:nth-child(3) { width: 48%; padding-left: 10px; font-weight: bold; }
+/* Variant for label + two value columns (e.g. Old Regime vs New Regime
+   comparisons) instead of the default label:colon:value shape above. */
+.form-table.compare-table td:nth-child(1) { width: 40%; }
+.form-table.compare-table td:nth-child(2) { width: 30%; text-align: right; font-weight: normal; padding-left: 0; }
+.form-table.compare-table td:nth-child(3) { width: 30%; text-align: right; font-weight: normal; padding-left: 14px; }
+/* Monthly pay register annexure (Income Tax Statement Generator) — a real
+   bordered data table, unlike form-table's label:value layout above. */
+.pay-register-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-top: 8px; }
+.pay-register-table th, .pay-register-table td { border: 1px solid #333; padding: 3px 5px; text-align: right; }
+.pay-register-table th { text-align: center; font-weight: bold; }
+.pay-register-table th:first-child, .pay-register-table td:first-child { text-align: left; }
 .signature-block { width: 300px; text-align: center; float: right; margin-top: 20px; }
 .sig-slot { min-height: 55px; display: flex; align-items: center; justify-content: center; padding: 6px 0; overflow: visible; }
 .sig-img-target { max-height: 45px; max-width: 180px; object-fit: contain; }
@@ -51,6 +62,7 @@
 @media print {
   .screen-only { display: none !important; }
   .print-only { display: block !important; }
+  .modal-overlay { display: none !important; }
   @page { size: A4; margin: 15mm 20mm; }
   body { background: #fff; margin: 0; padding: 0; }
   .page { page-break-after: always; padding: 0; margin: 0; position: relative; min-height: 250mm; }
