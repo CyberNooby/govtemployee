@@ -27,4 +27,8 @@ window.STATE_REGISTRY = [
   { key: 'jharkhand', name: 'Jharkhand', region: 'East', live: true },
   { key: 'odisha', name: 'Odisha', region: 'East', live: true },
   { key: 'westbengal', name: 'West Bengal', region: 'East', live: true },
+  { key: 'arunachalpradesh', name: 'Arunachal Pradesh', region: 'Northeast', live: true },
+  { key: 'assam', name: 'Assam', region: 'Northeast', live: true },
+  { key: 'manipur', name: 'Manipur', region: 'Northeast', live: true },
+  { key: 'meghalaya', name: 'Meghalaya', region: 'Northeast', live: true },
 ];

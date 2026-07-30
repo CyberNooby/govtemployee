@@ -327,6 +327,10 @@
   <script src="assets/js/data/jharkhand.js"></script>
   <script src="assets/js/data/odisha.js"></script>
   <script src="assets/js/data/westbengal.js"></script>
+  <script src="assets/js/data/arunachalpradesh.js"></script>
+  <script src="assets/js/data/assam.js"></script>
+  <script src="assets/js/data/manipur.js"></script>
+  <script src="assets/js/data/meghalaya.js"></script>
   <script src="assets/js/tools/income-tax.js"></script>
 
   <script>
@@ -358,7 +362,7 @@
     // the registry and nothing here needs to change.
     function slugify(s) { return s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
     const OTHER_STATES = [
-      ['Arunachal Pradesh','Northeast'], ['Assam','Northeast'], ['Manipur','Northeast'], ['Meghalaya','Northeast'], ['Mizoram','Northeast'], ['Nagaland','Northeast'], ['Sikkim','Northeast'], ['Tripura','Northeast'],
+      ['Mizoram','Northeast'], ['Nagaland','Northeast'], ['Sikkim','Northeast'], ['Tripura','Northeast'],
       ['Andaman & Nicobar Islands','Union Territory'], ['Chandigarh','Union Territory'], ['Dadra & Nagar Haveli and Daman & Diu','Union Territory'], ['Delhi (NCT)','Union Territory'], ['Jammu & Kashmir','Union Territory'], ['Ladakh','Union Territory'], ['Lakshadweep','Union Territory'], ['Puducherry','Union Territory'],
     ].map(([name, region]) => ({ key: slugify(name), name, region, live: false }));
 
@@ -694,15 +698,16 @@
       tg: 'telangana', ga: 'goa', gj: 'gujarat', mp: 'madhyapradesh', ct: 'chhattisgarh',
       rj: 'rajasthan', up: 'uttarpradesh', hr: 'haryana', pb: 'punjab', hp: 'himachalpradesh',
       ut: 'uttarakhand', br: 'bihar', jh: 'jharkhand', or: 'odisha', wb: 'westbengal',
+      ar: 'arunachalpradesh', as: 'assam', mn: 'manipur', ml: 'meghalaya',
     };
     // Region label shown in the roadmap tooltip, for the states/UTs with no
     // registry key yet — same rough grouping as OTHER_STATES above, keyed by
     // the map package's own code rather than a name (names don't match
     // verbatim between the two sources, e.g. "&" vs "and").
     const MAP_CODE_REGION = {
-      an: 'Union Territory', ar: 'Northeast', as: 'Northeast', ch: 'Union Territory',
+      an: 'Union Territory', ch: 'Union Territory',
       dn: 'Union Territory', dd: 'Union Territory', dl: 'Union Territory', jk: 'Union Territory',
-      ld: 'Union Territory', mn: 'Northeast', ml: 'Northeast', mz: 'Northeast', nl: 'Northeast',
+      ld: 'Union Territory', mz: 'Northeast', nl: 'Northeast',
       py: 'Union Territory', sk: 'Northeast', tr: 'Northeast',
     };
     let lastHoveredMapPath = null;
