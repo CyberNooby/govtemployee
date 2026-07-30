@@ -57,6 +57,15 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
   outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft);
 }
 .form-group input::placeholder, .form-group textarea::placeholder { color: #A8A296; }
+.form-group input[type="file"] { padding: 8px 13px 8px 8px; cursor: pointer; color: var(--text-soft); font-size: .86rem; }
+.form-group input[type="file"]::file-selector-button,
+.form-group input[type="file"]::-webkit-file-upload-button {
+  background: var(--accent); color: #fff; border: none; padding: 9px 18px; margin-right: 14px;
+  border-radius: 20px; font-size: .82rem; font-weight: 600; font-family: inherit; cursor: pointer;
+  transition: background-color .15s ease;
+}
+.form-group input[type="file"]:hover::file-selector-button,
+.form-group input[type="file"]:hover::-webkit-file-upload-button { background: var(--accent-deep); }
 .help-text { font-size: .76rem; color: var(--text-soft); margin-top: 6px; line-height: 1.45; }
 .hidden-section { display: none !important; } /* a universal "hide this" utility must always win, regardless of any other rule's specificity or position in the file — this is exactly the category of bug that just broke panel visibility */
 .rule-hint { font-size: .82rem; color: var(--accent-deep); margin-top: 10px; font-style: italic; min-height: 1.2em; }
