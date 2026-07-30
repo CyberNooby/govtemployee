@@ -7,11 +7,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <title>Sarkari Forms Hub</title>
+<link rel="stylesheet" href="assets/css/shared-document.css">
 <link rel="stylesheet" href="assets/css/shared-ui.css">
 </head>
 <body>
-  <nav class="top-nav">
-    <a href="index.html" class="nav-brand">
+  <nav class="top-nav screen-only">
+    <a href="#home" class="nav-brand" id="nav_brand">
       <svg class="app-seal" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seal emblem">
         <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/>
         <circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="1.4"/>
@@ -36,81 +37,351 @@
     </div>
   </nav>
 
-  <div class="container hub-dashboard">
+  <div class="container hub-dashboard screen-only">
     <div class="disclaimer-banner">
-      <strong>Before you rely on this:</strong> these tools draft applications and statements in standard government formats so you have a clean, correctly-cited starting point — they are not official government products and are not legal or tax advice. Rules are amended from time to time; please confirm current requirements with your own office before submission.
+      <strong>Before you rely on this:</strong> these tools draft applications and statements in standard government formats so you have a clean, correctly-cited starting point — they are not official government products and are not legal or tax advice. Rules are amended from time to time, and some figures below (special leave day-limits, advance interest rates, insurance benefit tables) change more often than others; please confirm current requirements with your own office (or a tax professional, for the Income Tax tool) before submission.
     </div>
 
-    <div id="state_content_area"></div>
-
-    <div class="section dashboard-section">
-      <h2><span class="step-badge">&#9733;</span> National Tools</h2>
-      <p class="sub-hint">Not tied to any one state — these apply the same way across India.</p>
-      <div id="national_tools" class="card-grid"></div>
+    <div class="dashboard-shell">
+      <div class="dashboard-layout" id="dashboard_layout">
+        <aside class="dashboard-sidebar" id="dashboard_sidebar" aria-label="Dashboard navigation"></aside>
+        <div class="dashboard-main">
+          <div id="state_content_area"></div>
+        </div>
+      </div>
     </div>
 
     <p class="privacy-note">All data stays in your browser on your device — nothing here is uploaded, stored, or sent anywhere.</p>
   </div>
 
+  <!-- Whichever tool is open lives here — cloned fresh from its <template>
+       below the first time it's opened, then reused (data preserved) for
+       as long as the user stays on that same tool. See
+       assets/js/engine-common.js's openDashboardTool for the mount logic. -->
+  <div id="tool_mount"></div>
+
+  <!-- =====================================================================
+       TEMPLATE: shared by every state's leave/service form generator
+       (Kerala, Central Government, and every state added after them).
+       Driven entirely by assets/js/state-tool-engine.js plus that state's
+       data object (assets/js/data/<state>.js) — Employee Profile and each
+       type's "Additional Particulars" are rendered dynamically from data
+       (profileFields / extraFields), not hardcoded per state. Adding a new
+       state does NOT mean touching this template.
+       ===================================================================== -->
+  <template id="tpl_state_tool">
+    <form id="stateForm" onsubmit="event.preventDefault();">
+      <select id="leave_type" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+      <div class="modal-overlay" id="app_modal">
+        <div class="modal-dialog form-modal-dialog" role="dialog" aria-modal="true" aria-label="Application">
+          <div class="app-modal-view" id="panel_form">
+          <div class="modal-toolbar">
+            <div class="state-switcher" id="type_switcher">
+              <button type="button" class="state-switcher-trigger" id="type_switcher_trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="type_switcher_icon"></span>
+                <span id="type_switcher_label">Choose application&hellip;</span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="state-switcher-panel" role="listbox" aria-label="Choose an application type">
+                <div class="state-search-wrap">
+                  <input type="text" id="type_search" placeholder="Search application types&hellip;" autocomplete="off">
+                </div>
+                <div class="state-list" id="type_list"></div>
+              </div>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="st_closeAppModal()" aria-label="Close">&times;</button>
+          </div>
+          <div class="rule-hint" id="modal_rule_caption" style="padding:10px 22px 0;"><span class="category-dot" id="category_dot"></span><span id="rule_hint"></span></div>
+          <div class="modal-body">
+      <div class="section">
+        <h2><span class="step-badge">1</span> Employee Profile</h2>
+        <p class="sub-hint">Fill this in once — it is reused for every application you generate.</p>
+        <div class="grid" id="profile_fields_mount"></div>
+      </div>
+      <div class="section">
+        <h2><span class="step-badge">2</span> Digital Signature (Auto Background Isolation)</h2>
+        <div class="form-group full-width">
+          <label>Upload Photo / Scan of Signature</label>
+          <input type="file" id="sig_upload" accept="image/*" onchange="processSignatureUpload(this)">
+          <div class="help-text">Upload any snapshot of your signature on paper. The app isolates the ink, strips the background, and places it above signature lines across all generated pages. Everything happens in your browser — the image is never uploaded anywhere. Note: many offices still require a wet-ink signature on the printed copy, so check before treating this as sufficient on its own.</div>
+        </div>
+        <div class="sig-preview-box" id="sig_preview_container" style="display:none;">
+          <div>
+            <span style="font-size:0.85rem; font-weight:600; color:var(--text-soft); display:block; margin-bottom:8px;">Captured Signature:</span>
+            <div class="sig-thumb-frame"><img id="sig_preview_img" src="" alt="Signature Preview"></div>
+          </div>
+        </div>
+        <div class="help-text" id="sig_adjust_help" style="display:none; margin-top:8px;">You can adjust its size and rotation from the Preview step, once you're ready to generate your document.</div>
+      </div>
+      <div class="section">
+        <h2><span class="step-badge">3</span> Application Routing &amp; Dates</h2>
+        <div id="sec_leave_routing">
+          <div class="highlight-box mb-4">
+            <p style="margin-top:0; font-size: 0.9rem; color: var(--accent-deep); font-weight: 600;">Smart Date Engine: Enter Start &amp; End Date to auto-calculate duration, OR enter Start Date &amp; Duration to auto-calculate End Date.</p>
+            <div class="grid-3">
+              <div class="form-group"><label class="required">Leave Start Date</label><input type="date" id="start"></div>
+              <div class="form-group"><label class="required">Leave End Date</label><input type="date" id="end"></div>
+              <div class="form-group"><label class="required">Leave Duration</label>
+                <div style="display:flex; gap:5px;">
+                  <input type="number" id="dur_num" style="width:50%">
+                  <select id="dur_unit" style="width:50%">
+                    <option value="days">Days</option><option value="months">Months</option><option value="years">Years</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group full-width mt-4"><label class="required">Formal Duration String (Printed on Forms)</label><input type="text" id="duration_str" placeholder="e.g., 5 Years or 120 Days"></div>
+          </div>
+          <div class="grid">
+            <div class="form-group full-width"><label class="required">Ground / Reason Applied For</label><input type="text" id="reason">
+              <div class="help-text">Auto-filled based on the application type you selected above — feel free to edit the wording.</div>
+            </div>
+            <div class="form-group"><label class="required">Address During Leave</label><textarea id="address" rows="2"></textarea></div>
+          </div>
+        </div>
+        <div class="grid" style="margin-top:20px;">
+          <div class="form-group"><label class="required">Application Place</label><input type="text" id="place" required></div>
+          <div class="form-group"><label class="required">Application Date</label><input type="date" id="app_date" required></div>
+          <div class="form-group full-width"><label class="required">Forward To (Recipient's Designation)</label><input type="text" id="controlling" required>
+            <div class="help-text" id="controlling_hint" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="section hidden-section" id="sec_dynamic_fields">
+        <h2><span class="step-badge">4</span> Additional Particulars</h2>
+        <div class="grid" id="dynamic_fields_mount"></div>
+      </div>
+      <div class="section hidden-section" id="form_extra_fields_wrap">
+        <h2><span class="step-badge">5</span> Additional Form Data</h2>
+        <div class="grid" id="form_extra_fields_mount"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="print-btn" onclick="st_showPreviewPanel()">Preview Application &rarr;</button>
+      </div>
+          </div>
+          </div>
+          <div class="app-modal-view hidden-section" id="panel_preview">
+            <div class="modal-toolbar">
+              <button type="button" class="modal-back-btn" onclick="st_showFormPanel()" aria-label="Back to form">&larr;</button>
+              <div class="modal-sig-controls" id="modal_sig_controls" style="display:none;">
+                <div class="sig-adjust-row">
+                  <label for="sig_scale_modal">Size</label>
+                  <input type="range" id="sig_scale_modal" min="50" max="400" value="100" step="1" oninput="updateSigTransform('modal')">
+                  <span id="sig_scale_val_modal">100%</span>
+                </div>
+                <div class="sig-adjust-row">
+                  <label for="sig_rotate_modal">Rotate</label>
+                  <input type="range" id="sig_rotate_modal" min="-180" max="180" value="0" step="1" oninput="updateSigTransform('modal')">
+                  <span id="sig_rotate_val_modal">0&deg;</span>
+                </div>
+              </div>
+              <button type="button" class="modal-close-btn" onclick="st_closeAppModal()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="preview-render-target"></div>
+            <div class="modal-footer">
+              <button type="button" class="print-btn" onclick="st_generatePDF()">Print PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <div id="document-preview" class="print-only"></div>
+  </template>
+
+  <!-- =====================================================================
+       TEMPLATE: Income Tax Statement Generator
+       ===================================================================== -->
+  <template id="tpl_income_tax">
+    <form id="itForm" onsubmit="event.preventDefault();">
+      <div class="modal-overlay" id="app_modal">
+        <div class="modal-dialog form-modal-dialog" role="dialog" aria-modal="true" aria-label="Income Tax Statement Generator">
+          <div class="app-modal-view" id="panel_form">
+          <div class="modal-toolbar">
+            <h3>Income Tax Statement Generator</h3>
+            <button type="button" class="modal-close-btn" onclick="it_closeAppModal()" aria-label="Close">&times;</button>
+          </div>
+          <div class="rule-hint" style="padding:10px 22px 0;">FY 2026-27 (AY 2027-28) — Old vs New Regime comparison</div>
+          <div class="modal-body">
+      <div class="section">
+        <h2><span class="step-badge">1</span> Your Details</h2>
+        <div class="grid">
+          <div class="form-group"><label class="required">Full Name</label><input type="text" id="it_name" required></div>
+          <div class="form-group"><label>PAN</label><input type="text" id="it_pan" placeholder="Optional"></div>
+          <div class="form-group"><label>Designation</label><input type="text" id="it_designation"></div>
+          <div class="form-group"><label>Office / Employer</label><input type="text" id="it_office"></div>
+          <div class="form-group"><label>Place</label><input type="text" id="it_place" placeholder="e.g., Thiruvananthapuram"></div>
+          <div class="form-group"><label>Date</label><input type="date" id="it_date"></div>
+        </div>
+      </div>
+      <div class="section">
+        <h2><span class="step-badge">2</span> Monthly Pay &amp; Deductions</h2>
+        <div class="grid">
+          <div class="form-group">
+            <label>Provident Fund / Pension Scheme</label>
+            <select id="it_pf_scheme">
+              <option value="nps">National Pension System (NPS) — joined service on/after ~2004</option>
+              <option value="gpf">General Provident Fund (GPF) — joined service before ~2004</option>
+            </select>
+            <div class="help-text">Old Regime only, either way: your own monthly contribution below is claimed under Section 80C (GPF) or Section 80CCD(1)/80CCD(1B) (NPS) — don't re-enter it under Deductions below.</div>
+          </div>
+        </div>
+        <div class="help-text" style="margin-top:2px;">Pay drawn for March 2026 through February 2027 is what's actually received as salary during FY 2026-27 — government pay is credited a month in arrears, so this matches how a DDO prepares an annual pay certificate. Fill in the first row, then use "Copy Row 1 to All Months" and adjust only the months that actually changed (increment, DA revision, etc).</div>
+        <div class="pay-grid-actions"><button type="button" class="print-btn" id="it_fill_down_btn">Copy Row 1 to All Months &darr;</button></div>
+        <div class="pay-grid-wrap"><table class="pay-grid" id="it_pay_grid"></table></div>
+        <div class="help-text">"Other Deduction" is for your own payslip record only (e.g. Group Insurance premium, festival advance recovery, society loan) — it does not reduce your taxable income; only the PF/NPS and Professional Tax columns feed the tax computation below.</div>
+      </div>
+      <div class="section">
+        <h2><span class="step-badge">3</span> Other Annual Income</h2>
+        <div class="grid">
+          <div class="form-group"><label>Bonus / Ex-gratia</label><input type="number" id="it_bonus" min="0" placeholder="e.g., 15000"></div>
+          <div class="form-group"><label>Earned Leave Encashment (Leave Surrender)</label><input type="number" id="it_leave_encash" min="0" placeholder="e.g., 30000"></div>
+          <div class="form-group" style="align-self:end;"><label style="display:flex; align-items:center; gap:8px; font-weight:500;"><input type="checkbox" id="it_leave_retirement" style="width:auto;"> Paid at retirement / superannuation</label></div>
+          <div class="form-group"><label>Employer's NPS Contribution — 80CCD(2)</label><input type="number" id="it_80ccd2" min="0" placeholder="Optional">
+            <div class="help-text">Deductible under both regimes — leave blank if not applicable.</div>
+          </div>
+        </div>
+        <div class="help-text">For a Central/State Government employee, leave encashment is fully exempt under Section 10(10AA) <strong>only when paid at retirement or superannuation</strong>. Leave surrendered while still in service (e.g. alongside LTC) is fully taxable — leave the checkbox unticked in that case.</div>
+      </div>
+      <div class="section">
+        <h2><span class="step-badge">4</span> HRA Details (used for Old Regime only)</h2>
+        <div class="grid">
+          <div class="form-group"><label>Annual Rent Paid</label><input type="number" id="it_rent_paid" min="0" placeholder="e.g., 240000"></div>
+          <div class="form-group"><label>City Type</label>
+            <select id="it_city">
+              <option value="metro">Metro (Delhi, Mumbai, Kolkata, Chennai, Bengaluru, Hyderabad, Pune, Ahmedabad) — 50%</option>
+              <option value="nonmetro">Other city — 40%</option>
+            </select>
+          </div>
+        </div>
+        <div class="help-text">HRA exemption is only available under the Old Regime, and is computed month-by-month against each month's Basic+DA and HRA above (rent is assumed even across all 12 months). The 8-city metro list is effective FY 2026-27 under the Income-tax Rules, 2026 — if this hasn't reached your payroll system yet, confirm with your DDO before relying on the 50% rate for the four newly-added cities.</div>
+      </div>
+      <div class="section">
+        <h2><span class="step-badge">5</span> Other Deductions (Old Regime only)</h2>
+        <div class="grid">
+          <div class="form-group full-width"><label>Section 80C — other investments (PPF, ELSS, life insurance, home loan principal, etc.)</label><input type="number" id="it_80c" min="0" placeholder="e.g., 50000">
+            <div class="help-text">Combined with your GPF/NPS contribution above, capped at ₹1,50,000 total.</div>
+          </div>
+          <div class="form-group"><label>Section 80D — Health Insurance (Self / Family)</label><input type="number" id="it_80d_self" min="0" placeholder="e.g., 20000"></div>
+          <div class="form-group" style="align-self:end;"><label style="display:flex; align-items:center; gap:8px; font-weight:500;"><input type="checkbox" id="it_80d_self_senior" style="width:auto;"> I am a senior citizen (cap ₹50,000)</label></div>
+          <div class="form-group"><label>Section 80D — Health Insurance (Parents)</label><input type="number" id="it_80d_parent" min="0" placeholder="e.g., 25000"></div>
+          <div class="form-group" style="align-self:end;"><label style="display:flex; align-items:center; gap:8px; font-weight:500;"><input type="checkbox" id="it_80d_parent_senior" style="width:auto;"> Parents are senior citizens (cap ₹50,000)</label></div>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button type="button" class="print-btn" id="it_compute_btn">Compute Old vs New Regime &rarr;</button>
+      </div>
+      <div class="section hidden-section" id="it_results">
+        <h2><span class="step-badge">&#10003;</span> Comparison</h2>
+        <div id="it_results_table"></div>
+      </div>
+      <div class="modal-footer hidden-section" id="it_preview_btn_wrap">
+        <button type="button" class="print-btn" onclick="it_showPreviewPanel()">Preview Printable Statement &rarr;</button>
+      </div>
+          </div>
+          </div>
+          <div class="app-modal-view hidden-section" id="panel_preview">
+            <div class="modal-toolbar">
+              <button type="button" class="modal-back-btn" onclick="it_showFormPanel()" aria-label="Back to form">&larr;</button>
+              <button type="button" class="modal-close-btn" onclick="it_closeAppModal()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="preview-render-target"></div>
+            <div class="modal-footer">
+              <button type="button" class="print-btn" onclick="it_generatePDF()">Print PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <div id="document-preview" class="print-only">
+      <div class="page">
+        <div id="it_page_body"></div>
+      </div>
+      <div class="page">
+        <div id="it_annexure_body"></div>
+      </div>
+    </div>
+  </template>
+
+  <script src="assets/js/engine-common.js"></script>
+  <script src="assets/js/state-tool-engine.js"></script>
+  <script src="assets/js/data/registry.js"></script>
+  <script src="assets/js/data/india-map.js"></script>
+  <script src="assets/js/data/kerala.js"></script>
+  <script src="assets/js/data/central.js"></script>
+  <script src="assets/js/data/tamilnadu.js"></script>
+  <script src="assets/js/data/karnataka.js"></script>
+  <script src="assets/js/data/maharashtra.js"></script>
+  <script src="assets/js/data/andhrapradesh.js"></script>
+  <script src="assets/js/data/telangana.js"></script>
+  <script src="assets/js/data/goa.js"></script>
+  <script src="assets/js/data/gujarat.js"></script>
+  <script src="assets/js/data/madhyapradesh.js"></script>
+  <script src="assets/js/data/chhattisgarh.js"></script>
+  <script src="assets/js/data/rajasthan.js"></script>
+  <script src="assets/js/data/uttarpradesh.js"></script>
+  <script src="assets/js/data/haryana.js"></script>
+  <script src="assets/js/data/punjab.js"></script>
+  <script src="assets/js/data/himachalpradesh.js"></script>
+  <script src="assets/js/data/uttarakhand.js"></script>
+  <script src="assets/js/data/bihar.js"></script>
+  <script src="assets/js/data/jharkhand.js"></script>
+  <script src="assets/js/data/odisha.js"></script>
+  <script src="assets/js/data/westbengal.js"></script>
+  <script src="assets/js/tools/income-tax.js"></script>
+
   <script>
     // ---------------------------------------------------------------------
-    // DATA
+    // NATIONAL TOOLS
     // ---------------------------------------------------------------------
-    const GROUP_ORDER = ['General Leave (Form 13)', 'Leave Without Allowance (LWA)', 'Family & Medical Leave', 'Casual & Special Leave',
-      'Insurance & Accident Benefits', 'Service & Establishment Matters', 'Advances & Loans', 'Estate / Death Benefit Claims'];
-    const CATEGORY_COLOR_VAR = {
-      'General Leave (Form 13)': '--cat-general', 'Leave Without Allowance (LWA)': '--cat-lwa',
-      'Family & Medical Leave': '--cat-family', 'Casual & Special Leave': '--cat-casual',
-      'Insurance & Accident Benefits': '--cat-insurance', 'Service & Establishment Matters': '--cat-service',
-      'Advances & Loans': '--cat-advance', 'Estate / Death Benefit Claims': '--cat-estate',
-    };
-    // One small hand-drawn icon per category — chosen for what the category actually
-    // is about (a calendar for routine leave, a paper plane for going elsewhere, a
-    // heart for family matters), not decoration for its own sake.
-    const CATEGORY_ICONS = {
-      'General Leave (Form 13)': '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-      'Leave Without Allowance (LWA)': '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>',
-      'Family & Medical Leave': '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z"/>',
-      'Casual & Special Leave': '<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/>',
-      'Insurance & Accident Benefits': '<path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5z"/>',
-      'Service & Establishment Matters': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/>',
-      'Advances & Loans': '<circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/>',
-      'Estate / Death Benefit Claims': '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
-    };
-    const KERALA_TYPES = {"el":{"label":"Earned Leave","group":"General Leave (Form 13)","rule":"Rule 78, Part I, K.S.R."},"hpl":{"label":"Half Pay Leave","group":"General Leave (Form 13)","rule":"Rule 83, Part I, K.S.R."},"commuted":{"label":"Commuted Leave","group":"General Leave (Form 13)","rule":"Rule 84, Part I, K.S.R."},"leavenotdue":{"label":"Leave Not Due","group":"General Leave (Form 13)","rule":"Rule 85, Part I, K.S.R."},"lwa_abroad":{"label":"LWA \u2014 Employment Abroad","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-A, Part I, K.S.R."},"lwa_india":{"label":"LWA \u2014 Employment within India","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-A, Part I, K.S.R."},"lwa_study":{"label":"LWA \u2014 Higher Studies","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-B, Part I, K.S.R."},"lwa_spouse":{"label":"LWA \u2014 Joining Spouse","group":"Leave Without Allowance (LWA)","rule":"Rule 88 & Appendix XII-C, Part I, K.S.R."},"maternity":{"label":"Maternity Leave","group":"Family & Medical Leave","rule":"Rule 100, Part I, K.S.R."},"miscarriage":{"label":"Miscarriage / Abortion Leave","group":"Family & Medical Leave","rule":"Rule 101, Part I, K.S.R."},"hysterectomy":{"label":"Hysterectomy Leave","group":"Family & Medical Leave","rule":"Rule 101-A, Part I, K.S.R."},"paternity":{"label":"Paternity Leave","group":"Family & Medical Leave","rule":"Rule 102-B, Part I, K.S.R."},"adoption":{"label":"Child Adoption Leave","group":"Family & Medical Leave","rule":"Part I, K.S.R. (Child Adoption Leave provisions \u2014 confirm current rule number with your DDO)"},"hospital":{"label":"Hospital Leave","group":"Family & Medical Leave","rule":"Rule 103, Part I, K.S.R."},"cl":{"label":"Casual Leave","group":"Casual & Special Leave","rule":"Appendix VII, Part I, K.S.R."},"scl":{"label":"Special Casual Leave","group":"Casual & Special Leave","rule":"Appendix VII, Section II, Part I, K.S.R."},"compensation":{"label":"Compensation Leave","group":"Casual & Special Leave","rule":"Appendix VII, Section III, Part I, K.S.R."},"sli_proposal":{"label":"SLI \u2014 New Policy Proposal","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"sli_nomination":{"label":"SLI \u2014 Change of Nomination","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"sli_loan":{"label":"SLI \u2014 Loan Against Policy","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"sli_claim":{"label":"SLI \u2014 Claim (Maturity / Death)","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department"},"jr_nomination":{"label":"Jeevan Raksha (GPAIS) \u2014 Nomination","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department (formerly GPAIS)"},"jr_claim":{"label":"Jeevan Raksha (GPAIS) \u2014 Claim","group":"Insurance & Accident Benefits","rule":"Kerala State Insurance Department (formerly GPAIS)"},"fbs_closure":{"label":"Family Benefit Scheme \u2014 Closure / Claim","group":"Insurance & Accident Benefits","rule":"Family Benefit Scheme (FBS)"},"toc":{"label":"Transfer of Charge Report","group":"Service & Establishment Matters","rule":"Article 81(a), Chapter IV, K.F.C. (Form 7 & Form 8/8A)"},"probation":{"label":"Probation Declaration","group":"Service & Establishment Matters","rule":"Kerala Service Rules / Special Rules"},"pay_option":{"label":"Pay Revision / Higher Grade Option","group":"Service & Establishment Matters","rule":"Pay Revision Rules / Time Bound Higher Grade Scheme"},"nps_reg":{"label":"NPS Subscriber Registration","group":"Service & Establishment Matters","rule":"National Pension System (for those who joined on/after 01.04.2013)"},"hba":{"label":"House Building Advance (HBA) Application","group":"Advances & Loans","rule":"Kerala Financial Code, Form No. 29"},"mva":{"label":"Motor Vehicle Advance Application","group":"Advances & Loans","rule":"Kerala Financial Code (Motor Vehicle Advance scheme)"},"indemnity":{"label":"Indemnity Bond \u2014 Deceased Employee's Dues","group":"Estate / Death Benefit Claims","rule":"Kerala Financial Code, Form No. 9"}};
-
     const NATIONAL_TOOLS = [
-      { name: 'Income Tax Statement Generator', note: 'Old vs New regime, HRA &amp; 80C/80D, printable statement — in progress' },
+      { key: 'income_tax', name: 'Income Tax Statement Generator', note: 'Monthly pay register, Old vs New regime, HRA & 80C/80D, printable statement', live: true, tpl: 'tpl_income_tax', initFn: 'it_init', openFn: 'it_openAppModal' },
     ];
+    // National tools apply to every government uniformly (the IT Act doesn't
+    // vary by state), so they're reachable from Home's module grid AND from
+    // every live state/central module's own sidebar (see renderSidebar) —
+    // one lookup here, not a hardcoded template/init/open triple duplicated
+    // at each call site. A newly-registered state gets this for free since
+    // the sidebar section is built from NATIONAL_TOOLS + "is a module open",
+    // not per-state markup.
+    function openNationalTool(key) {
+      const t = NATIONAL_TOOLS.find(x => x.key === key);
+      if (!t || !t.live) return;
+      openDashboardTool(t.key, t.tpl, t.initFn, t.openFn, null);
+    }
 
-    // Kerala is handled separately (it's live); every other entry here is on
-    // the roadmap. Region is kept as searchable metadata in the switcher, not
-    // as a grouping — with 35 mostly-identical "coming soon" entries, a flat
-    // searchable list scans faster than eight subheaded clusters.
+    // Every state/UT not yet built is a roadmap placeholder. Region is kept
+    // as searchable metadata in the switcher, not as a grouping — with ~30
+    // mostly-identical "coming soon" entries, a flat searchable list scans
+    // faster than eight subheaded clusters. Any entry here whose key also
+    // appears in STATE_REGISTRY (assets/js/data/registry.js) is filtered out
+    // below — once a state is built, it moves from this placeholder list to
+    // the registry and nothing here needs to change.
+    function slugify(s) { return s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
     const OTHER_STATES = [
-      ['Andhra Pradesh','South'], ['Karnataka','South'], ['Tamil Nadu','South'], ['Telangana','South'],
-      ['Haryana','North'], ['Himachal Pradesh','North'], ['Punjab','North'], ['Rajasthan','North'], ['Uttar Pradesh','North'], ['Uttarakhand','North'],
-      ['Chhattisgarh','West & Central'], ['Goa','West & Central'], ['Gujarat','West & Central'], ['Madhya Pradesh','West & Central'], ['Maharashtra','West & Central'],
-      ['Bihar','East'], ['Jharkhand','East'], ['Odisha','East'], ['West Bengal','East'],
       ['Arunachal Pradesh','Northeast'], ['Assam','Northeast'], ['Manipur','Northeast'], ['Meghalaya','Northeast'], ['Mizoram','Northeast'], ['Nagaland','Northeast'], ['Sikkim','Northeast'], ['Tripura','Northeast'],
       ['Andaman & Nicobar Islands','Union Territory'], ['Chandigarh','Union Territory'], ['Dadra & Nagar Haveli and Daman & Diu','Union Territory'], ['Delhi (NCT)','Union Territory'], ['Jammu & Kashmir','Union Territory'], ['Ladakh','Union Territory'], ['Lakshadweep','Union Territory'], ['Puducherry','Union Territory'],
-    ].map(([name, region]) => ({ key: slugify(name), name, region }));
-
-    function slugify(s) { return s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
-
-    const ALL_ENTRIES = [{ key: 'kerala', name: 'Kerala', region: 'South', live: true }, ...OTHER_STATES.map(s => ({ ...s, live: false }))];
+    ].map(([name, region]) => ({ key: slugify(name), name, region, live: false }));
 
     // ---------------------------------------------------------------------
-    // STATE SWITCHER
+    // STATE SWITCHER — driven by STATE_REGISTRY (single source of truth,
+    // also used by the tool engine itself), not a duplicated type mirror.
     // ---------------------------------------------------------------------
-    let currentKey = null;
+    const REGISTRY_KEYS = new Set(window.STATE_REGISTRY.map(s => s.key));
+    const ALL_ENTRIES = [
+      ...window.STATE_REGISTRY,
+      ...OTHER_STATES.filter(s => !REGISTRY_KEYS.has(s.key)),
+    ];
+
+    let currentKey = null;          // 'home' | a state/module key
+    let activeCategorySlot = 'all'; // which category is filtered into view within the current module
     let kbdIndex = -1;
 
     function renderStateList(filter) {
       const q = (filter || '').trim().toLowerCase();
       const list = document.getElementById('state_list');
-      const live = ALL_ENTRIES.filter(e => e.live && matches(e, q));
-      const rest = ALL_ENTRIES.filter(e => !e.live && matches(e, q));
+      const byName = (a, b) => a.name.localeCompare(b.name);
+      const live = ALL_ENTRIES.filter(e => e.live && matches(e, q)).sort(byName);
+      const rest = ALL_ENTRIES.filter(e => !e.live && matches(e, q)).sort(byName);
       let html = '';
       if (live.length) {
         html += '<div class="state-list-label">Live now</div>';
@@ -149,65 +420,400 @@
       document.getElementById('state_switcher').classList.contains('open') ? closeSwitcher() : openSwitcher();
     }
 
+    // ---------------------------------------------------------------------
+    // NAVIGATION — 'home' is a pseudo-entry (not in ALL_ENTRIES; it isn't a
+    // government to pick from the switcher). selectState() is the one
+    // function every nav surface (switcher, sidebar Home button, module
+    // cards, browser back/forward) funnels through.
+    // ---------------------------------------------------------------------
     function selectState(key) {
-      currentKey = key;
+      // Navigating to a different top-level view (Home <-> a government)
+      // should land at the top, like any app screen change — otherwise a
+      // module card clicked from partway down the Home page leaves the new
+      // view scrolled to that same position, which reads as broken.
+      const isViewChange = key !== currentKey;
+      if (key === 'home') {
+        currentKey = 'home';
+        closeSwitcher();
+        window.location.hash = 'home';
+        document.getElementById('state_content_area').innerHTML = renderHomeHtml();
+        renderSidebar();
+        if (isViewChange) window.scrollTo(0, 0);
+        return;
+      }
       const entry = ALL_ENTRIES.find(e => e.key === key);
       if (!entry) return;
+      if (currentKey !== key) activeCategorySlot = 'overview'; // fresh module lands on its own stats overview, not a raw card dump
+      currentKey = key;
       document.getElementById('trigger_label').textContent = entry.name;
       document.getElementById('trigger_dot').style.background = entry.live ? 'var(--gold)' : 'var(--line)';
       closeSwitcher();
       window.location.hash = key;
       try { localStorage.setItem('sfh_last_state', key); } catch (e) { /* private browsing or blocked — fine, just skip persistence */ }
       renderStateContent(entry);
+      if (isViewChange) window.scrollTo(0, 0);
     }
 
     function renderStateContent(entry) {
       const area = document.getElementById('state_content_area');
       // restart the entrance animation on every switch
       area.style.animation = 'none'; void area.offsetWidth; area.style.animation = '';
-      if (entry.live) {
-        area.innerHTML = renderKeralaHtml();
+      if (entry.live && window.STATE_DATA[entry.key]) {
+        area.innerHTML = renderModuleBody(entry.key, activeCategorySlot);
+        fitStateLocatorViewBox();
       } else {
         area.innerHTML = renderComingSoonHtml(entry.name);
       }
+      renderSidebar();
     }
 
-    function renderKeralaHtml() {
-      const blocks = GROUP_ORDER.map(groupName => {
-        const keys = Object.keys(KERALA_TYPES).filter(k => KERALA_TYPES[k].group === groupName);
+    // Dispatcher for whatever's currently active in the sidebar for this
+    // module: 'overview' (default — this government's own stats, see
+    // buildStateOverviewHtml), 'all' (every category's cards), or one
+    // specific category slot (that category's cards only).
+    function renderModuleBody(stateKey, activeSlot) {
+      const sd = window.STATE_DATA[stateKey];
+      const count = Object.keys(sd.types).length;
+      const header = '<div class="state-hero"><h2>' + sd.heroTitle + '</h2></div>' +
+        '<p class="state-hero-meta">' + count + ' application types across ' + sd.groupOrder.length + ' categories &middot; ' + sd.heroMeta + '</p>';
+      const body = (!activeSlot || activeSlot === 'overview') ? buildStateOverviewHtml(sd) : renderTypeGrid(sd, stateKey, activeSlot);
+      return '<div class="state-content">' + header + body + '</div>';
+    }
+
+    // Per-government stats overview — the default view on entering a
+    // module. Real counts from this government's own data, not the
+    // cross-government comparison (that lives on Home) — a bar per
+    // category, in that category's own established color (already used
+    // site-wide for its dot/icon, so this isn't a new hue, just reusing a
+    // fixed one), directly axis-labeled so no separate legend is needed.
+    function buildStateOverviewHtml(sd) {
+      const perCategory = sd.groupOrder.map(g => ({
+        slot: g.slot, name: g.name,
+        count: Object.keys(sd.types).filter(k => sd.types[k].group === g.slot).length,
+      })).filter(c => c.count > 0);
+      const total = perCategory.reduce((s, c) => s + c.count, 0);
+      const busiest = perCategory.reduce((a, b) => (b.count > a.count ? b : a), perCategory[0]);
+
+      const kpis = [
+        { label: 'Application Types', value: total },
+        { label: 'Categories Covered', value: perCategory.length },
+        { label: 'Most Types In', value: busiest.name },
+      ].map(k => '<div class="stat-tile"><div class="stat-tile-label">' + k.label + '</div><div class="stat-tile-value' + (typeof k.value === 'string' ? ' stat-tile-value-text' : '') + '">' + k.value + '</div></div>').join('');
+
+      // Horizontal bars — category names are genuinely long ("Insurance &
+      // Accident Benefits", "Estate / Death Benefit Claims"), and a vertical
+      // column chart has no room for that text without labels colliding.
+      // Horizontal bars give labels a full row's width to breathe.
+      const max = Math.max.apply(null, perCategory.map(c => c.count).concat(1));
+      const rowH = 30, barH = 18, labelW = 190, padRight = 34, padTop = 8, w = 560;
+      const barAreaW = w - labelW - padRight;
+      const h = perCategory.length * rowH + padTop;
+      const rows = perCategory.map((c, i) => {
+        const barLen = Math.max(3, Math.round((c.count / max) * barAreaW));
+        const y = padTop + i * rowH;
+        const barY = y + (rowH - barH) / 2;
+        const slot = window.CATEGORY_SLOTS[c.slot];
+        const colorVar = slot ? slot.colorVar : '--accent';
+        return '<g><title>' + c.name + ': ' + c.count + ' application types</title>' +
+          '<text x="' + (labelW - 10) + '" y="' + (y + rowH / 2) + '" dominant-baseline="middle" text-anchor="end" class="chart-axis-label">' + c.name + '</text>' +
+          '<rect class="chart-bar" x="' + labelW + '" y="' + barY + '" width="' + barLen + '" height="' + barH + '" rx="5" style="fill: var(' + colorVar + ')"></rect>' +
+          '<text x="' + (labelW + barLen + 8) + '" y="' + (y + rowH / 2) + '" dominant-baseline="middle" class="chart-value">' + c.count + '</text>' +
+          '</g>';
+      }).join('');
+
+      return '<div class="state-overview-top">' +
+        '<div class="state-locator-card">' + buildStateLocatorMapHtml(sd.key) +
+        '<div class="state-locator-label">' + sd.name + '</div></div>' +
+        '<div class="kpi-row kpi-row-3">' + kpis + '</div>' +
+        '</div>' +
+        '<div class="chart-card" style="margin-top:22px;">' +
+        '<div class="chart-card-title">Application Types by Category — ' + sd.name + '</div>' +
+        '<svg viewBox="0 0 ' + w + ' ' + h + '" class="bar-chart bar-chart-horizontal" role="img" aria-label="Bar chart of application types per category for ' + sd.name + '">' +
+        rows + '</svg></div>';
+    }
+
+    // Small locator — reuses the same INDIA_MAP path data as the Home map,
+    // but shows ONLY the current state's own shape (no neighboring states,
+    // no India outline for context) — no hover/tooltip/click, it's a locator
+    // not a picker. Central Government isn't a single place, so it keeps the
+    // full country outline, entirely highlighted, instead of one shape.
+    // The viewBox below is a placeholder (the full India one, so the SVG is
+    // never malformed while empty) — fitStateLocatorViewBox() crops it to
+    // the actual rendered shape's bounding box right after this HTML is
+    // inserted into the DOM (see the two renderModuleBody() call sites).
+    function buildStateLocatorMapHtml(stateKey) {
+      const isCentral = stateKey === 'central';
+      const label = window.STATE_DATA[stateKey] ? window.STATE_DATA[stateKey].name : '';
+      if (isCentral) {
+        const paths = window.INDIA_MAP.states.map(s => '<path class="india-locator-state is-current" d="' + s.d + '"></path>').join('');
+        return '<svg class="india-locator-map" id="state_locator_svg" viewBox="' + window.INDIA_MAP.viewBox + '" role="img" aria-label="' + label + ' applies across all of India">' + paths + '</svg>';
+      }
+      const code = Object.keys(MAP_CODE_TO_KEY).find(c => MAP_CODE_TO_KEY[c] === stateKey);
+      const state = window.INDIA_MAP.states.find(s => s.code === code);
+      if (!state) return '';
+      return '<svg class="india-locator-map" id="state_locator_svg" viewBox="' + window.INDIA_MAP.viewBox + '" role="img" aria-label="Shape of ' + label + '">' +
+        '<path class="india-locator-state is-current" d="' + state.d + '"></path></svg>';
+    }
+    function fitStateLocatorViewBox() {
+      const svg = document.getElementById('state_locator_svg');
+      if (!svg) return;
+      const shapes = svg.querySelectorAll('.india-locator-state');
+      if (shapes.length !== 1) return; // Central's all-India outline keeps its placeholder viewBox as-is
+      const bbox = shapes[0].getBBox();
+      const pad = Math.max(bbox.width, bbox.height) * 0.08;
+      svg.setAttribute('viewBox', (bbox.x - pad) + ' ' + (bbox.y - pad) + ' ' + (bbox.width + pad * 2) + ' ' + (bbox.height + pad * 2));
+    }
+
+    // Card-grid renderer — reads a state's data object directly
+    // (window.STATE_DATA[stateKey], the SAME object the shared engine uses
+    // to run the modal) instead of a duplicated type mirror. Renders ONLY
+    // the one category the sidebar has active — there's no "show everything"
+    // option any more (see Overview for the summary view instead).
+    function renderTypeGrid(sd, stateKey, activeSlot) {
+      const types = sd.types;
+      const groupsToShow = sd.groupOrder.filter(g => g.slot === activeSlot);
+      return '<div style="margin-top:22px;">' + groupsToShow.map(g => {
+        const keys = Object.keys(types).filter(k => types[k].group === g.slot);
         if (!keys.length) return '';
         const cards = keys.map(k => {
-          const t = KERALA_TYPES[k];
-          return '<a class="app-type-card" href="kerala.html?type=' + k + '">' +
-            '<span class="card-name">' + t.label + '</span><span class="card-rule">' + t.rule + '</span></a>';
+          const t = types[k];
+          return '<button type="button" class="app-type-card" onclick="openDashboardTool(\'' + stateKey + '\',\'tpl_state_tool\',\'st_init\',\'st_openAppModal\',\'' + k + '\')">' +
+            '<span class="card-name">' + t.label + '</span><span class="card-rule">' + t.rule + '</span></button>';
         }).join('');
-        return '<div class="category-block" style="--cat-color: var(' + CATEGORY_COLOR_VAR[groupName] + ')">' +
-          '<h3><svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + CATEGORY_ICONS[groupName] + '</svg>' + groupName + '</h3>' +
+        const slot = window.CATEGORY_SLOTS[g.slot];
+        return '<div class="category-block" style="--cat-color: var(' + (slot ? slot.colorVar : '--accent') + ')">' +
+          '<h3>' + window.categoryIconSvg(g.slot) + g.name + '</h3>' +
           '<div class="card-grid">' + cards + '</div></div>';
-      }).join('');
-      const count = Object.keys(KERALA_TYPES).length;
-      return '<div class="state-content">' +
-        '<div class="state-hero"><h2>Kerala — KSR &amp; Service Forms</h2>' +
-        '<a class="state-open-tool-btn" href="kerala.html">Open the full tool &rarr;</a></div>' +
-        '<p class="state-hero-meta">' + count + ' application types across ' + GROUP_ORDER.length + ' categories &middot; leave, insurance, advances &amp; estate claims</p>' +
-        '<div style="margin-top:22px;">' + blocks + '</div></div>';
+      }).join('') + '</div>';
     }
+
+    // ---------------------------------------------------------------------
+    // SIDEBAR — a modern desktop-app-style icon rail: a pinned Home item
+    // (always present) plus, when a module is open, that module's Overview
+    // (default) and its category list as filter buttons — no "show every
+    // category at once" option; clicking a category re-renders the main
+    // pane to show ONLY that category. Rebuilt on every navigation from
+    // renderStateContent/selectState so it always reflects
+    // currentKey/activeCategorySlot.
+    // ---------------------------------------------------------------------
+    function renderSidebar() {
+      const sidebar = document.getElementById('dashboard_sidebar');
+      const isHome = currentKey === 'home';
+      const sd = (!isHome && window.STATE_DATA[currentKey]) ? window.STATE_DATA[currentKey] : null;
+      let html = '<button type="button" class="sidebar-link sidebar-link-home' + (isHome ? ' active' : '') + '" data-nav="home">' +
+        homeIconSvg('sidebar-icon') + '<span class="sidebar-name">Home</span></button>';
+      if (sd) {
+        html += '<div class="sidebar-divider"></div><div class="sidebar-title">' + sd.name + '</div>';
+        html += '<button type="button" class="sidebar-link' + (activeCategorySlot === 'overview' ? ' active' : '') + '" data-category="overview">' +
+          '<svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>' +
+          '<span class="sidebar-name">Overview</span></button>';
+        html += sd.groupOrder.map(g => {
+          const count = Object.keys(sd.types).filter(k => sd.types[k].group === g.slot).length;
+          if (!count) return '';
+          const slot = window.CATEGORY_SLOTS[g.slot];
+          const isActive = activeCategorySlot === g.slot;
+          return '<button type="button" class="sidebar-link' + (isActive ? ' active' : '') + '" data-category="' + g.slot + '" style="--cat-color: var(' + (slot ? slot.colorVar : '--accent') + '); --cat-color-soft: color-mix(in srgb, var(' + (slot ? slot.colorVar : '--accent') + ') 16%, var(--surface))">' +
+            window.categoryIconSvg(g.slot, 'sidebar-icon') +
+            '<span class="sidebar-name">' + g.name + '</span><span class="sidebar-count">' + count + '</span></button>';
+        }).join('');
+      }
+      // National tools (Income Tax Statement Generator, and any future
+      // addition) apply to every government's employees the same way, so
+      // they're pinned in every module's sidebar AND on Home (Home's own
+      // content is just the map now, with no module grid to list them in) —
+      // driven by NATIONAL_TOOLS, so a newly-registered tool shows up
+      // everywhere automatically.
+      const liveTools = NATIONAL_TOOLS.filter(t => t.live);
+      if (liveTools.length) {
+        html += '<div class="sidebar-divider"></div><div class="sidebar-title">National Tools</div>';
+        html += liveTools.map(t => '<button type="button" class="sidebar-link" data-national-tool="' + t.key + '" style="--cat-color: var(--cat-national); --cat-color-soft: color-mix(in srgb, var(--cat-national) 16%, var(--surface))">' +
+          taxIconSvg('sidebar-icon') + '<span class="sidebar-name">' + t.name + '</span></button>').join('');
+      }
+      sidebar.innerHTML = html;
+    }
+    document.getElementById('dashboard_sidebar').addEventListener('click', (e) => {
+      const homeBtn = e.target.closest('[data-nav="home"]');
+      if (homeBtn) { selectState('home'); return; }
+      const toolBtn = e.target.closest('[data-national-tool]');
+      if (toolBtn) { openNationalTool(toolBtn.dataset.nationalTool); return; }
+      const catBtn = e.target.closest('[data-category]');
+      if (!catBtn || !window.STATE_DATA[currentKey]) return;
+      activeCategorySlot = catBtn.dataset.category;
+      const area = document.getElementById('state_content_area');
+      area.style.animation = 'none'; void area.offsetWidth; area.style.animation = '';
+      area.innerHTML = renderModuleBody(currentKey, activeCategorySlot);
+      fitStateLocatorViewBox();
+      renderSidebar();
+    });
 
     function renderComingSoonHtml(name) {
       return '<div class="state-content"><div class="empty-state-panel">' +
         '<svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>' +
         '<h2>' + name + ' is on the roadmap</h2>' +
-        '<p>Every state gets the same rule-by-rule care Kerala did before it ships — citing the actual service rules, not guessed ones — so ' + name + ' isn\u2019t built yet rather than built carelessly. Check back, or pick Kerala above to see what a finished state looks like.</p>' +
+        '<p>Every state gets the same rule-by-rule care already-live tools got before shipping — citing the actual service rules, not guessed ones — so ' + name + ' isn’t built yet rather than built carelessly. Check back, or pick a live government from Home to see what a finished tool looks like.</p>' +
         '</div></div>';
     }
 
-    function renderNationalTools() {
-      document.getElementById('national_tools').innerHTML = NATIONAL_TOOLS.map(t =>
-        '<div class="app-type-card is-pending" role="note" aria-label="' + t.name + ', coming soon">' +
-        '<span class="card-name">' + t.name + ' <span class="status-pill pending">Coming soon</span></span>' +
-        '<span class="card-rule">' + t.note + '</span></div>'
-      ).join('');
+    // ---------------------------------------------------------------------
+    // ICONS — Home + a ledger icon for national tools. Category icons
+    // already come from the shared engine's window.categoryIconSvg/CATEGORY_SLOTS.
+    // ---------------------------------------------------------------------
+    function homeIconSvg(cls) {
+      return '<svg class="' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>';
     }
+    function taxIconSvg(cls) {
+      return '<svg class="' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>';
+    }
+
+    // ---------------------------------------------------------------------
+    // HOME — the landing dashboard: just the India map (see INDIA MAP
+    // section below). Everything else (stats, National Tools) lives one
+    // click away — a state's Overview for its own stats, the sidebar's
+    // pinned National Tools section for Income Tax.
+    // ---------------------------------------------------------------------
+    function renderHomeHtml() {
+      return '<div class="state-content home-content">' +
+        '<div class="state-hero"><h2>Welcome to Sarkari Forms Hub</h2></div>' +
+        '<p class="state-hero-meta">Hover a state on the map for its stats, or click/tap to open it.</p>' +
+        buildIndiaMapHtml() +
+        '</div>';
+    }
+
+    // ---------------------------------------------------------------------
+    // INDIA MAP — the Home screen's primary state-picker. Real SVG state/UT
+    // outlines (assets/js/data/india-map.js); MAP_CODE_TO_KEY links that
+    // package's own 2-letter codes to this app's STATE_REGISTRY keys for the
+    // states we've actually built. Anything not in that table renders as a
+    // muted "on the roadmap" shape — still hoverable/tappable for its name
+    // and region, just not clickable through to a module. Central Government
+    // isn't a shape on the map (it isn't a place), so it gets its own pinned
+    // pill in the map card's header instead.
+    // ---------------------------------------------------------------------
+    const MAP_CODE_TO_KEY = {
+      kl: 'kerala', tn: 'tamilnadu', ka: 'karnataka', mh: 'maharashtra', ap: 'andhrapradesh',
+      tg: 'telangana', ga: 'goa', gj: 'gujarat', mp: 'madhyapradesh', ct: 'chhattisgarh',
+      rj: 'rajasthan', up: 'uttarpradesh', hr: 'haryana', pb: 'punjab', hp: 'himachalpradesh',
+      ut: 'uttarakhand', br: 'bihar', jh: 'jharkhand', or: 'odisha', wb: 'westbengal',
+    };
+    // Region label shown in the roadmap tooltip, for the states/UTs with no
+    // registry key yet — same rough grouping as OTHER_STATES above, keyed by
+    // the map package's own code rather than a name (names don't match
+    // verbatim between the two sources, e.g. "&" vs "and").
+    const MAP_CODE_REGION = {
+      an: 'Union Territory', ar: 'Northeast', as: 'Northeast', ch: 'Union Territory',
+      dn: 'Union Territory', dd: 'Union Territory', dl: 'Union Territory', jk: 'Union Territory',
+      ld: 'Union Territory', mn: 'Northeast', ml: 'Northeast', mz: 'Northeast', nl: 'Northeast',
+      py: 'Union Territory', sk: 'Northeast', tr: 'Northeast',
+    };
+    let lastHoveredMapPath = null;
+
+    function buildIndiaMapHtml() {
+      const paths = window.INDIA_MAP.states.map(s => {
+        const key = MAP_CODE_TO_KEY[s.code];
+        const isLive = !!(key && window.STATE_DATA[key]);
+        return '<path class="india-map-state' + (isLive ? ' is-live' : '') + '" data-code="' + s.code + '" d="' + s.d + '"><title>' + s.name + '</title></path>';
+      }).join('');
+      return '<div class="india-map-section"><div class="india-map-card">' +
+        '<div class="india-map-card-header"><h3 class="home-section-title" style="margin:0;">Explore by State</h3>' +
+        '<button type="button" class="central-gov-pill" onclick="selectState(\'central\')">Central Government <span aria-hidden="true">&rarr;</span></button></div>' +
+        '<div class="india-map-wrap" id="india_map_wrap">' +
+        '<svg class="india-map" viewBox="' + window.INDIA_MAP.viewBox + '" role="img" aria-label="Map of India — hover or tap a state for its status, click a live one to open it">' +
+        paths + '</svg>' +
+        '<div class="india-map-tooltip" id="india_map_tooltip"></div>' +
+        '</div>' +
+        '<div class="india-map-legend">' +
+        '<span class="india-map-legend-item"><span class="india-map-legend-dot is-live"></span>Live</span>' +
+        '<span class="india-map-legend-item"><span class="india-map-legend-dot is-roadmap"></span>On the roadmap</span>' +
+        '</div>' +
+        '<div class="india-map-attribution">State boundaries: svg-maps/india (CC BY 4.0)</div>' +
+        '</div></div>';
+    }
+
+    function mapTooltipHtml(code) {
+      const s = window.INDIA_MAP.states.find(x => x.code === code);
+      if (!s) return '';
+      const key = MAP_CODE_TO_KEY[code];
+      if (key && window.STATE_DATA[key]) {
+        const sd = window.STATE_DATA[key];
+        const count = Object.keys(sd.types).length;
+        return '<div class="map-tip-name">' + s.name + '<span class="status-pill live">Live</span></div>' +
+          '<div class="map-tip-stat">' + count + ' application types &middot; ' + sd.groupOrder.length + ' categories</div>' +
+          '<div class="map-tip-cta">Click to open &rarr;</div>';
+      }
+      const region = MAP_CODE_REGION[code];
+      return '<div class="map-tip-name">' + s.name + '<span class="status-pill pending">Roadmap</span></div>' +
+        (region ? '<div class="map-tip-stat">' + region + '</div>' : '');
+    }
+
+    function showMapTooltip(code) {
+      const tip = document.getElementById('india_map_tooltip');
+      if (!tip) return;
+      tip.innerHTML = mapTooltipHtml(code);
+      tip.classList.add('visible');
+    }
+    function positionMapTooltip(e) {
+      const tip = document.getElementById('india_map_tooltip');
+      const wrap = document.getElementById('india_map_wrap');
+      if (!tip || !wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      const tipW = 220, tipH = 74; // rough estimate — clamped to the wrap, not measured, so it never needs a layout read
+      let x = e.clientX - rect.left + 18;
+      let y = e.clientY - rect.top + 18;
+      if (x + tipW > rect.width) x = e.clientX - rect.left - tipW - 10;
+      if (y + tipH > rect.height) y = e.clientY - rect.top - tipH - 10;
+      tip.style.left = Math.max(0, x) + 'px';
+      tip.style.top = Math.max(0, y) + 'px';
+    }
+    function hideMapTooltip() {
+      const tip = document.getElementById('india_map_tooltip');
+      if (tip) tip.classList.remove('visible');
+    }
+    // Delegated on #state_content_area (stable across every Home re-render,
+    // unlike the <svg> itself which is rebuilt each time) — one listener
+    // survives selectState('home') being called over and over.
+    function handleMapPointerMove(e) {
+      const svg = e.target.closest('.india-map');
+      if (!svg) return;
+      const path = e.target.closest('.india-map-state');
+      if (path) {
+        if (path !== lastHoveredMapPath) {
+          if (lastHoveredMapPath) lastHoveredMapPath.classList.remove('is-hover');
+          path.classList.add('is-hover');
+          lastHoveredMapPath = path;
+          showMapTooltip(path.dataset.code);
+        }
+        positionMapTooltip(e);
+      } else if (lastHoveredMapPath) {
+        lastHoveredMapPath.classList.remove('is-hover');
+        lastHoveredMapPath = null;
+        hideMapTooltip();
+      }
+    }
+    function handleMapPointerOut(e) {
+      const svg = e.target.closest('.india-map');
+      if (!svg) return;
+      if (e.relatedTarget && svg.contains(e.relatedTarget)) return; // still inside the map — pointermove owns this
+      if (lastHoveredMapPath) { lastHoveredMapPath.classList.remove('is-hover'); lastHoveredMapPath = null; }
+      hideMapTooltip();
+    }
+    function handleMapClick(e) {
+      const path = e.target.closest('.india-map-state');
+      if (!path) return;
+      const key = MAP_CODE_TO_KEY[path.dataset.code];
+      if (key) { selectState(key); return; }
+      // Roadmap state, or a touch device with no real hover — surface the
+      // tooltip in place instead of silently doing nothing.
+      if (path !== lastHoveredMapPath) {
+        if (lastHoveredMapPath) lastHoveredMapPath.classList.remove('is-hover');
+        path.classList.add('is-hover');
+        lastHoveredMapPath = path;
+      }
+      showMapTooltip(path.dataset.code);
+      positionMapTooltip(e);
+    }
+    document.getElementById('state_content_area').addEventListener('pointermove', handleMapPointerMove);
+    document.getElementById('state_content_area').addEventListener('pointerout', handleMapPointerOut);
+    document.getElementById('state_content_area').addEventListener('click', handleMapClick);
 
     // ---------------------------------------------------------------------
     // Wiring
@@ -237,27 +843,44 @@
     }
 
     // ---------------------------------------------------------------------
-    // Boot: hash in the URL wins (so links/bookmarks are shareable), then a
-    // remembered last visit, then Kerala by default since it's the only
-    // state with anything to show yet.
+    // Deep links: index.html#kerala/el or index.html#central/eol opens that
+    // tool's modal directly on the dashboard with the type pre-selected.
+    // Generic over the registry — no per-state map to maintain.
+    // ---------------------------------------------------------------------
+    function handleDeepLink(hash) {
+      const [stateKey, typeKey] = hash.split('/');
+      if (typeKey && window.STATE_DATA[stateKey]) {
+        openDashboardTool(stateKey, 'tpl_state_tool', 'st_init', 'st_openAppModal', typeKey);
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // Boot: hash in the URL wins (so links/bookmarks are shareable — incl.
+    // #home), then a remembered last visit, then Home by default.
     // ---------------------------------------------------------------------
     function boot() {
-      renderNationalTools();
       const fromHash = window.location.hash.replace('#', '');
-      let initial = ALL_ENTRIES.find(e => e.key === fromHash);
+      const stateKeyFromHash = fromHash.split('/')[0];
+      if (stateKeyFromHash === 'home') { selectState('home'); return; }
+      let initial = ALL_ENTRIES.find(e => e.key === stateKeyFromHash);
       if (!initial) {
         let remembered = null;
         try { remembered = localStorage.getItem('sfh_last_state'); } catch (e) { /* ignore */ }
         initial = ALL_ENTRIES.find(e => e.key === remembered);
       }
-      selectState((initial || ALL_ENTRIES[0]).key);
+      if (!initial) { selectState('home'); return; }
+      selectState(initial.key);
+      handleDeepLink(fromHash);
     }
     window.addEventListener('hashchange', () => {
-      const key = window.location.hash.replace('#', '');
+      const hash = window.location.hash.replace('#', '');
+      const key = hash.split('/')[0];
+      if (key === 'home') { if (currentKey !== 'home') selectState('home'); return; }
       if (key && key !== currentKey) {
         const entry = ALL_ENTRIES.find(e => e.key === key);
         if (entry) selectState(entry.key);
       }
+      handleDeepLink(hash);
     });
     boot();
   </script>

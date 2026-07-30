@@ -73,6 +73,28 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .secondary-btn { background: var(--ink); box-shadow: 0 10px 24px -10px rgba(20,42,44,.45); }
 .secondary-btn:hover { background: var(--ink-2); box-shadow: 0 14px 28px -10px rgba(20,42,44,.5); }
 
+/* ---- monthly pay grid (Income Tax tool) ---------------------------------
+   A compact data-entry table, not a print table — see .pay-register-table
+   in shared-document.css for the printed annexure version of the same data. */
+.pay-grid-actions { display: flex; justify-content: flex-end; margin: 4px 0 8px; }
+.pay-grid-actions .print-btn { flex: 0 0 auto; padding: 9px 18px; font-size: .82rem; }
+.pay-grid-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.pay-grid { width: 100%; border-collapse: collapse; font-size: .8rem; min-width: 720px; }
+.pay-grid th, .pay-grid td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.pay-grid thead th { background: var(--surface-2); font-weight: 600; color: var(--text-soft); font-size: .7rem; text-transform: uppercase; letter-spacing: .03em; }
+.pay-grid td:first-child, .pay-grid th:first-child { text-align: left; font-weight: 600; position: sticky; left: 0; background: var(--surface); }
+.pay-grid thead th:first-child { background: var(--surface-2); }
+.pay-grid tbody tr:last-child td { border-bottom: none; }
+.pay-grid input { width: 76px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; font-size: .8rem; text-align: right; background: var(--surface); color: var(--ink); font-family: inherit; }
+.pay-grid input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* on-screen recap table (results panel) — a lighter cousin of .pay-grid with no inputs */
+.data-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.data-table th, .data-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.data-table th:first-child, .data-table td:first-child { text-align: left; font-weight: 600; }
+.data-table thead th { background: var(--surface-2); font-size: .7rem; text-transform: uppercase; letter-spacing: .03em; color: var(--text-soft); }
+.data-table tfoot td { font-weight: 700; border-top: 2px solid var(--line); border-bottom: none; }
+
 .highlight-box { background: var(--accent-soft); border: 1px solid #C7E2DB; padding: 16px 18px; border-radius: var(--radius); }
 
 .sig-preview-box { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin-top: 12px; border: 1.5px dashed var(--line); padding: 16px; border-radius: var(--radius); background: var(--surface-2); }
@@ -95,7 +117,7 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .category-block h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: .96rem; color: var(--ink); margin: 0 0 12px; display: flex; align-items: center; gap: 9px; }
 .category-block h3::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--cat-color, var(--accent)); flex-shrink: 0; }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
-.app-type-card { display: block; text-align: left; text-decoration: none; cursor: pointer; background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-card); transition: transform .13s ease, box-shadow .13s ease, border-color .13s ease; font-family: inherit; }
+.app-type-card { display: block; width: 100%; margin: 0; text-align: left; text-decoration: none; cursor: pointer; background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-card); transition: transform .13s ease, box-shadow .13s ease, border-color .13s ease; font-family: inherit; }
 .app-type-card:hover, .app-type-card:focus-visible { border-color: var(--cat-color, var(--accent)); transform: translateY(-2px); box-shadow: var(--shadow-card-hover); outline: none; }
 .app-type-card .card-name { display: block; font-weight: 600; font-size: .93rem; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
 .app-type-card .card-rule { display: block; font-family: "IBM Plex Mono", monospace; font-size: .68rem; color: var(--text-soft); line-height: 1.4; }
@@ -137,7 +159,14 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,26,.72); backdrop-filter: blur(2px); z-index: 1000; align-items: center; justify-content: center; padding: 30px 20px; overflow-y: auto; opacity: 0; transition: opacity .18s ease; }
 .modal-overlay.open { display: flex; }
 .modal-overlay.open.visible { opacity: 1; }
-.modal-dialog { background: #4A5352; border-radius: var(--radius-lg); max-width: 900px; width: 100%; max-height: min(85vh, 800px); box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); transform: translateY(14px) scale(.98); transition: transform .2s ease; display: flex; flex-direction: column; }
+/* overflow:hidden is safe here (unlike the dashboard shell's sticky-sidebar
+   case) — nothing inside a modal uses position:sticky, the header/footer
+   just stay put via flex layout (flex-shrink:0 around a scrolling
+   .modal-body). Without it, .modal-body's own square white background pokes
+   past the dialog's rounded corners whenever a panel has no .modal-footer
+   visible at its bottom edge (e.g. Income Tax's form panel before Compute
+   is clicked, when #it_preview_btn_wrap is still .hidden-section). */
+.modal-dialog { background: #4A5352; border-radius: var(--radius-lg); overflow: hidden; max-width: 900px; width: 100%; max-height: min(85vh, 800px); box-shadow: 0 30px 70px -12px rgba(0,0,0,.55); transform: translateY(14px) scale(.98); transition: transform .2s ease; display: flex; flex-direction: column; }
 /* Settle to transform:none (not an identity translate/scale) once open — a
    transform value, even a no-op one, permanently creates a new CSS
    containing block for descendants. Left in place, that quietly breaks how
@@ -222,6 +251,146 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .state-empty-result { padding: 24px 16px; text-align: center; color: var(--text-soft); font-size: .85rem; }
 
 /* =============================================================================
+   DASHBOARD SHELL — the whole sidebar+content region reads as one raised,
+   rounded-corner desktop-app window floating on the page's paper
+   background, rather than a stack of separate cards. One shadow, one
+   border-radius, one clipping boundary (overflow:hidden — safe with the
+   sidebar's position:sticky since the shell never independently scrolls;
+   it just bounds how far the sticky sidebar can travel, which is exactly
+   the desired "stick within the window" behavior). The sidebar reads as a
+   tinted pane of that same window (a soft gradient + a hairline divider),
+   not a separate floating card — icon-led, modern-desktop-app style: a
+   pinned Home item, then (once a government is selected) that government's
+   Overview + category filters. Clicking a category shows ONLY that
+   category's cards (see index.html's renderTypeGrid/renderSidebar) — the
+   sidebar always reflects whichever government is currently selected. On
+   narrow viewports the rail collapses into a sticky horizontal pill strip.
+   ============================================================================= */
+.hub-dashboard { max-width: 1180px; }
+.dashboard-shell {
+  /* NOTE: deliberately no overflow:hidden here — clipping via an
+     overflow!=visible ancestor breaks position:sticky on the sidebar in
+     practice (confirmed empirically: the sidebar scrolled away instead of
+     sticking). Corner-rounding is achieved by giving the sidebar its own
+     matching radius (below) instead of relying on the shell to clip it. */
+  margin-top: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  box-shadow: 0 1px 2px rgba(20,30,28,.05), 0 2px 6px rgba(20,30,28,.06), 0 44px 84px -34px rgba(20,30,28,.35), 0 14px 34px -16px rgba(20,30,28,.18);
+}
+.dashboard-layout { display: grid; grid-template-columns: 240px 1fr; align-items: stretch; }
+.dashboard-sidebar { position: sticky; top: 84px; align-self: start; background: linear-gradient(180deg, var(--surface-2), var(--surface) 65%); border-right: 1px solid var(--line); border-radius: 22px 0 0 22px; padding: 20px 12px; max-height: calc(100vh - 104px); overflow-y: auto; }
+.sidebar-title { font-family: "IBM Plex Mono", monospace; font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-soft); padding: 4px 10px 10px; }
+.sidebar-divider { height: 1px; background: var(--line); margin: 10px 4px; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-radius: 10px; padding: 9px 10px; margin-bottom: 2px; cursor: pointer; font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--text); position: relative; transition: background-color .15s ease, color .15s ease; }
+.sidebar-link:hover, .sidebar-link:focus-visible { background: rgba(255,255,255,.7); outline: none; }
+.sidebar-link.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-card); }
+.sidebar-link.active::before { content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--cat-color, var(--accent)); }
+.sidebar-link-home { font-family: "Fraunces", Georgia, serif; font-size: .92rem; }
+.sidebar-icon { width: 17px; height: 17px; flex-shrink: 0; color: var(--cat-color, var(--accent)); }
+.sidebar-link-home .sidebar-icon { color: var(--ink); }
+.sidebar-link-home.active .sidebar-icon { color: var(--accent-deep); }
+.sidebar-link .sidebar-name { flex: 1; line-height: 1.25; }
+.sidebar-count { flex-shrink: 0; font-family: "IBM Plex Mono", monospace; font-size: .66rem; font-weight: 600; color: var(--text-soft); background: var(--surface-2); padding: 2px 7px; border-radius: 20px; }
+.sidebar-link.active .sidebar-count { background: var(--cat-color-soft, var(--accent-soft)); }
+.dashboard-main { min-width: 0; padding: 30px 34px 38px; }
+
+@media (max-width: 900px) {
+  .dashboard-shell { border-radius: 18px; }
+  .dashboard-layout { grid-template-columns: 1fr; }
+  .dashboard-main { padding: 22px 20px 30px; }
+  .dashboard-sidebar { position: sticky; top: 62px; z-index: 5; max-height: none; display: flex; flex-direction: row; align-items: center; gap: 6px; padding: 10px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; border-right: none; border-bottom: 1px solid var(--line); border-radius: 18px 18px 0 0; }
+  .sidebar-title { display: none; }
+  .sidebar-divider { width: 1px; height: 26px; flex-shrink: 0; margin: 0 2px; }
+  .sidebar-link { width: auto; flex-shrink: 0; margin-bottom: 0; white-space: nowrap; padding: 8px 12px; }
+  .sidebar-link.active::before { left: 6px; right: 6px; top: auto; bottom: -10px; height: 3px; width: auto; border-radius: 3px 3px 0 0; }
+  .sidebar-count { display: none; }
+}
+
+/* =============================================================================
+   HOME DASHBOARD — landing view is just the India map now (see the India
+   map section below). Stat tiles (.kpi-row etc.) are still used, just by
+   each state's own Overview (buildStateOverviewHtml in index.html) rather
+   than Home.
+   ============================================================================= */
+.home-section-title { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.05rem; color: var(--ink); margin: 30px 0 12px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 20px; }
+.kpi-row-3 { grid-template-columns: repeat(3, 1fr); }
+.stat-tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-card); }
+.stat-tile-label { font-size: .74rem; font-weight: 600; color: var(--text-soft); letter-spacing: .01em; }
+.stat-tile-value { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 2rem; color: var(--ink); margin-top: 6px; line-height: 1; }
+.stat-tile-value-text { font-size: 1.2rem; line-height: 1.25; }
+
+/* ---- India map (Home screen state picker) ------------------------------ */
+.india-map-section { margin-top: 22px; }
+.india-map-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px 22px 16px; box-shadow: var(--shadow-card); }
+.india-map-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.central-gov-pill { display: inline-flex; align-items: center; gap: 7px; background: var(--accent-soft); color: var(--accent-deep); border: 1.5px solid #C7E2DB; border-radius: 20px; padding: 8px 16px; font-size: .82rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: all .15s ease; }
+.central-gov-pill:hover, .central-gov-pill:focus-visible { background: var(--accent); color: #fff; border-color: var(--accent); outline: none; }
+
+.india-map-wrap { position: relative; max-width: 440px; margin: 4px auto 0; }
+.india-map { width: 100%; height: auto; display: block; }
+.india-map-state { fill: var(--surface-2); stroke: var(--surface); stroke-width: 1.2; transition: fill .12s ease; cursor: default; }
+.india-map-state.is-live { fill: color-mix(in srgb, var(--accent) 26%, var(--surface)); cursor: pointer; }
+.india-map-state.is-live.is-hover { fill: var(--accent); }
+.india-map-state.is-hover:not(.is-live) { fill: var(--line); }
+
+.india-map-tooltip {
+  position: absolute; top: 0; left: 0; z-index: 20; pointer-events: none;
+  background: var(--ink); color: #F4F1E7; padding: 10px 14px; border-radius: 10px;
+  font-size: .8rem; line-height: 1.45; box-shadow: 0 14px 30px -10px rgba(20,30,28,.5);
+  opacity: 0; transform: translateY(4px); transition: opacity .1s ease, transform .1s ease;
+  max-width: 220px; white-space: normal;
+}
+.india-map-tooltip.visible { opacity: 1; transform: translateY(0); }
+.india-map-tooltip .map-tip-name { font-weight: 700; font-family: "Fraunces", Georgia, serif; font-size: .88rem; margin-bottom: 3px; }
+.india-map-tooltip .map-tip-stat { font-family: "IBM Plex Mono", monospace; font-size: .68rem; color: #C8D6D1; }
+.india-map-tooltip .map-tip-cta { font-size: .7rem; color: var(--gold); margin-top: 4px; font-weight: 600; }
+.india-map-tooltip .status-pill.live { background: rgba(216,184,122,.22); color: var(--gold); }
+.india-map-tooltip .status-pill.pending { background: rgba(255,255,255,.14); color: #C8D6D1; }
+
+.india-map-legend { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: 12px; font-size: .76rem; color: var(--text-soft); }
+.india-map-legend-item { display: inline-flex; align-items: center; gap: 7px; }
+.india-map-legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.india-map-legend-dot.is-live { background: color-mix(in srgb, var(--accent) 26%, var(--surface)); border: 1px solid var(--accent); }
+.india-map-legend-dot.is-roadmap { background: var(--surface-2); border: 1px solid var(--line); }
+.india-map-attribution { text-align: center; font-size: .68rem; color: var(--text-soft); opacity: .7; margin-top: 8px; }
+
+@media (max-width: 640px) {
+  .india-map-wrap { max-width: 320px; }
+}
+
+/* ---- State Overview locator (a small "you are here" map) ---------------
+   The svg gets a fixed height (not height:auto) so every state's card is the
+   same size regardless of its own shape's aspect ratio — SVG's default
+   preserveAspectRatio (xMidYMid meet) then letterboxes/centers whatever
+   shape it's given within that fixed box, whether it's tall and narrow
+   (Kerala) or short and wide (Rajasthan). */
+.state-overview-top { display: grid; grid-template-columns: 210px 1fr; gap: 18px; align-items: stretch; margin-top: 20px; }
+.state-locator-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.india-locator-map { width: 100%; height: 150px; display: block; }
+.india-locator-state { fill: var(--surface-2); stroke: var(--surface); stroke-width: 1.2; }
+.india-locator-state.is-current { fill: var(--accent); }
+.state-locator-label { font-family: "IBM Plex Mono", monospace; font-size: .7rem; font-weight: 600; color: var(--accent-deep); text-align: center; }
+
+@media (max-width: 640px) {
+  .state-overview-top { grid-template-columns: 1fr; }
+  .state-locator-card { max-width: 220px; margin: 0 auto; }
+}
+
+.chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-card); }
+.chart-card-title { font-size: .74rem; font-weight: 600; color: var(--text-soft); letter-spacing: .01em; margin-bottom: 10px; }
+.bar-chart { width: 100%; height: auto; display: block; }
+.chart-bar { fill: var(--accent); transition: opacity .15s ease; }
+.bar-chart g:hover .chart-bar { opacity: .82; }
+.chart-value { font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600; fill: var(--ink); }
+.chart-axis-label { font-family: "Public Sans", sans-serif; font-size: 11px; fill: var(--text-soft); }
+.chart-baseline { stroke: var(--line); stroke-width: 1; }
+
+@media (max-width: 720px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* =============================================================================
    DASHBOARD CONTENT AREA — swaps based on the selected state
    ============================================================================= */
 .state-content { animation: fadeSlideIn .28s ease both; }
@@ -229,8 +398,6 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 .state-hero { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
 .state-hero h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.5rem; color: var(--ink); margin: 0; }
 .state-hero-meta { font-family: "IBM Plex Mono", monospace; font-size: .78rem; color: var(--text-soft); }
-.state-open-tool-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 30px; font-weight: 600; font-size: .92rem; box-shadow: 0 10px 24px -10px rgba(20,42,44,.4); transition: background-color .15s ease, transform .12s ease; }
-.state-open-tool-btn:hover { background: var(--ink-2); transform: translateY(-1px); }
 
 .category-block h3 { display: flex; align-items: center; gap: 9px; }
 .category-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--cat-color, var(--accent)); }
@@ -245,7 +412,7 @@ body { font-family: "Public Sans", system-ui, -apple-system, sans-serif; backgro
 
 @media (prefers-reduced-motion: reduce) {
   .state-content { animation: none; }
-  .state-switcher-panel, .state-switcher-trigger .chevron, .app-type-card, .state-open-tool-btn { transition: none; }
+  .state-switcher-panel, .state-switcher-trigger .chevron, .app-type-card, .sidebar-link { transition: none; }
 }
 
 /* Deep-link handling now relocates the chosen type's fields inline (see
