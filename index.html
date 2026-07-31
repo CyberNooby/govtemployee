@@ -331,6 +331,18 @@
   <script src="assets/js/data/assam.js"></script>
   <script src="assets/js/data/manipur.js"></script>
   <script src="assets/js/data/meghalaya.js"></script>
+  <script src="assets/js/data/mizoram.js"></script>
+  <script src="assets/js/data/nagaland.js"></script>
+  <script src="assets/js/data/sikkim.js"></script>
+  <script src="assets/js/data/tripura.js"></script>
+  <script src="assets/js/data/andamannicobar.js"></script>
+  <script src="assets/js/data/chandigarh.js"></script>
+  <script src="assets/js/data/dadranagarhaveliandamandiu.js"></script>
+  <script src="assets/js/data/delhi.js"></script>
+  <script src="assets/js/data/jammukashmir.js"></script>
+  <script src="assets/js/data/ladakh.js"></script>
+  <script src="assets/js/data/lakshadweep.js"></script>
+  <script src="assets/js/data/puducherry.js"></script>
   <script src="assets/js/tools/income-tax.js"></script>
 
   <script>
@@ -362,8 +374,10 @@
     // the registry and nothing here needs to change.
     function slugify(s) { return s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
     const OTHER_STATES = [
-      ['Mizoram','Northeast'], ['Nagaland','Northeast'], ['Sikkim','Northeast'], ['Tripura','Northeast'],
-      ['Andaman & Nicobar Islands','Union Territory'], ['Chandigarh','Union Territory'], ['Dadra & Nagar Haveli and Daman & Diu','Union Territory'], ['Delhi (NCT)','Union Territory'], ['Jammu & Kashmir','Union Territory'], ['Ladakh','Union Territory'], ['Lakshadweep','Union Territory'], ['Puducherry','Union Territory'],
+      // All 28 states + 8 UTs are now live in STATE_REGISTRY — this list is
+      // intentionally empty. Kept as an array (not removed) so the .map()
+      // below and its callers don't need special-casing if a new UT/state
+      // is ever created via future reorganisation.
     ].map(([name, region]) => ({ key: slugify(name), name, region, live: false }));
 
     // ---------------------------------------------------------------------
@@ -698,18 +712,29 @@
       tg: 'telangana', ga: 'goa', gj: 'gujarat', mp: 'madhyapradesh', ct: 'chhattisgarh',
       rj: 'rajasthan', up: 'uttarpradesh', hr: 'haryana', pb: 'punjab', hp: 'himachalpradesh',
       ut: 'uttarakhand', br: 'bihar', jh: 'jharkhand', or: 'odisha', wb: 'westbengal',
-      ar: 'arunachalpradesh', as: 'assam', mn: 'manipur', ml: 'meghalaya',
+      ar: 'arunachalpradesh', as: 'assam', mn: 'manipur', ml: 'meghalaya', mz: 'mizoram',
+      nl: 'nagaland', sk: 'sikkim', tr: 'tripura', an: 'andamannicobar', ch: 'chandigarh',
+      dn: 'dadranagarhaveliandamandiu', dd: 'dadranagarhaveliandamandiu', dl: 'delhi', jk: 'jammukashmir',
+      ld: 'lakshadweep', py: 'puducherry',
     };
+    // Ladakh has NO shape of its own in this map data — the package's 'jk'
+    // shape is the pre-2019 undivided Jammu & Kashmir outline (see the
+    // INDIA_MAP header comment in india-map.js), and 'ld' belongs to
+    // Lakshadweep, not Ladakh. Ladakh is fully live and reachable via the
+    // state switcher; it just has no map shape to highlight or link, the
+    // same "live but not on the map" situation as Central Government
+    // (which gets a pill instead) — Ladakh doesn't get an equivalent pill
+    // since it IS a place, it's simply missing from this particular SVG
+    // source. See tests/smoke_test.py's Home-block assertion, which
+    // excludes it from the expected map-live-count for the same reason.
     // Region label shown in the roadmap tooltip, for the states/UTs with no
     // registry key yet — same rough grouping as OTHER_STATES above, keyed by
     // the map package's own code rather than a name (names don't match
     // verbatim between the two sources, e.g. "&" vs "and").
-    const MAP_CODE_REGION = {
-      an: 'Union Territory', ch: 'Union Territory',
-      dn: 'Union Territory', dd: 'Union Territory', dl: 'Union Territory', jk: 'Union Territory',
-      ld: 'Union Territory', mz: 'Northeast', nl: 'Northeast',
-      py: 'Union Territory', sk: 'Northeast', tr: 'Northeast',
-    };
+    // Empty now that all 36 states/UTs are live — kept as an object (not
+    // removed) so lookups against it stay well-defined if a future
+    // reorganisation ever adds a new placeholder entry.
+    const MAP_CODE_REGION = {};
     let lastHoveredMapPath = null;
 
     function buildIndiaMapHtml() {
