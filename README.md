@@ -6,6 +6,8 @@ Pick your government from an interactive map of India, fill in your profile once
 
 **No backend. No accounts. No data ever leaves your browser.**
 
+**🔗 Live app: [cybernooby.github.io/officialapplications](https://cybernooby.github.io/officialapplications)**
+
 ---
 
 ## What it does
